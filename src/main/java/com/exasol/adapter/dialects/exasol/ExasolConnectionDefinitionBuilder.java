@@ -21,7 +21,7 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
 
     @Override
     public String buildConnectionDefinition(final AdapterProperties properties,
-          final ExaConnectionInformation exaConnectionInformation) {
+            final ExaConnectionInformation exaConnectionInformation) {
         if (properties.containsKey(ExasolProperties.EXASOL_IMPORT_PROPERTY)) {
             return buildImportFromExaConnectionDefinition(properties, exaConnectionInformation);
         } else {
@@ -30,29 +30,30 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
     }
 
     private String buildImportFromExaConnectionDefinition(final AdapterProperties properties,
-          final ExaConnectionInformation exaConnectionInformation) {
+            final ExaConnectionInformation exaConnectionInformation) {
         if (hasConflictingConnectionProperties(properties)) {
             throw new IllegalArgumentException(CONFLICTING_CONNECTION_DETAILS_ERROR);
-        } else if (properties.containsKey(EXASOL_CONNECTION_STRING_PROPERTY) && hasIndividualConnectionPropertiesOnly(
-              properties)) {
+        } else if (properties.containsKey(EXASOL_CONNECTION_STRING_PROPERTY)
+                && hasIndividualConnectionPropertiesOnly(properties)) {
             return mixUsernameAndPasswordPropertiesWithExasolConnectionString(properties);
         } else if (properties.containsKey(EXASOL_CONNECTION_STRING_PROPERTY) && properties.hasConnectionName()) {
             return mixNamedConnectionWithExasolConnectionString(properties, exaConnectionInformation);
         } else {
             throw new IllegalArgumentException(
-                  "Incomplete remote connection information. Please specify an Exasol connection string with property "
-                        + EXASOL_CONNECTION_STRING_PROPERTY + " plus either a named connection with "
-                        + CONNECTION_NAME_PROPERTY + " or individual connetion properties " + CONNECTION_STRING_PROPERTY
-                        + ", " + USERNAME_PROPERTY + " and " + PASSWORD_PROPERTY + ".");
+                    "Incomplete remote connection information. Please specify an Exasol connection string with property "
+                            + EXASOL_CONNECTION_STRING_PROPERTY + " plus either a named connection with "
+                            + CONNECTION_NAME_PROPERTY + " or individual connetion properties "
+                            + CONNECTION_STRING_PROPERTY + ", " + USERNAME_PROPERTY + " and " + PASSWORD_PROPERTY
+                            + ".");
         }
     }
 
     private String mixNamedConnectionWithExasolConnectionString(final AdapterProperties properties,
-          final ExaConnectionInformation exaConnectionInformation) {
+            final ExaConnectionInformation exaConnectionInformation) {
         final String exasolConnectionString = getExasolConnectionString(properties);
         LOGGER.finer(() -> "Mixing Exasol connection string \"" + exasolConnectionString + "\" into named connection.");
         return getConnectionDefinition(exasolConnectionString, exaConnectionInformation.getUser(),
-              exaConnectionInformation.getPassword());
+                exaConnectionInformation.getPassword());
     }
 
     private String getExasolConnectionString(final AdapterProperties properties) {
@@ -61,8 +62,8 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
 
     private String mixUsernameAndPasswordPropertiesWithExasolConnectionString(final AdapterProperties properties) {
         LOGGER.warning(() -> "Defining credentials individually with properties is deprecated."
-              + " Provide a connection name instead in property " + CONNECTION_NAME_PROPERTY + ".");
+                + " Provide a connection name instead in property " + CONNECTION_NAME_PROPERTY + ".");
         return getConnectionDefinition(getExasolConnectionString(properties), properties.getUsername(),
-              properties.getPassword());
+                properties.getPassword());
     }
 }

@@ -14,7 +14,7 @@ class ExasolMetadataReaderTest {
 
     @BeforeEach
     void beforeEach() {
-        exasolMetadataReader = new ExasolMetadataReader(null, AdapterProperties.emptyProperties());
+        this.exasolMetadataReader = new ExasolMetadataReader(null, AdapterProperties.emptyProperties());
     }
 
     @Test

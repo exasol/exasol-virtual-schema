@@ -1,17 +1,19 @@
 package com.exasol.adapter.dialects.exasol;
 
-import com.exasol.ExaConnectionInformation;
-import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.jdbc.*;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import java.util.HashMap;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+
+import java.util.HashMap;
+
+import org.junit.Assert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import com.exasol.ExaConnectionInformation;
+import com.exasol.adapter.AdapterProperties;
+import com.exasol.adapter.jdbc.*;
 
 class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinitionBuilderTestBase {
     private static final String EXASOL_CONNECTION_STRING = "thehost:2345";
@@ -32,9 +34,8 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
         mockExasolNamedConnection();
         setImportFromExaProperties();
         setConnectionNameProperty();
-        assertThat(calculateConnectionDefinition(), equalTo(
-              "AT '" + EXASOL_CONNECTION_STRING + "' USER '" + CONNECTION_USER + "' IDENTIFIED BY '" + CONNECTION_PW
-                    + "'"));
+        assertThat(calculateConnectionDefinition(), equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '"
+                + CONNECTION_USER + "' IDENTIFIED BY '" + CONNECTION_PW + "'"));
     }
 
     protected void setImportFromExaProperties() {
@@ -48,15 +49,15 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
         setConnectionStringProperty("irrelevant");
         setUserNameProperty();
         setPasswordProperty();
-        assertThat(calculateConnectionDefinition(),
-              equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '" + USER + "' IDENTIFIED BY '" + PW + "'"));
+        Assert.assertThat(calculateConnectionDefinition(),
+                equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '" + USER + "' IDENTIFIED BY '" + PW + "'"));
     }
 
     @Test
     void testBuildConnectionDefinitionWithoutConnectionInfomationThrowsException() {
         setImportFromExaProperties();
         assertThrows(IllegalArgumentException.class, () -> new BaseConnectionDefinitionBuilder()
-              .buildConnectionDefinition(new AdapterProperties(this.rawProperties), null));
+                .buildConnectionDefinition(new AdapterProperties(this.rawProperties), null));
     }
 
     @Test

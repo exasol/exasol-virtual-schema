@@ -64,8 +64,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
     }
 
     @Test
-    void testRewriteToImportFromExaWithConnectionDetailsInProperties()
-            throws AdapterException, SQLException, ExaConnectionAccessException {
+    void testRewriteToImportFromExaWithConnectionDetailsInProperties() throws AdapterException, SQLException {
         setImportFromExaProperty();
         this.rawProperties.put(CONNECTION_STRING_PROPERTY, "irrelevant");
         this.rawProperties.put(USERNAME_PROPERTY, "alibaba");
