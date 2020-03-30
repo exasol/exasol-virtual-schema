@@ -35,7 +35,7 @@ import com.exasol.jdbc.DataException;
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtualschema-jdbc-adapter-dist-3.1.2.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-1.0.0.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -84,12 +84,12 @@ class ExasolSqlDialectIT {
                 Optional.of("IMPORT_FROM_EXA = 'true' EXA_CONNECTION_STRING = 'localhost:8888'"));
     }
 
-    public static void createTestSchema(final Statement statement, final String schemaName) throws SQLException {
+    private static void createTestSchema(final Statement statement, final String schemaName) throws SQLException {
         statement.execute("CREATE SCHEMA " + schemaName);
     }
 
-    public static void createAdapterScript(final Statement statement, final String qualifiedAdapterScriptName,
-            final String virtualSchemaJarName, final Optional<String> driver) throws SQLException {
+    private static void createAdapterScript(final Statement statement, final String qualifiedAdapterScriptName,
+                                            final String virtualSchemaJarName, final Optional<String> driver) throws SQLException {
         final StringBuilder builder = new StringBuilder();
         builder.append("CREATE OR REPLACE JAVA ADAPTER SCRIPT ").append(qualifiedAdapterScriptName);
         builder.append(" AS ");
@@ -100,8 +100,8 @@ class ExasolSqlDialectIT {
         statement.execute(builder.toString());
     }
 
-    public static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
-            final String firstTableName, final String secondTableName) throws SQLException {
+    private static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
+                                                     final String firstTableName, final String secondTableName) throws SQLException {
         statement.execute("CREATE TABLE " + schemaName + "." + firstTableName + "(x INT, y VARCHAR(100))");
         statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (1,'aaa')");
         statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (2,'bbb')");
@@ -706,8 +706,8 @@ class ExasolSqlDialectIT {
         assertThat(actual, matchesResultSet(expected));
     }
 
-    public ResultSet getSelectAllFromJoinExpectedTable(final Statement statement, final String schemaName,
-            final String expectedColumns, final String expectedValues) throws SQLException {
+    private ResultSet getSelectAllFromJoinExpectedTable(final Statement statement, final String schemaName,
+                                                        final String expectedColumns, final String expectedValues) throws SQLException {
         statement.execute("CREATE OR REPLACE TABLE " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedColumns);
         statement.execute("INSERT INTO " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedValues);
         return statement.executeQuery("SELECT * FROM " + schemaName + ".TABLE_JOIN_EXPECTED");
