@@ -16,7 +16,7 @@ SonarCloud results:
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=ncloc)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 
-An Exasol dialect of [Virtual Schemas][virtual-schemas].
+This projects contains the Exasol dialect for [Exasol's Virtual Schema][virtual-schemas].
 
 ## Features
 
@@ -26,7 +26,10 @@ An Exasol dialect of [Virtual Schemas][virtual-schemas].
 
 ### Information for Users
 
+* [User guide][user-guide]
 * [Exasol dialect](doc/dialects/exasol.md)
+
+Find all the documentation in the [Virtual Schemas project][vs-doc].
 
 ### Run Time Dependencies
 
@@ -62,4 +65,6 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 | [Maven Source Plugin](https://maven.apache.org/plugins/maven-source-plugin/)        | Creating a source code JAR                             | Apache License 2.0            |
 | [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/)   | Unit testing                                           | Apache License 2.0            |
 
+[user-guide]: https://github.com/exasol/virtual-schemas/blob/master/doc/user-guide/user_guide.md
 [virtual-schemas]: https://github.com/exasol/virtual-schemas
+[vs-doc]: https://github.com/exasol/virtual-schemas/tree/master/doc
