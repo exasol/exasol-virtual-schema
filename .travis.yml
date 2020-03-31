@@ -11,16 +11,18 @@ matrix:
 addons:
   sonarcloud:
     organization: exasol
+    token:
+      secure: "GJgl6RDOI8Mo7b/k3ck5wGqxfOLsORKOtJjEVUPsNsiZJKx41IKfwH2CzGU3P5kT5wbOB0FS7jDUaSRyURbhpl1pdVt69EQUy95XgjqBo9Bp9NHbWNzQNph6DmDshKqhlgZOlDs29pV9I1IRjKLdKQ+JQufwXaiwopGwnPBiuBIno9Y+10ueKwHp4sWuVueCgBML9f5cAvWGFKRJqLnGmqg1rHRqFJ0SANufKg8/hZ4mZxatkvcpepqkKcFmHW0HIYmAdzCehQyXZGUMiFInryXnUrCd4vy3OTZI0Rwu+2w4eIjnTZ0Lcp4/qjf+8XRQ5q3UrKA8NdmZZUW19xhhg2TjDKdRqio+fwRH8pIknpG0K+PP54FgOjrKSofCqXsieyUHLjTA0hqZm84x3Vwg7nL3jdccEOHAieRjhJfx11pNL5sMAcJg6pXlupp6FNvkpiNF2cDxO3jp2Znw2zwhM7FFDRnUHlb35SU/58TV0U8pcbyl2q/DJOlc7HvUj0BWiZIvTcwEml8rUU7cCIfU2bvO+O/02W7dx6KHC4zE2g3lRXeiNblJhfFZv5TOrf+h5kL/Hl9u3p7jKXLO/KvORindLrnJprWiQrFFqylpLYVwln37MTWt1aIZduag1v9mQdxXksksErXCxH/5qb2LbyrAnhxtzdi7BPh5K9SCrJs="
 
 before_script:
   - tools/version.sh verify
 
 install:
-    - travis_retry mvn dependency:resolve
+  - travis_retry mvn dependency:resolve
 
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent org.jacoco:jacoco-maven-plugin:prepare-agent-integration verify sonar:sonar -Dsonar.projectKey=com.exasol:exasol-virtual-schema  -Dsonar.login=${SONAR_TOKEN}
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent org.jacoco:jacoco-maven-plugin:prepare-agent-integration verify sonar:sonar -Dsonar.projectKey=com.exasol:exasol-virtual-schema
 
 cache:
   directories:
-  - "$HOME/.m2"
+    - "$HOME/.m2"
