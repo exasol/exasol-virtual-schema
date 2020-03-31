@@ -6,7 +6,7 @@
     <artifactId>exasol-virtual-schema</artifactId>
     <version>${product.version}</version>
     <name>Exasol Virtual Schema</name>
-    <description>This projects contains an Exasol dialect of Virtual Schema</description>
+    <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema</url>
     <properties>
         <product.version>1.0.0</product.version>
