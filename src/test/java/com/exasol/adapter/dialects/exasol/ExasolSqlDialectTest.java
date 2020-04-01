@@ -19,7 +19,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
-import org.hamcrest.MatcherAssert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -194,7 +193,7 @@ class ExasolSqlDialectTest {
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 containsString("You defined the property EXA_CONNECTION_STRING without setting IMPORT_FROM_EXA "));
     }
 
@@ -206,7 +205,7 @@ class ExasolSqlDialectTest {
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
-        MatcherAssert.assertThat(exception.getMessage(),
+        assertThat(exception.getMessage(),
                 containsString("You defined the property IMPORT_FROM_EXA, please also define EXA_CONNECTION_STRING"));
     }
 
@@ -236,7 +235,7 @@ class ExasolSqlDialectTest {
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
-        MatcherAssert.assertThat(exception.getMessage(), containsString(
+        assertThat(exception.getMessage(), containsString(
                 "The value 'asdasd' for the property IS_LOCAL is invalid. It has to be either 'true' or 'false' (case "
                         + "insensitive)"));
     }

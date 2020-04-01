@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +37,7 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
                 + CONNECTION_USER + "' IDENTIFIED BY '" + CONNECTION_PW + "'"));
     }
 
-    protected void setImportFromExaProperties() {
+    private void setImportFromExaProperties() {
         this.rawProperties.put(ExasolProperties.EXASOL_IMPORT_PROPERTY, "true");
         this.rawProperties.put(ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY, EXASOL_CONNECTION_STRING);
     }
@@ -49,7 +48,7 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
         setConnectionStringProperty("irrelevant");
         setUserNameProperty();
         setPasswordProperty();
-        Assert.assertThat(calculateConnectionDefinition(),
+        assertThat(calculateConnectionDefinition(),
                 equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '" + USER + "' IDENTIFIED BY '" + PW + "'"));
     }
 

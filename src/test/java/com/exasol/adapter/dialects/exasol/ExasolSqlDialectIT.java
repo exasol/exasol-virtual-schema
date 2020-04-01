@@ -29,7 +29,6 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolContainerConstants;
-import com.exasol.jdbc.DataException;
 
 @Tag("integration")
 @Testcontainers
@@ -670,7 +669,7 @@ class ExasolSqlDialectIT {
         builder.append("SQL_DIALECT     = 'EXASOL' ");
         builder.append("CONNECTION_NAME = 'NONEXISTENT_CONNECTION' ");
         builder.append("SCHEMA_NAME     = '" + SCHEMA_EXASOL + "' ");
-        final DataException exception = assertThrows(DataException.class, () -> statement.execute(builder.toString()));
+        final SQLException exception = assertThrows(SQLException.class, () -> statement.execute(builder.toString()));
         assertThat(exception.getMessage(),
                 containsString("Could not access the connection information of connection \"NONEXISTENT_CONNECTION\""));
     }
