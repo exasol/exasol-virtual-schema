@@ -124,12 +124,13 @@ class ExasolSqlDialectTest {
         final List<ColumnMetadata> columns = new ArrayList<>();
         final ColumnAdapterNotesJsonConverter converter = ColumnAdapterNotesJsonConverter.getInstance();
         columns.add(ColumnMetadata.builder().name("USER_ID")
-                .adapterNotes(converter.convertToJson(new ColumnAdapterNotes(3))).type(DataType.createDecimal(18, 0))
-                .nullable(true).identity(false).defaultValue("").comment("").build());
-        columns.add(
-                ColumnMetadata.builder().name("URL").adapterNotes(converter.convertToJson(new ColumnAdapterNotes(12)))
-                        .type(DataType.createVarChar(10000, DataType.ExaCharset.UTF8)).nullable(true).identity(false)
-                        .defaultValue("").comment("").build());
+                .adapterNotes(converter.convertToJson(ColumnAdapterNotes.builder().jdbcDataType(3).build()))
+                .type(DataType.createDecimal(18, 0)).nullable(true).identity(false).defaultValue("").comment("")
+                .build());
+        columns.add(ColumnMetadata.builder().name("URL")
+                .adapterNotes(converter.convertToJson(ColumnAdapterNotes.builder().jdbcDataType(12).build()))
+                .type(DataType.createVarChar(10000, DataType.ExaCharset.UTF8)).nullable(true).identity(false)
+                .defaultValue("").comment("").build());
         return new TableMetadata("CLICKS", "", columns, "");
     }
 
