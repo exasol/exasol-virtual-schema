@@ -160,9 +160,9 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     /**
-     * Check if the metadata reader should ignore tables where the name contains upper-case characters.
+     * Check if the adapter should ignore the usage of the literal timestamp with local time zone.
      *
-     * @return <code>true</code> if the reader should ignore upper-case tables
+     * @return <code>true</code> if the property is enabled
      */
     boolean isTimestampWithLocalTimeZoneEnabled() {
         return this.properties.getIgnoredErrors().contains(EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
