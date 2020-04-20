@@ -18,7 +18,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/exasol-virtual-schema-dist-1.0.0.jar;
+    %jar /buckets/<BFS service>/<bucket>/exasol-virtual-schema-dist-1.0.1.jar;
 /
 ```
 
@@ -67,3 +67,33 @@ CREATE VIRTUAL SCHEMA <virtual schema name>
 ## Supported Capabilities
 
 The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
+
+## Connection Types
+
+You can use different connection options depending on a type of source Exasol database.
+
+### Data Source a Remote Exasol Instance or Cluster
+
+Add the following parameters to `CREATE VIRTUAL SCHEMA`:
+
+    IMPORT_FROM_EXA = 'true'
+    EXA_CONNECTION_STRING = '<host-or-range>:<port>'
+
+You additionally need to provide a named connection with JDBC details so that Virtual Schema can read the metadata.
+
+#### Data Source is the Same Exasol Instance or Cluster Virtual Schemas Runs on
+
+In this case the best possible connection type is a so called "local" connection.
+
+Add the following parameters to `CREATE VIRTUAL SCHEMA`:
+
+    IS_LOCAL = 'true'
+
+The parameter `IS_LOCAL` provides an additional speed-up in this particular use case. 
+The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
+And that `SELECT` can be directly executed by the core database, whereas the `IMPORT` statement takes a detour via the ExaLoader.
+
+#### Data Source is an Exasol Instance or Cluster Only Reachable via JDBC
+
+While this connection type works, it is also the slowest option and exists mainly to support integration tests on the ExaLoader. 
+We recommend that you use `IMPORT FROM EXA` instead.
