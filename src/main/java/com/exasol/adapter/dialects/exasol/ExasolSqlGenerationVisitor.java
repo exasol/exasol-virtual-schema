@@ -29,7 +29,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
             return super.visit(literal);
         } else {
             throw new UnsupportedOperationException(
-                    "Attention! Using functions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` " +
+                    "Attention! Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` " +
                             "in Virtual Schemas can produce an incorrect result. We suggest to use 'TIMESTAMP' instead. " +
                             "If you take a risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, " +
                             "create a Virtual Schema with an additional property " +
