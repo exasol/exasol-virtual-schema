@@ -64,6 +64,14 @@ CREATE VIRTUAL SCHEMA <virtual schema name>
     SCHEMA_NAME     = '<schema name>';
 ```
 
+## Known limitations
+
+* Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas 
+can produce an incorrect results. We recommend using 'TIMESTAMP' instead. If you are willing to take the risk
+and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following
+additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`. 
+We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
+
 ## Supported Capabilities
 
 The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
