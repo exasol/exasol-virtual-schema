@@ -18,7 +18,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/exasol-virtual-schema-dist-1.0.1.jar;
+    %jar /buckets/<BFS service>/<bucket>/exasol-virtual-schema-dist-2.0.0.jar;
 /
 ```
 
@@ -63,6 +63,14 @@ CREATE VIRTUAL SCHEMA <virtual schema name>
     CONNECTION_NAME = 'EXASOL_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
 ```
+
+## Known limitations
+
+* Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas 
+can produce an incorrect results. We recommend using 'TIMESTAMP' instead. If you are willing to take the risk
+and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following
+additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`. 
+We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
 
 ## Supported Capabilities
 

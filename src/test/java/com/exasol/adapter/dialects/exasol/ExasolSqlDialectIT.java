@@ -1,9 +1,9 @@
 package com.exasol.adapter.dialects.exasol;
 
+import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.matcher.ResultSetMatcher.matchesResultSet;
 import static java.util.Calendar.AUGUST;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -34,7 +34,7 @@ import com.exasol.containers.ExasolContainerConstants;
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-1.0.1.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-2.0.0.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -54,7 +54,7 @@ class ExasolSqlDialectIT {
     @Container
     private static final ExasolContainer<? extends ExasolContainer<?>> container = new ExasolContainer<>(
             ExasolContainerConstants.EXASOL_DOCKER_IMAGE_REFERENCE) //
-                    .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+            .withLogConsumer(new Slf4jLogConsumer(LOGGER));
     private static Statement statement;
     private static Connection connection;
 
@@ -169,7 +169,7 @@ class ExasolSqlDialectIT {
     }
 
     private static void createVirtualSchema(final String virtualSchemaName, final String schemaName,
-            final Optional<String> additionalParameters) throws SQLException {
+                                            final Optional<String> additionalParameters) throws SQLException {
         final StringBuilder builder = new StringBuilder();
         builder.append("CREATE VIRTUAL SCHEMA ");
         builder.append(virtualSchemaName);
@@ -322,7 +322,7 @@ class ExasolSqlDialectIT {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "Column1", "column2" })
+    @ValueSource(strings = {"Column1", "column2"})
     void assertUnquotedMixedCaseColumnIsNotFound(final String columnName) {
         final SQLException exception = assertThrows(SQLException.class, () -> statement.executeQuery("SELECT "
                 + columnName + " FROM \"" + VIRTUAL_SCHEMA_EXA_MIXED_CASE + "\".\"" + TABLE_MIXED_CASE + "\""));
@@ -755,5 +755,24 @@ class ExasolSqlDialectIT {
         final ResultSet actual = statement.executeQuery("SELECT * FROM " + virtualSchemaName + "." + TABLE_JOIN_1
                 + " a FULL OUTER JOIN  " + virtualSchemaName + "." + TABLE_JOIN_2 + " b ON a.x=b.x ORDER BY a.x");
         assertThat(actual, matchesResultSet(expected));
+    }
+
+    @Test
+    void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
+        createVirtualSchema("VIRTUAL_SCHEMA_IGNORES_ERRORS", SCHEMA_EXASOL,
+                Optional.of("IS_LOCAL = 'true' IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'"));
+        assertThat(statement.executeQuery(
+                "SELECT NOW() - INTERVAL '1' MINUTE FROM VIRTUAL_SCHEMA_IGNORES_ERRORS." + TABLE_SIMPLE_VALUES),
+                instanceOf(ResultSet.class));
+    }
+
+    @Test
+    void testVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() {
+        final SQLException exception = assertThrows(SQLException.class, () ->
+                statement.execute("SELECT NOW() - INTERVAL '1' MINUTE FROM "
+                        + VIRTUAL_SCHEMA_EXA_LOCAL + "." + TABLE_SIMPLE_VALUES));
+        assertThat(exception.getMessage(),
+                containsString("Attention! Using literals and constant expressions with datatype " +
+                        "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
     }
 }

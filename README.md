@@ -26,8 +26,8 @@ This projects contains the Exasol dialect for [Exasol's Virtual Schema][virtual-
 
 ### Information for Users
 
-* [User guide][user-guide]
 * [Exasol dialect](doc/dialects/exasol.md)
+* [User guide][user-guide]
 
 Find all the documentation in the [Virtual Schemas project][vs-doc].
 
@@ -65,6 +65,6 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 | [Maven Source Plugin](https://maven.apache.org/plugins/maven-source-plugin/)        | Creating a source code JAR                             | Apache License 2.0            |
 | [Maven Surefire Plugin](https://maven.apache.org/surefire/maven-surefire-plugin/)   | Unit testing                                           | Apache License 2.0            |
 
-[user-guide]: https://github.com/exasol/virtual-schemas/blob/master/doc/user-guide/user_guide.md
+[user-guide]: https://github.com/exasol/virtual-schemas/blob/master/doc/user-guide/user_guide.md#using-the-adapter
 [virtual-schemas]: https://github.com/exasol/virtual-schemas
 [vs-doc]: https://github.com/exasol/virtual-schemas/tree/master/doc
