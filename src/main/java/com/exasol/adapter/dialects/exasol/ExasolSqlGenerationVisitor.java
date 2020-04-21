@@ -7,6 +7,9 @@ import java.util.logging.Logger;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.sql.SqlLiteralTimestampUtc;
 
+/**
+ * This class generates SQL queries for the {@link ExasolSqlDialect}.
+ */
 public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
     private static final Logger LOGGER = Logger.getLogger(ExasolSqlGenerationVisitor.class.getName());
 
