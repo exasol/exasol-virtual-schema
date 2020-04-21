@@ -30,9 +30,9 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
         } else {
             throw new UnsupportedOperationException(
                     "Attention! Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` " +
-                            "in Virtual Schemas can produce an incorrect result. We suggest to use 'TIMESTAMP' instead. " +
-                            "If you take a risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, " +
-                            "create a Virtual Schema with an additional property " +
+                            "in Virtual Schemas can produce an incorrect results. We recommend using 'TIMESTAMP' instead. " +
+                            "If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, " +
+                            "create a Virtual Schema with the following additional property " +
                             "IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'. " +
                             "We also recommend to set Exasol system `time_zone` " +
                             "to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.");
