@@ -58,14 +58,12 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
     @Test
     void testRewriteToImportFromExaWithConnectionDetailsInProperties() throws AdapterException, SQLException {
         final AdapterProperties properties = new AdapterProperties(Map.of(EXASOL_IMPORT_PROPERTY, "true", //
-                CONNECTION_STRING_PROPERTY, "irrelevant", //
-                USERNAME_PROPERTY, "alibaba", //
-                PASSWORD_PROPERTY, "open sesame", //
+                CONNECTION_NAME_PROPERTY, "exasol_connection", //
                 EXASOL_CONNECTION_STRING_PROPERTY, "localhost:7861"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null, null);
         assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
-                equalTo("IMPORT FROM EXA AT 'localhost:7861' USER 'alibaba' IDENTIFIED BY 'open sesame'"
+                equalTo("IMPORT FROM EXA AT 'localhost:7861' USER 'connection_user' IDENTIFIED BY 'connection_secret'"
                         + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
 
