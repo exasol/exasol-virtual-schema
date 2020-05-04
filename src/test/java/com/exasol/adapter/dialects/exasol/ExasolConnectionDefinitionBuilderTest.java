@@ -43,40 +43,9 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
     }
 
     @Test
-    void testBuildConnectionDefinitionForImportFromExaWithConnectionStringUsernamePasswordGiven() {
-        setImportFromExaProperties();
-        setConnectionStringProperty("irrelevant");
-        setUserNameProperty();
-        setPasswordProperty();
-        assertThat(calculateConnectionDefinition(),
-                equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '" + USER + "' IDENTIFIED BY '" + PW + "'"));
-    }
-
-    @Test
     void testBuildConnectionDefinitionWithoutConnectionInfomationThrowsException() {
         setImportFromExaProperties();
         assertThrows(IllegalArgumentException.class, () -> new BaseConnectionDefinitionBuilder()
                 .buildConnectionDefinition(new AdapterProperties(this.rawProperties), null));
-    }
-
-    @Test
-    void testBuildConnectionDefinitionWithExtraUsernameThrowsException() {
-        setConnectionNameProperty();
-        setUserNameProperty();
-        assertIllegalPropertiesThrowsException(this.rawProperties);
-    }
-
-    @Test
-    void testBuildConnectionDefinitionWithExtraPasswordThrowsException() {
-        setConnectionNameProperty();
-        setPasswordProperty();
-        assertIllegalPropertiesThrowsException(this.rawProperties);
-    }
-
-    @Test
-    void testBuildConnectionDefinitionWithExtraConnectionStringThrowsException() {
-        setConnectionNameProperty();
-        setConnectionStringProperty("irrelevant");
-        assertIllegalPropertiesThrowsException(this.rawProperties);
     }
 }
