@@ -34,7 +34,7 @@ import com.exasol.containers.ExasolContainerConstants;
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-3.0.0.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-3.0.1.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -54,7 +54,7 @@ class ExasolSqlDialectIT {
     @Container
     private static final ExasolContainer<? extends ExasolContainer<?>> container = new ExasolContainer<>(
             ExasolContainerConstants.EXASOL_DOCKER_IMAGE_REFERENCE) //
-            .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+                    .withLogConsumer(new Slf4jLogConsumer(LOGGER));
     private static Statement statement;
     private static Connection connection;
 
@@ -88,7 +88,7 @@ class ExasolSqlDialectIT {
     }
 
     private static void createAdapterScript(final Statement statement, final String qualifiedAdapterScriptName,
-                                            final String virtualSchemaJarName, final Optional<String> driver) throws SQLException {
+            final String virtualSchemaJarName, final Optional<String> driver) throws SQLException {
         final StringBuilder builder = new StringBuilder();
         builder.append("CREATE OR REPLACE JAVA ADAPTER SCRIPT ").append(qualifiedAdapterScriptName);
         builder.append(" AS ");
@@ -100,7 +100,7 @@ class ExasolSqlDialectIT {
     }
 
     private static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
-                                                     final String firstTableName, final String secondTableName) throws SQLException {
+            final String firstTableName, final String secondTableName) throws SQLException {
         statement.execute("CREATE TABLE " + schemaName + "." + firstTableName + "(x INT, y VARCHAR(100))");
         statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (1,'aaa')");
         statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (2,'bbb')");
@@ -169,7 +169,7 @@ class ExasolSqlDialectIT {
     }
 
     private static void createVirtualSchema(final String virtualSchemaName, final String schemaName,
-                                            final Optional<String> additionalParameters) throws SQLException {
+            final Optional<String> additionalParameters) throws SQLException {
         final StringBuilder builder = new StringBuilder();
         builder.append("CREATE VIRTUAL SCHEMA ");
         builder.append(virtualSchemaName);
@@ -322,7 +322,7 @@ class ExasolSqlDialectIT {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"Column1", "column2"})
+    @ValueSource(strings = { "Column1", "column2" })
     void assertUnquotedMixedCaseColumnIsNotFound(final String columnName) {
         final SQLException exception = assertThrows(SQLException.class, () -> statement.executeQuery("SELECT "
                 + columnName + " FROM \"" + VIRTUAL_SCHEMA_EXA_MIXED_CASE + "\".\"" + TABLE_MIXED_CASE + "\""));
@@ -336,6 +336,17 @@ class ExasolSqlDialectIT {
         assertAll(() -> assertExpressionExecutionStringResult(query, "1,1,2,2,3,3"), //
                 () -> assertExplainVirtual(query, //
                         "SELECT GROUP_CONCAT(\"" + TABLE_SIMPLE_VALUES + "\".\"A\") FROM \"" //
+                                + SCHEMA_EXASOL + "\".\"" + TABLE_SIMPLE_VALUES + "\""));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "ST_UNION", "ST_INTERSECTION" })
+    void testStAggregateFunctions(final String functionName) {
+        final String query = "SELECT " + functionName + "('POLYGON ((0 0, 0 4, 2 4, 2 0, 0 0))') FROM "
+                + VIRTUAL_SCHEMA_EXA_LOCAL + "." + TABLE_SIMPLE_VALUES;
+        assertAll(() -> assertExpressionExecutionStringResult(query, "POLYGON ((0 0, 0 4, 2 4, 2 0, 0 0))"), //
+                () -> assertExplainVirtual(query, //
+                        "SELECT " + functionName + "('POLYGON ((0 0, 0 4, 2 4, 2 0, 0 0))') FROM \"" //
                                 + SCHEMA_EXASOL + "\".\"" + TABLE_SIMPLE_VALUES + "\""));
     }
 
@@ -706,7 +717,7 @@ class ExasolSqlDialectIT {
     }
 
     private ResultSet getSelectAllFromJoinExpectedTable(final Statement statement, final String schemaName,
-                                                        final String expectedColumns, final String expectedValues) throws SQLException {
+            final String expectedColumns, final String expectedValues) throws SQLException {
         statement.execute("CREATE OR REPLACE TABLE " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedColumns);
         statement.execute("INSERT INTO " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedValues);
         return statement.executeQuery("SELECT * FROM " + schemaName + ".TABLE_JOIN_EXPECTED");
@@ -759,20 +770,20 @@ class ExasolSqlDialectIT {
 
     @Test
     void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
-        createVirtualSchema("VIRTUAL_SCHEMA_IGNORES_ERRORS", SCHEMA_EXASOL,
-                Optional.of("IS_LOCAL = 'true' IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'"));
-        assertThat(statement.executeQuery(
-                "SELECT NOW() - INTERVAL '1' MINUTE FROM VIRTUAL_SCHEMA_IGNORES_ERRORS." + TABLE_SIMPLE_VALUES),
+        createVirtualSchema("VIRTUAL_SCHEMA_IGNORES_ERRORS", SCHEMA_EXASOL, Optional
+                .of("IS_LOCAL = 'true' IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'"));
+        assertThat(
+                statement.executeQuery(
+                        "SELECT NOW() - INTERVAL '1' MINUTE FROM VIRTUAL_SCHEMA_IGNORES_ERRORS." + TABLE_SIMPLE_VALUES),
                 instanceOf(ResultSet.class));
     }
 
     @Test
     void testVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() {
-        final SQLException exception = assertThrows(SQLException.class, () ->
-                statement.execute("SELECT NOW() - INTERVAL '1' MINUTE FROM "
-                        + VIRTUAL_SCHEMA_EXA_LOCAL + "." + TABLE_SIMPLE_VALUES));
+        final SQLException exception = assertThrows(SQLException.class, () -> statement.execute(
+                "SELECT NOW() - INTERVAL '1' MINUTE FROM " + VIRTUAL_SCHEMA_EXA_LOCAL + "." + TABLE_SIMPLE_VALUES));
         assertThat(exception.getMessage(),
-                containsString("Attention! Using literals and constant expressions with datatype " +
-                        "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
+                containsString("Attention! Using literals and constant expressions with datatype "
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
     }
 }
