@@ -203,7 +203,7 @@
                     <descriptors>
                         <descriptor>src/assembly/all-dependencies.xml</descriptor>
                     </descriptors>
-                    <finalName>exasol-virtual-schema-dist-${product.version}</finalName>
+                    <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${product.version}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
