@@ -34,7 +34,7 @@ import com.exasol.containers.ExasolContainerConstants;
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "exasol-virtual-schema-dist-3.0.1.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-5.0.2-exasol-3.0.2.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
