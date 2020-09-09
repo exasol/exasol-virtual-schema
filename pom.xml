@@ -14,7 +14,7 @@
         <java.version>11</java.version>
         <junit.version>5.6.2</junit.version>
         <junit.platform.version>1.6.2</junit.platform.version>
-        <surefire.and.failsafe.plugin.version>3.0.0-M4</surefire.and.failsafe.plugin.version>
+        <surefire.and.failsafe.plugin.version>3.0.0-M3</surefire.and.failsafe.plugin.version>
         <vscjdbc.version>5.0.2</vscjdbc.version>
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>2.0.3</version>
+            <version>3.1.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -137,6 +137,11 @@
             <artifactId>slf4j-jdk14</artifactId>
             <version>1.7.30</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.exasol</groupId>
+            <artifactId>test-db-builder-java</artifactId>
+            <version>1.1.0</version>
         </dependency>
     </dependencies>
     <build>
