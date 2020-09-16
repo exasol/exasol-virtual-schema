@@ -8,17 +8,25 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.sql.*;
 import java.util.GregorianCalendar;
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.*;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
@@ -29,12 +37,18 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolContainerConstants;
+import com.exasol.dbbuilder.dialects.Schema;
+import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
+import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
+import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
+import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
+import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-5.0.2-exasol-3.0.2.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-5.0.2-exasol-3.0.3.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -51,52 +65,56 @@ class ExasolSqlDialectIT {
     private static final String TABLE_MIXED_CASE = "Table_Mixed_Case";
     private static final String VIRTUAL_SCHEMA_EXA_MIXED_CASE = "VIRTUAL_SCHEMA_EXA_Mixed_Case";
 
+    public static final String DEBUGGER_PORT = "8000";
+    public static final String EXASOL_DIALECT = "EXASOL";
     @Container
     private static final ExasolContainer<? extends ExasolContainer<?>> container = new ExasolContainer<>(
-            ExasolContainerConstants.EXASOL_DOCKER_IMAGE_REFERENCE) //
-                    .withLogConsumer(new Slf4jLogConsumer(LOGGER));
+            ExasolContainerConstants.EXASOL_DOCKER_IMAGE_REFERENCE).withLogConsumer(new Slf4jLogConsumer(LOGGER))
+                    .withReuse(true);
     private static Statement statement;
     private static Connection connection;
+    private static ExasolObjectFactory exasolObjectFactory;
+    private static AdapterScript adapterScript;
+    private static ConnectionDefinition connectionDefinition;
+
+    private static String getTestHostIp() {
+        final Map<String, ContainerNetwork> networks = container.getContainerInfo().getNetworkSettings().getNetworks();
+        if (networks.size() == 0) {
+            return null;
+        }
+        return networks.values().iterator().next().getGateway();
+    }
 
     @BeforeAll
-    static void beforeAll() throws SQLException, BucketAccessException, InterruptedException, TimeoutException {
+    static void beforeAll()
+            throws SQLException, BucketAccessException, InterruptedException, TimeoutException, IOException {
         final Bucket bucket = container.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
         connection = container.createConnectionForUser(container.getUsername(), container.getPassword());
         statement = connection.createStatement();
-        createTestSchema(statement, SCHEMA_EXASOL);
-        createTestSchema(statement, "\"" + SCHEMA_TEST_MIXED_CASE + "\"");
+        exasolObjectFactory = new ExasolObjectFactory(connection);
+        final ExasolSchema exasolSchema = exasolObjectFactory.createSchema(SCHEMA_EXASOL);
+        final Schema mixedCaseSchema = exasolObjectFactory.createSchema(SCHEMA_TEST_MIXED_CASE);
+
         createTestTableAllExasolDataTypes();
         createTestTableWithSimpleValues();
         createTestTableMixedCase();
         createTestTablesForJoinTests(statement, SCHEMA_EXASOL, TABLE_JOIN_1, TABLE_JOIN_2);
-        createConnection();
-        createAdapterScript(statement, SCHEMA_EXASOL + "." + ADAPTER_SCRIPT_EXASOL,
-                VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION, Optional.empty());
-        createVirtualSchema(VIRTUAL_SCHEMA_JDBC, SCHEMA_EXASOL, Optional.empty());
-        createVirtualSchema(VIRTUAL_SCHEMA_JDBC_LOCAL, SCHEMA_EXASOL, Optional.of("IS_LOCAL = 'true'"));
+        connectionDefinition = exasolObjectFactory.createConnectionDefinition(JDBC_EXASOL_CONNECTION,
+                "jdbc:exa:localhost:8888", container.getUsername(), container.getPassword());
+        adapterScript = exasolSchema.createAdapterScriptBuilder().name(ADAPTER_SCRIPT_EXASOL)
+                .bucketFsContent("com.exasol.adapter.RequestDispatcher",
+                        "/buckets/bfsdefault/default/" + VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION)
+                .language(AdapterScript.Language.JAVA).debuggerConnection(getTestHostIp() + ":" + DEBUGGER_PORT)
+                .build();
+        createVirtualSchema(VIRTUAL_SCHEMA_JDBC, SCHEMA_EXASOL, Map.of());
+        createVirtualSchema(VIRTUAL_SCHEMA_JDBC_LOCAL, SCHEMA_EXASOL, Map.of("IS_LOCAL", "true"));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA, SCHEMA_EXASOL,
-                Optional.of("IMPORT_FROM_EXA = 'true' EXA_CONNECTION_STRING = 'localhost:8888'"));
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888"));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA_LOCAL, SCHEMA_EXASOL,
-                Optional.of("IMPORT_FROM_EXA = 'true' EXA_CONNECTION_STRING = 'localhost:8888' IS_LOCAL = 'true'"));
-        createVirtualSchema("\"" + VIRTUAL_SCHEMA_EXA_MIXED_CASE + "\"", SCHEMA_TEST_MIXED_CASE,
-                Optional.of("IMPORT_FROM_EXA = 'true' EXA_CONNECTION_STRING = 'localhost:8888'"));
-    }
-
-    private static void createTestSchema(final Statement statement, final String schemaName) throws SQLException {
-        statement.execute("CREATE SCHEMA " + schemaName);
-    }
-
-    private static void createAdapterScript(final Statement statement, final String qualifiedAdapterScriptName,
-            final String virtualSchemaJarName, final Optional<String> driver) throws SQLException {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("CREATE OR REPLACE JAVA ADAPTER SCRIPT ").append(qualifiedAdapterScriptName);
-        builder.append(" AS ");
-        builder.append("%scriptclass com.exasol.adapter.RequestDispatcher;\n");
-        builder.append("%jar /buckets/bfsdefault/default/").append(virtualSchemaJarName).append(";\n");
-        driver.ifPresent(builder::append);
-        builder.append("/");
-        statement.execute(builder.toString());
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888", "IS_LOCAL", "true"));
+        createVirtualSchema(VIRTUAL_SCHEMA_EXA_MIXED_CASE, SCHEMA_TEST_MIXED_CASE,
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888"));
     }
 
     private static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
@@ -161,24 +179,12 @@ class ExasolSqlDialectIT {
                 + "(1, 2, 3)");
     }
 
-    private static void createConnection() throws SQLException {
-        statement.execute("CREATE CONNECTION " + JDBC_EXASOL_CONNECTION + " " //
-                + "TO 'jdbc:exa:localhost:8888' " //
-                + "USER '" + container.getUsername() + "' " //
-                + "IDENTIFIED BY '" + container.getPassword() + "'");
-    }
-
     private static void createVirtualSchema(final String virtualSchemaName, final String schemaName,
-            final Optional<String> additionalParameters) throws SQLException {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("CREATE VIRTUAL SCHEMA ");
-        builder.append(virtualSchemaName);
-        builder.append(" USING " + SCHEMA_EXASOL + ".ADAPTER_SCRIPT_EXASOL WITH ");
-        builder.append("SQL_DIALECT     = 'EXASOL' ");
-        builder.append("CONNECTION_NAME = '" + JDBC_EXASOL_CONNECTION + "' ");
-        builder.append("SCHEMA_NAME     = '" + schemaName + "' ");
-        additionalParameters.ifPresent(builder::append);
-        statement.execute(builder.toString());
+            final Map<String, String> additionalParameters) throws SQLException {
+        final Map<String, String> properties = new HashMap<>(Map.of("SCHEMA_NAME", schemaName));
+        properties.putAll(additionalParameters);
+        exasolObjectFactory.createVirtualSchemaBuilder(virtualSchemaName).adapterScript(adapterScript)
+                .dialectName(EXASOL_DIALECT).connectionDefinition(connectionDefinition).properties(properties).build();
     }
 
     @ParameterizedTest
@@ -278,7 +284,7 @@ class ExasolSqlDialectIT {
 
     // TODO: This test excludes VIRTUAL_SCHEMA_JDBC and VIRTUAL_SCHEMA_EXA virtual schema because of the bug on the
     // loader side.
-    // https://github.com/exasol/virtual-schemas/issues/299
+    // https://github.com/exasol/exasol-virtual-schema/issues/4
     @ParameterizedTest
     @MethodSource("getVirtualSchemaVariantsOnlyLocal")
     void testIntervalYearToMonth(final String virtualSchemaName) throws SQLException {
@@ -291,7 +297,7 @@ class ExasolSqlDialectIT {
 
     // TODO: This test excludes VIRTUAL_SCHEMA_JDBC and VIRTUAL_SCHEMA_EXA virtual schema because of the bug on the
     // loader side.
-    // https://github.com/exasol/virtual-schemas/issues/299
+    // https://github.com/exasol/exasol-virtual-schema/issues/4
     @ParameterizedTest
     @MethodSource("getVirtualSchemaVariantsOnlyLocal")
     void testIntervalDayToSecond(final String virtualSchemaName) throws SQLException {
@@ -770,8 +776,8 @@ class ExasolSqlDialectIT {
 
     @Test
     void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
-        createVirtualSchema("VIRTUAL_SCHEMA_IGNORES_ERRORS", SCHEMA_EXASOL, Optional
-                .of("IS_LOCAL = 'true' IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'"));
+        createVirtualSchema("VIRTUAL_SCHEMA_IGNORES_ERRORS", SCHEMA_EXASOL,
+                Map.of("IS_LOCAL", "true", "IGNORE_ERRORS", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH));
         assertThat(
                 statement.executeQuery(
                         "SELECT NOW() - INTERVAL '1' MINUTE FROM VIRTUAL_SCHEMA_IGNORES_ERRORS." + TABLE_SIMPLE_VALUES),
