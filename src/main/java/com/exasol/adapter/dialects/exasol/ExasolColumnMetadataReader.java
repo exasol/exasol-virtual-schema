@@ -22,9 +22,6 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_GEOMETRY = 123;
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
-    private static final int DEFAULT_INTERVAL_DAY_TO_SECOND_FRACTION = 3;
-    private static final int DEFAULT_INTERVAL_DAY_TO_SECOND_PRECISION = 2;
-    private static final int DEFAULT_INTERVAL_YEAR_TO_MONTH_PRECISION = 2;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
 
     /**
