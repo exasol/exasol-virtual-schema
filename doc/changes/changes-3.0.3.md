@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 3.0.2, released 2020-07-06
+# Exasol Virtual Schema Common 3.0.3, released 2020-XX-XX
 
 ## Features / Enhancements
 
