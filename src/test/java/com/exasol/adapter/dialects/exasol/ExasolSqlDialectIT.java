@@ -48,7 +48,7 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Testcontainers
 class ExasolSqlDialectIT {
     private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-5.0.2-exasol-3.0.2.jar";
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-5.0.2-exasol-3.0.3.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -107,10 +107,7 @@ class ExasolSqlDialectIT {
                         "/buckets/bfsdefault/default/" + VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION)
                 .language(AdapterScript.Language.JAVA).debuggerConnection(getTestHostIp() + ":" + DEBUGGER_PORT)
                 .build();
-        exasolObjectFactory.createVirtualSchemaBuilder(VIRTUAL_SCHEMA_JDBC).adapterScript(adapterScript)
-                .dialectName(EXASOL_DIALECT).connectionDefinition(connectionDefinition)
-                .properties(Map.of("SCHEMA_NAME", SCHEMA_EXASOL)).build();
-
+        createVirtualSchema(VIRTUAL_SCHEMA_JDBC, SCHEMA_EXASOL, Map.of());
         createVirtualSchema(VIRTUAL_SCHEMA_JDBC_LOCAL, SCHEMA_EXASOL, Map.of("IS_LOCAL", "true"));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA, SCHEMA_EXASOL,
                 Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888"));
