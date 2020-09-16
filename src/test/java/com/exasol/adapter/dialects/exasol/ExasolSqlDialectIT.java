@@ -146,13 +146,14 @@ class ExasolSqlDialectIT {
                 + "c9 DATE DEFAULT '2016-06-01', " //
                 + "c10 TIMESTAMP DEFAULT '2016-06-01 00:00:01.000', " //
                 + "c11 TIMESTAMP WITH LOCAL TIME ZONE DEFAULT '2016-06-01 00:00:02.000', " //
-                + "c12 INTERVAL YEAR TO MONTH DEFAULT '3-5', " //
-                + "c13 INTERVAL DAY TO SECOND DEFAULT '2 12:50:10.123', " //
+                + "c12 INTERVAL YEAR(3) TO MONTH DEFAULT '3-5', " //
+                + "c13 INTERVAL DAY(4) TO SECOND(7) DEFAULT '2 12:50:10.123', " //
+                + "c13B INTERVAL DAY TO SECOND DEFAULT '2 12:50:10.123', " //
                 + "c14 GEOMETRY(3857) DEFAULT 'POINT(2 5)' " //
                 + ")");
         statement.execute("INSERT INTO " + SCHEMA_EXASOL + "." + TABLE_ALL_EXASOL_DATA_TYPES + " VALUES " //
                 + "('a茶', 'b', 'c茶', 'd', 123, 123.456, 2.2, FALSE, '2016-08-01', '2016-08-01 00:00:01.000', " //
-                + "'2016-08-01 00:00:02.000', '4-6', '3 12:50:10.123', 'POINT(2 5)')");
+                + "'2016-08-01 00:00:02.000', '4-6', '3 12:50:10.123', '3 12:50:10.123', 'POINT(2 5)')");
     }
 
     private static void createTestTableWithSimpleValues() throws SQLException {
@@ -210,8 +211,9 @@ class ExasolSqlDialectIT {
                 + "('C9', 'DATE', 10, NULL, NULL, '''2016-06-01'''), " //
                 + "('C10', 'TIMESTAMP', 29, NULL, NULL, '''2016-06-01 00:00:01.000'''), " //
                 + "('C11', 'TIMESTAMP WITH LOCAL TIME ZONE', 29, NULL, NULL, '''2016-06-01 00:00:02.000'''), " //
-                + "('C12', 'INTERVAL YEAR(2) TO MONTH', 13, NULL, NULL, '''3-5'''), " //
-                + "('C13', 'INTERVAL DAY(2) TO SECOND(3)', 29, NULL, NULL, '''2 12:50:10.123'''), " //
+                + "('C12', 'INTERVAL YEAR(3) TO MONTH', 13, NULL, NULL, '''3-5'''), " //
+                + "('C13', 'INTERVAL DAY(4) TO SECOND(7)', 29, NULL, NULL, '''2 12:50:10.123'''), " //
+                + "('C13B', 'INTERVAL DAY(2) TO SECOND(3)', 29, NULL, NULL, '''2 12:50:10.123'''), "// default precision
                 + "('C14', 'GEOMETRY(3857)', 8000000, NULL, NULL, '''POINT(2 5)''') " //
         );
         final ResultSet expected = statement.executeQuery("SELECT * FROM " + expectedSchemaQualifiedTableName);
