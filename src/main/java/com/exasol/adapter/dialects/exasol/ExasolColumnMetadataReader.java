@@ -1,6 +1,11 @@
 package com.exasol.adapter.dialects.exasol;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.IdentifierConverter;
@@ -38,10 +43,10 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     public DataType mapJdbcType(final JdbcTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
         case EXASOL_INTERVAL_DAY_TO_SECONDS:
-            return DataType.createIntervalDaySecond(DEFAULT_INTERVAL_DAY_TO_SECOND_PRECISION,
-                    DEFAULT_INTERVAL_DAY_TO_SECOND_FRACTION);
+            return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
+                    jdbcTypeDescription.getDecimalScale());
         case EXASOL_INTERVAL_YEAR_TO_MONTHS:
-            return DataType.createIntervalYearMonth(DEFAULT_INTERVAL_YEAR_TO_MONTH_PRECISION);
+            return DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize());
         case EXASOL_GEOMETRY:
             return DataType.createGeometry(DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER);
         case EXASOL_TIMESTAMP:
@@ -50,6 +55,60 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return DataType.createHashtype(jdbcTypeDescription.getByteSize());
         default:
             return super.mapJdbcType(jdbcTypeDescription);
+        }
+    }
+
+    @Override
+    public JdbcTypeDescription readJdbcTypeDescription(final ResultSet remoteColumn) throws SQLException {
+        final JdbcTypeDescription typeDescription = super.readJdbcTypeDescription(remoteColumn);
+        if (typeDescription.getJdbcType() == EXASOL_INTERVAL_DAY_TO_SECONDS) {
+            return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
+        } else if (typeDescription.getJdbcType() == EXASOL_INTERVAL_YEAR_TO_MONTHS) {
+            return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
+        } else {
+            return typeDescription;
+        }
+    }
+
+    private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
+        try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
+                "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
+            final String schema = remoteColumn.getString("TABLE_SCHEM");
+            final String table = remoteColumn.getString("TABLE_NAME");
+            final String column = remoteColumn.getString("COLUMN_NAME");
+            preparedStatement.setString(1, schema);
+            preparedStatement.setString(2, table);
+            preparedStatement.setString(3, column);
+            try (final ResultSet resultSet = preparedStatement.executeQuery()) {
+                resultSet.next();
+                return resultSet.getString("COLUMN_TYPE");
+            }
+        }
+    }
+
+    private JdbcTypeDescription extractIntervalDayToSecondPrecision(final ResultSet remoteColumn,
+            final JdbcTypeDescription typeDescription) throws SQLException {
+        final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
+        final Pattern pattern = Pattern.compile("INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)");
+        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        if (matcher.matches()) {
+            return new JdbcTypeDescription(typeDescription.getJdbcType(), Integer.parseInt(matcher.group(2)),
+                    Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
+        } else {
+            throw new IllegalStateException("Failed to extract INTERVAL precision");
+        }
+    }
+
+    private JdbcTypeDescription extractIntervalYearToMonthPrecision(final ResultSet remoteColumn,
+            final JdbcTypeDescription typeDescription) throws SQLException {
+        final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
+        final Pattern pattern = Pattern.compile("INTERVAL YEAR\\((\\d+)\\) TO MONTH");
+        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        if (matcher.matches()) {
+            return new JdbcTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(),
+                    Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
+        } else {
+            throw new IllegalStateException("Failed to extract INTERVAL precision");
         }
     }
 }
