@@ -23,6 +23,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
+    public static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
 
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
@@ -86,7 +87,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private JdbcTypeDescription extractIntervalDayToSecondPrecision(final ResultSet remoteColumn,
             final JdbcTypeDescription typeDescription) throws SQLException {
         final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
-        final Pattern pattern = Pattern.compile("INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)");
+        final Pattern pattern = Pattern.compile(INTERVAL_DAY_TO_SECOND_PATTERN);
         final Matcher matcher = pattern.matcher(typeDescriptionString);
         if (matcher.matches()) {
             return new JdbcTypeDescription(typeDescription.getJdbcType(), Integer.parseInt(matcher.group(2)),
