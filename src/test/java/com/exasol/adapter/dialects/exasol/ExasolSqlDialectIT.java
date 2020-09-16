@@ -155,18 +155,6 @@ class ExasolSqlDialectIT {
                 + "'2016-08-01 00:00:02.000', '4-6', '3 12:50:10.123', 'POINT(2 5)')");
     }
 
-    @Test
-    void test() throws SQLException {
-        final ResultSet c13 = connection.getMetaData().getColumns(null, SCHEMA_EXASOL, TABLE_ALL_EXASOL_DATA_TYPES,
-                "C12");
-        LOGGER.info("" + c13.next());
-        LOGGER.info("COLUMN_SIZE: " + c13.getInt(7));
-        LOGGER.info("DECIMAL_DIGITS: " + c13.getInt(9));
-        LOGGER.info("Column def: " + c13.getString(13));
-        LOGGER.info("12: " + c13.getString(12));
-        LOGGER.info("6: " + c13.getString(6));
-    }
-
     private static void createTestTableWithSimpleValues() throws SQLException {
         statement.execute("CREATE OR REPLACE TABLE " + SCHEMA_EXASOL + "." + TABLE_SIMPLE_VALUES //
                 + "(a INT, " //
