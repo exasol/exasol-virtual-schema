@@ -23,22 +23,6 @@ class ExasolColumnMetadataReaderTest {
     }
 
     @Test
-    void testMapJdbcTypeIntervalDayToSeconds() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
-                ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECONDS, 0, 0, 0, "INTERVAL_DAY_TO_SECONDS");
-        assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createIntervalDaySecond(2, 3)));
-    }
-
-    @Test
-    void testMapJdbcTypeIntervalYearToMonths() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
-                ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTHS, 0, 0, 0, "INTERVAL_YEAR_TO_MONTHS");
-        assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createIntervalYearMonth(2)));
-    }
-
-    @Test
     void testMapJdbcTypeGeometry() {
         final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_GEOMETRY, 0, 0, 0, "GEOMETRY");
@@ -57,9 +41,9 @@ class ExasolColumnMetadataReaderTest {
     @Test
     void testMapJdbcTypeHashtype() {
         final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
-              ExasolColumnMetadataReader.EXASOL_HASHTYPE, 0, 0, 16, "HASHTYPE");
+                ExasolColumnMetadataReader.EXASOL_HASHTYPE, 0, 0, 16, "HASHTYPE");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-              equalTo(DataType.createHashtype(16)));
+                equalTo(DataType.createHashtype(16)));
     }
 
     @Test
