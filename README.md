@@ -80,6 +80,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 [maven-source-plugin]: https://maven.apache.org/plugins/maven-source-plugin/
 [maven-surefire-plugin]: https://maven.apache.org/surefire/maven-surefire-plugin/
 [sonatype-oss-index-maven-plugin]: https://sonatype.github.io/ossindex-maven/maven-plugin/
+[test-db-builder]: https://github.com/exasol/test-db-builder/
 [user-guide]: https://github.com/exasol/virtual-schemas/blob/master/doc/user-guide/user_guide.md#using-the-adapter
 [versions-maven-plugin]: https://www.mojohaus.org/versions-maven-plugin/
 [virtual-schemas]: https://github.com/exasol/virtual-schemas
