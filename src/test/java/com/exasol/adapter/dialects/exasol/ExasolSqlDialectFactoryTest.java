@@ -8,7 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
-public class ExasolSqlDialectFactoryTest {
+class ExasolSqlDialectFactoryTest {
     private ExasolSqlDialectFactory factory;
 
     @BeforeEach
