@@ -57,6 +57,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 
 | Plug-in                                                            | Purpose                                                | License                       |
 |--------------------------------------------------------------------|--------------------------------------------------------|-------------------------------|
+| [Artifact Reference Checker Plugin][artifact-ref-checker-plugin]   | Check if artifact is referenced with correct version   | MIT License                   |
 | [Maven Compiler Plugin][maven-compiler-plugin]                     | Setting required Java version                          | Apache License 2.0            |
 | [Maven Exec Plugin](https://www.mojohaus.org/exec-maven-plugin/)   | Executing external applications                        | Apache License 2.0            |
 | [Maven Enforcer Plugin][maven-enforcer-plugin]                     | Controlling environment constants                      | Apache License 2.0            |
@@ -70,6 +71,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 | [Versions Maven Plugin][versions-maven-plugin]                     | Checking if dependencies updates are available         | Apache License 2.0            |
 | [Test Database Builder][test-db-builder]                           | Fluent database interfaces for testing                 | MIT License                   |
 
+[artifact-ref-checker-plugin]: https://github.com/exasol/artifact-reference-checker-maven-plugin
 [exasol-jdbc-driver]: https://www.exasol.com/portal/display/DOWNLOAD/Exasol+Download+Section
 [maven-compiler-plugin]: https://maven.apache.org/plugins/maven-compiler-plugin/
 [maven-enforcer-plugin]: http://maven.apache.org/enforcer/maven-enforcer-plugin/
