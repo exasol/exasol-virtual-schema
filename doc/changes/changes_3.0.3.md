@@ -1,6 +1,6 @@
 # Exasol Virtual Schema Common 3.0.3, released 2020-XX-XX
 
-Code name: Added new functions, detect interval precision
+Code name: Added new functions support, detect interval precision
 
 ## Features / Enhancements
 
