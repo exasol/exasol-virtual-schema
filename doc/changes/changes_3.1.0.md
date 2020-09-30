@@ -1,10 +1,14 @@
-# Exasol Virtual Schema Common 3.0.3, released 2020-XX-XX
+# Exasol Virtual Schema Common 3.1.0, released 2020-09-30
 
 Code name: Added new functions support, detect interval precision
 
 ## Features / Enhancements
 
 * #16: Get interval precision from system table.
+
+## Documentation
+
+* #15: Improved the documentation.
 
 ## Refactoring:
 

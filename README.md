@@ -17,7 +17,10 @@ SonarCloud results:
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=ncloc)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 
-This projects contains the Exasol dialect for [Exasol's Virtual Schema][virtual-schemas].
+This project contains the Exasol dialect for the Exasol's Virtual Schema.
+Use this dialect if you want to create a Virtual Schema based on the Exasol database.
+
+If you want to set up a Virtual Schema for a different database system, please head over to the [Virtual Schemas Repository][virtual-schemas].
 
 ## Features
 
@@ -28,10 +31,14 @@ This projects contains the Exasol dialect for [Exasol's Virtual Schema][virtual-
 ### Information for Users
 
 * [Exasol dialect](doc/dialects/exasol.md)
-* [User guide][user-guide]
+* [User Guide][user-guide]
 * [Changelog](doc/changes/changelog.md)
 
 Find all the documentation in the [Virtual Schemas project][vs-doc].
+
+## Information for Developers 
+
+* [Virtual Schema API Documentation][vs-api]
 
 ### Run Time Dependencies
 
@@ -83,8 +90,10 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 [maven-surefire-plugin]: https://maven.apache.org/surefire/maven-surefire-plugin/
 [sonatype-oss-index-maven-plugin]: https://sonatype.github.io/ossindex-maven/maven-plugin/
 [test-db-builder]: https://github.com/exasol/test-db-builder/
-[user-guide]: https://github.com/exasol/virtual-schemas/blob/master/doc/user-guide/user_guide.md#using-the-adapter
 [versions-maven-plugin]: https://www.mojohaus.org/versions-maven-plugin/
-[virtual-schemas]: https://github.com/exasol/virtual-schemas
 [virtual-schema-common-jdbc]:https://github.com/exasol/virtual-schema-common-jdbc
+
+[user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
+[virtual-schemas]: https://github.com/exasol/virtual-schemas
+[vs-api]: https://github.com/exasol/virtual-schema-common-java/blob/master/doc/development/api/virtual_schema_api.md
 [vs-doc]: https://github.com/exasol/virtual-schemas/tree/master/doc
