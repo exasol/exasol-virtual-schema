@@ -114,11 +114,6 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
-    public String applyQuote(final String identifier) {
-        return "\"" + identifier.replace("\"", "\"\"") + "\"";
-    }
-
-    @Override
     public boolean requiresCatalogQualifiedTableNames(final SqlGenerationContext context) {
         return false;
     }
