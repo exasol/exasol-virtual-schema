@@ -1,19 +1,19 @@
 package com.exasol.adapter.dialects.exasol;
 
-import static com.exasol.adapter.AdapterProperties.*;
-import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
-import static com.exasol.adapter.sql.ScalarFunction.*;
-
-import java.sql.SQLException;
-import java.util.*;
-
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.capabilities.*;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.sql.SqlNodeVisitor;
+
+import java.sql.SQLException;
+import java.util.Set;
+
+import static com.exasol.adapter.AdapterProperties.*;
+import static com.exasol.adapter.capabilities.MainCapability.*;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.sql.ScalarFunction.*;
 
 /**
  * Exasol SQL dialect.
@@ -109,6 +109,11 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
+    public String applyQuote(String identifier) {
+        return super.quoteIdentifierWithDoubleQuotes(identifier);
+    }
+
+    @Override
     public Capabilities getCapabilities() {
         return CAPABILITIES;
     }
@@ -126,6 +131,11 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     public NullSorting getDefaultNullSorting() {
         return NullSorting.NULLS_SORTED_HIGH;
+    }
+
+    @Override
+    public String getStringLiteral(String value) {
+        return super.quoteLiteralStringWithSingleQuote(value);
     }
 
     @Override

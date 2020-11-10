@@ -1,5 +1,22 @@
 package com.exasol.adapter.dialects.exasol;
 
+import com.exasol.bucketfs.Bucket;
+import com.exasol.bucketfs.BucketAccessException;
+import com.exasol.containers.ExasolContainer;
+import com.exasol.dbbuilder.dialects.exasol.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
+
+import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.sql.Date;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
+
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.matcher.ResultSetMatcher.matchesResultSet;
 import static java.util.Calendar.AUGUST;
@@ -8,36 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.math.BigDecimal;
-import java.nio.file.Path;
-import java.sql.*;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-
-import com.exasol.containers.ExasolContainer;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.exasol.bucketfs.Bucket;
-import com.exasol.bucketfs.BucketAccessException;
-import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
-import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
-import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
-import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-
 abstract class AbstractExasolSqlDialectIntegrationTest {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractExasolSqlDialectIntegrationTest.class);
     private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-6.1.0-exasol-3.1.0.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
@@ -69,13 +57,12 @@ abstract class AbstractExasolSqlDialectIntegrationTest {
 
     protected static void startSetUp()
             throws SQLException, BucketAccessException, InterruptedException, TimeoutException {
-        container = new ExasolContainer<>(
-                dockerImageReference).withLogConsumer(new Slf4jLogConsumer(LOGGER)).withReuse(true);
+        container = new ExasolContainer<>(dockerImageReference);
         container.start();
         connection = container.createConnectionForUser(container.getUsername(), container.getPassword());
         final Bucket bucket = container.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
-        connection = container.createConnectionForUser(container.getUsername(), container.getPassword());
+        connection = container.createConnection();
         statement = connection.createStatement();
         exasolObjectFactory = new ExasolObjectFactory(connection);
         final ExasolSchema exasolSchema = exasolObjectFactory.createSchema(SCHEMA_EXASOL);
