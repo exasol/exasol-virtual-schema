@@ -1,5 +1,22 @@
 package com.exasol.adapter.dialects.exasol;
 
+import com.exasol.bucketfs.Bucket;
+import com.exasol.bucketfs.BucketAccessException;
+import com.exasol.containers.ExasolContainer;
+import com.exasol.dbbuilder.dialects.exasol.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.*;
+
+import java.math.BigDecimal;
+import java.nio.file.Path;
+import java.sql.Date;
+import java.sql.*;
+import java.util.*;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
+
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.matcher.ResultSetMatcher.matchesResultSet;
 import static java.util.Calendar.AUGUST;
@@ -8,47 +25,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.nio.file.Path;
-import java.sql.*;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.output.Slf4jLogConsumer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.exasol.bucketfs.Bucket;
-import com.exasol.bucketfs.BucketAccessException;
-import com.exasol.containers.ExasolContainer;
-import com.exasol.containers.ExasolContainerConstants;
-import com.exasol.dbbuilder.dialects.Schema;
-import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
-import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
-import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
-import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
-import com.github.dockerjava.api.model.ContainerNetwork;
-
-@Tag("integration")
-@Testcontainers
-class ExasolSqlDialectIT {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ExasolSqlDialectIT.class);
-    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-6.0.0-exasol-3.1.0.jar";
+abstract class AbstractExasolSqlDialectIntegrationTest {
+    private static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-7.0.0-exasol-3.1.0.jar";
     private static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
     private static final String SCHEMA_EXASOL = "SCHEMA_EXASOL";
     private static final String ADAPTER_SCRIPT_EXASOL = "ADAPTER_SCRIPT_EXASOL";
@@ -64,73 +42,66 @@ class ExasolSqlDialectIT {
     private static final String SCHEMA_TEST_MIXED_CASE = "SCHEMA_TEST_Mixed_Case";
     private static final String TABLE_MIXED_CASE = "Table_Mixed_Case";
     private static final String VIRTUAL_SCHEMA_EXA_MIXED_CASE = "VIRTUAL_SCHEMA_EXA_Mixed_Case";
+    private static final String EXASOL_DIALECT = "EXASOL";
 
-    public static final String DEBUGGER_PORT = "8000";
-    public static final String EXASOL_DIALECT = "EXASOL";
-    @Container
-    private static final ExasolContainer<? extends ExasolContainer<?>> container = new ExasolContainer<>(
-            ExasolContainerConstants.EXASOL_DOCKER_IMAGE_REFERENCE).withLogConsumer(new Slf4jLogConsumer(LOGGER))
-                    .withReuse(true);
     private static Statement statement;
     private static Connection connection;
     private static ExasolObjectFactory exasolObjectFactory;
     private static AdapterScript adapterScript;
     private static ConnectionDefinition connectionDefinition;
+    private static ExasolContainer<? extends ExasolContainer<?>> container;
 
-    private static String getTestHostIp() {
-        final Map<String, ContainerNetwork> networks = container.getContainerInfo().getNetworkSettings().getNetworks();
-        if (networks.size() == 0) {
-            return null;
-        }
-        return networks.values().iterator().next().getGateway();
-    }
+    // Set in the implementations classes
+    protected static String hostAndDefaultPort;
+    protected static String dockerImageReference;
 
-    @BeforeAll
-    static void beforeAll()
-            throws SQLException, BucketAccessException, InterruptedException, TimeoutException, IOException {
+    protected static void startSetUp()
+            throws SQLException, BucketAccessException, InterruptedException, TimeoutException {
+        container = new ExasolContainer<>(dockerImageReference);
+        container.start();
+        connection = container.createConnectionForUser(container.getUsername(), container.getPassword());
         final Bucket bucket = container.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
-        connection = container.createConnectionForUser(container.getUsername(), container.getPassword());
+        connection = container.createConnection();
         statement = connection.createStatement();
         exasolObjectFactory = new ExasolObjectFactory(connection);
         final ExasolSchema exasolSchema = exasolObjectFactory.createSchema(SCHEMA_EXASOL);
-        final Schema mixedCaseSchema = exasolObjectFactory.createSchema(SCHEMA_TEST_MIXED_CASE);
-
+        exasolObjectFactory.createSchema(SCHEMA_TEST_MIXED_CASE);
         createTestTableAllExasolDataTypes();
         createTestTableWithSimpleValues();
         createTestTableMixedCase();
         createTestTablesForJoinTests(statement, SCHEMA_EXASOL, TABLE_JOIN_1, TABLE_JOIN_2);
         connectionDefinition = exasolObjectFactory.createConnectionDefinition(JDBC_EXASOL_CONNECTION,
-                "jdbc:exa:localhost:8888", container.getUsername(), container.getPassword());
+                "jdbc:exa:" + hostAndDefaultPort, container.getUsername(), container.getPassword());
         adapterScript = exasolSchema.createAdapterScriptBuilder().name(ADAPTER_SCRIPT_EXASOL)
                 .bucketFsContent("com.exasol.adapter.RequestDispatcher",
                         "/buckets/bfsdefault/default/" + VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION)
-                .language(AdapterScript.Language.JAVA).debuggerConnection(getTestHostIp() + ":" + DEBUGGER_PORT)
-                .build();
+                .language(AdapterScript.Language.JAVA).build();
         createVirtualSchema(VIRTUAL_SCHEMA_JDBC, SCHEMA_EXASOL, Map.of());
         createVirtualSchema(VIRTUAL_SCHEMA_JDBC_LOCAL, SCHEMA_EXASOL, Map.of("IS_LOCAL", "true"));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA, SCHEMA_EXASOL,
-                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888"));
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", hostAndDefaultPort));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA_LOCAL, SCHEMA_EXASOL,
-                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888", "IS_LOCAL", "true"));
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", hostAndDefaultPort, "IS_LOCAL", "true"));
         createVirtualSchema(VIRTUAL_SCHEMA_EXA_MIXED_CASE, SCHEMA_TEST_MIXED_CASE,
-                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", "localhost:8888"));
-    }
-
-    private static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
-            final String firstTableName, final String secondTableName) throws SQLException {
-        statement.execute("CREATE TABLE " + schemaName + "." + firstTableName + "(x INT, y VARCHAR(100))");
-        statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (1,'aaa')");
-        statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (2,'bbb')");
-        statement.execute("CREATE TABLE " + schemaName + "." + secondTableName + "(x INT, y VARCHAR(100))");
-        statement.execute("INSERT INTO " + schemaName + "." + secondTableName + " VALUES (2,'bbb')");
-        statement.execute("INSERT INTO " + schemaName + "." + secondTableName + " VALUES (3,'ccc')");
+                Map.of("IMPORT_FROM_EXA", "true", "EXA_CONNECTION_STRING", hostAndDefaultPort));
     }
 
     @AfterAll
     static void releaseResources() throws SQLException {
         connection.close();
         statement.close();
+        container.stop();
+    }
+
+    private static void createTestTablesForJoinTests(final Statement statement, final String schemaName,
+                                                     final String firstTableName, final String secondTableName) throws SQLException {
+        statement.execute("CREATE TABLE " + schemaName + "." + firstTableName + "(x INT, y VARCHAR(100))");
+        statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (1,'aaa')");
+        statement.execute("INSERT INTO " + schemaName + "." + firstTableName + " VALUES (2,'bbb')");
+        statement.execute("CREATE TABLE " + schemaName + "." + secondTableName + "(x INT, y VARCHAR(100))");
+        statement.execute("INSERT INTO " + schemaName + "." + secondTableName + " VALUES (2,'bbb')");
+        statement.execute("INSERT INTO " + schemaName + "." + secondTableName + " VALUES (3,'ccc')");
     }
 
     private static void createTestTableAllExasolDataTypes() throws SQLException {
@@ -181,7 +152,7 @@ class ExasolSqlDialectIT {
     }
 
     private static void createVirtualSchema(final String virtualSchemaName, final String schemaName,
-            final Map<String, String> additionalParameters) throws SQLException {
+                                            final Map<String, String> additionalParameters) throws SQLException {
         final Map<String, String> properties = new HashMap<>(Map.of("SCHEMA_NAME", schemaName));
         properties.putAll(additionalParameters);
         exasolObjectFactory.createVirtualSchemaBuilder(virtualSchemaName).adapterScript(adapterScript)
@@ -330,7 +301,7 @@ class ExasolSqlDialectIT {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = { "Column1", "column2" })
+    @ValueSource(strings = {"Column1", "column2"})
     void assertUnquotedMixedCaseColumnIsNotFound(final String columnName) {
         final SQLException exception = assertThrows(SQLException.class, () -> statement.executeQuery("SELECT "
                 + columnName + " FROM \"" + VIRTUAL_SCHEMA_EXA_MIXED_CASE + "\".\"" + TABLE_MIXED_CASE + "\""));
@@ -348,7 +319,7 @@ class ExasolSqlDialectIT {
     }
 
     @ParameterizedTest
-    @CsvSource({ "ST_UNION", "ST_INTERSECTION" })
+    @CsvSource({"ST_UNION", "ST_INTERSECTION"})
     void testStAggregateFunctions(final String functionName) {
         final String query = "SELECT " + functionName + "('POLYGON ((0 0, 0 4, 2 4, 2 0, 0 0))') FROM "
                 + VIRTUAL_SCHEMA_EXA_LOCAL + "." + TABLE_SIMPLE_VALUES;
@@ -705,7 +676,7 @@ class ExasolSqlDialectIT {
         final String select = "SELECT 1 FROM \"" + SCHEMA_EXASOL + "\".\"" + TABLE_SIMPLE_VALUES + "\"";
         return Stream.of(
                 Arguments.of(VIRTUAL_SCHEMA_EXA,
-                        "IMPORT FROM EXA AT 'localhost:8888' USER 'SYS' IDENTIFIED BY 'exasol' STATEMENT " //
+                        "IMPORT FROM EXA AT '" + hostAndDefaultPort + "' USER 'SYS' IDENTIFIED BY 'exasol' STATEMENT " //
                                 + "'" + select + "'"),
                 Arguments.of(VIRTUAL_SCHEMA_EXA_LOCAL, select),
                 Arguments.of(VIRTUAL_SCHEMA_JDBC,
@@ -725,7 +696,7 @@ class ExasolSqlDialectIT {
     }
 
     private ResultSet getSelectAllFromJoinExpectedTable(final Statement statement, final String schemaName,
-            final String expectedColumns, final String expectedValues) throws SQLException {
+                                                        final String expectedColumns, final String expectedValues) throws SQLException {
         statement.execute("CREATE OR REPLACE TABLE " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedColumns);
         statement.execute("INSERT INTO " + schemaName + ".TABLE_JOIN_EXPECTED " + expectedValues);
         return statement.executeQuery("SELECT * FROM " + schemaName + ".TABLE_JOIN_EXPECTED");
