@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 3.1.0, released 2020-09-30
+# Exasol Virtual Schema Common 3.1.0, released 2020-11-??
 
 Code name: Added new functions support, detect interval precision
 
@@ -14,7 +14,7 @@ Code name: Added new functions support, detect interval precision
 
 * #18: Use test-db-builder for integration tests.
 * #22: Updated to the new major version of `virtual-schema-common-jdbc`.
-* #26: Updated to the new version of `virtual-schema-common-jdbc`.
+* #26: Updated to the new major version of `virtual-schema-common-jdbc`.
 
 ## Dependency updates
 
@@ -23,7 +23,7 @@ Code name: Added new functions support, detect interval precision
 * Added org.junit.jupiter:junit-jupiter:5.7.0
 * Updated com.exasol:exasol-testcontainers:jar:2.0.3 to version 3.2.0
 * Updated com.exasol:exasol-jdbc:6.2.5 to version 7.0.3
-* Updated com.exasol:virtual-schema-common-jdbc:5.0.4 to version 6.1.0
+* Updated com.exasol:virtual-schema-common-jdbc:5.0.4 to version 7.0.0
 * Updated com.exasol:hamcrest-resultset-matcher:1.1.1 to version 1.2.1
 * Updated org.mockito:mockito-junit-jupiter:3.3.3 to version 3.5.15
 * Removed org.junit.jupiter:junit-jupiter-engine
