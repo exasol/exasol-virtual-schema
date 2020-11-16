@@ -101,6 +101,8 @@ The parameter `IS_LOCAL` provides an additional speed-up in this particular use 
 The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
 And that `SELECT` can be directly executed by the core database, whereas the `IMPORT` statement takes a detour via the ExaLoader.
 
+**Important:** Please note that since the generated `SELECT` command runs with the permissions of the owner of the Virtual Schema, that user must have privileges to access what you plan to select! This is *different* from using a connection definition where you can use a different user in that connection.
+
 #### Data Source is an Exasol Instance or Cluster Only Reachable via JDBC
 
 While this connection type works, it is also the slowest option and exists mainly to support integration tests on the ExaLoader. 
