@@ -1,6 +1,39 @@
 # Exasol Virtual Schema Common 3.1.0, released 2020-11-17
 
-Code name: Added new functions support, detect interval precision
+Code name: Security Update
+
+## Summary
+
+Classification: High
+Please update your adapters as soon as possible!
+This release fixes several SQL injection vulnerabilities on the remote database of the virtual schema. 
+The local Exasol database defining the virtual schema is not affected.
+
+This release also provides support for new capabilities: 
+
+FN_BIT_LROTATE
+FN_BIT_RROTATE
+FN_BIT_LSHIFT
+FN_BIT_RSHIFT
+FN_FROM_POSIX_TIME
+FN_HOUR
+FN_INITCAP
+FN_AGG_EVERY
+FN_AGG_SOME
+FN_AGG_MUL_DISTINCT
+FN_HASHTYPE_MD5
+FN_HASHTYPE_SHA1
+FN_HASHTYPE_SHA256
+FN_HASHTYPE_SHA512
+FN_HASHTYPE_TIGER
+FN_MIN_SCALE
+FN_AGG_LISTAGG
+FN_AGG_LISTAGG_DISTINCT
+FN_AGG_LISTAGG_SEPARATOR
+FN_AGG_LISTAGG_ON_OVERFLOW_ERROR
+FN_AGG_LISTAGG_ON_OVERFLOW_TRUNCATE
+FN_AGG_LISTAGG_ORDER_BY
+FN_AGG_COUNT_TUPLE
 
 ## Bugs
 
