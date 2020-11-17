@@ -98,20 +98,20 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.5.15</version>
+            <version>3.6.0</version>
             <scope>test</scope>
         </dependency>
         <!--Integration test dependencies-->
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>3.2.0</version>
+            <version>3.3.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -294,6 +294,13 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludeVulnerabilityIds>
+                        <!-- Ignores CVE-2020-15250, because we use Java 11 and junit 4.13.1 which contains a fix:
+                        https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
+                        <exclude>7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1</exclude>
+                    </excludeVulnerabilityIds>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
