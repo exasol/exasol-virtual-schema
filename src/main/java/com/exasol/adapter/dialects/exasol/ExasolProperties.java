@@ -5,7 +5,7 @@ package com.exasol.adapter.dialects.exasol;
  */
 public final class ExasolProperties {
     public static final String EXASOL_IMPORT_PROPERTY = "IMPORT_FROM_EXA";
-    public static final String EXASOL_CONNECTION_STRING_PROPERTY = "EXA_CONNECTION_STRING";
+    public static final String EXASOL_CONNECTION_PROPERTY = "EXA_CONNECTION";
 
     private ExasolProperties() {
         // prevent instantiation

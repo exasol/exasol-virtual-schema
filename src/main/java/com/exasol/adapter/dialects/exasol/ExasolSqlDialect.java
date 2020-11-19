@@ -2,12 +2,12 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
 import static com.exasol.adapter.sql.ScalarFunction.*;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Set;
 
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.capabilities.*;
@@ -31,7 +31,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
      */
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
         super(connectionFactory, properties, Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY,
-                EXASOL_CONNECTION_STRING_PROPERTY, IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY));
+                EXASOL_CONNECTION_PROPERTY, IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY));
         this.omitParenthesesMap.add(SYSDATE);
         this.omitParenthesesMap.add(SYSTIMESTAMP);
         this.omitParenthesesMap.add(CURRENT_SCHEMA);
@@ -136,7 +136,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     public void validateProperties() throws PropertyValidationException {
         super.validateProperties();
-        checkImportPropertyConsistency(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_STRING_PROPERTY);
+        checkImportPropertyConsistency(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY);
         validateBooleanProperty(EXASOL_IMPORT_PROPERTY);
         validateBooleanProperty(IS_LOCAL_PROPERTY);
     }

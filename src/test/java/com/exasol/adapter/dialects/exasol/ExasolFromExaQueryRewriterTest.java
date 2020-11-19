@@ -1,7 +1,8 @@
 package com.exasol.adapter.dialects.exasol;
 
-import static com.exasol.adapter.AdapterProperties.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
+import static com.exasol.adapter.AdapterProperties.CONNECTION_NAME_PROPERTY;
+import static com.exasol.adapter.AdapterProperties.IS_LOCAL_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
 import static com.exasol.reflect.ReflectionUtils.getMethodReturnViaReflection;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -59,12 +60,11 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
     void testRewriteToImportFromExaWithConnectionDetailsInProperties() throws AdapterException, SQLException {
         final AdapterProperties properties = new AdapterProperties(Map.of(EXASOL_IMPORT_PROPERTY, "true", //
                 CONNECTION_NAME_PROPERTY, "exasol_connection", //
-                EXASOL_CONNECTION_STRING_PROPERTY, "localhost:7861"));
+                EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null, null);
         assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
-                equalTo("IMPORT FROM EXA AT 'localhost:7861' USER 'connection_user' IDENTIFIED BY 'connection_secret'"
-                        + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
+                equalTo("IMPORT FROM EXA AT 'THE_EXA_CONNECTION'" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
 
     @Test
