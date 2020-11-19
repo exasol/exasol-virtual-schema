@@ -91,7 +91,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 [sonatype-oss-index-maven-plugin]: https://sonatype.github.io/ossindex-maven/maven-plugin/
 [test-db-builder]: https://github.com/exasol/test-db-builder/
 [versions-maven-plugin]: https://www.mojohaus.org/versions-maven-plugin/
-[virtual-schema-common-jdbc]:https://github.com/exasol/virtual-schema-common-jdbc
+[virtual-schema-common-jdbc]: https://github.com/exasol/virtual-schema-common-jdbc
 
 [user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
 [virtual-schemas]: https://github.com/exasol/virtual-schemas

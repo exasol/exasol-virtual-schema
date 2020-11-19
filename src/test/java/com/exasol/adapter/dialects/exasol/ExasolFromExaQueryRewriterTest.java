@@ -64,7 +64,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null, null);
         assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
-                equalTo("IMPORT FROM EXA AT 'THE_EXA_CONNECTION'" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
+                equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\"" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
 
     @Test

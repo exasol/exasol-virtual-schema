@@ -3,6 +3,7 @@ package com.exasol.adapter.dialects.exasol;
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.PATH_TO_VIRTUAL_SCHEMAS_JAR;
 import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION;
+import static com.exasol.dbbuilder.dialects.exasol.ExasolObjectPrivilege.SELECT;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -34,38 +35,33 @@ import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
-    public static final String EXASOL_DIALECT = "EXASOL";
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> CONTAINER = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
+    public static final String EXASOL_DIALECT = "EXASOL";
+    private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
-    private static Connection connection;
-    private static ConnectionDefinition jdbcConnection;
-    private static AdapterScript adapterScript;
-    private ExasolSchema sourceSchema;
-    private VirtualSchema virtualSchema;
+    protected static Connection connection;
+    protected static AdapterScript adapterScript;
+    protected ExasolSchema sourceSchema;
+    protected User user;
+    protected VirtualSchema virtualSchema;
+    private ConnectionDefinition jdbcConnection;
 
     @BeforeAll
     static void beforeAll() throws BucketAccessException, InterruptedException, TimeoutException, IOException,
             NoDriverFoundException, SQLException {
         connection = CONTAINER.createConnection("");
         objectFactory = new ExasolObjectFactory(connection);
-        createAdapterConnectionDefinition();
-        final ExasolSchema adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
-        installVirtualSchemaAdapter(adapterSchema);
+        adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
+        adapterScript = installVirtualSchemaAdapter(adapterSchema);
     }
 
-    private static void createAdapterConnectionDefinition() {
-        final String jdbcUrl = "jdbc:exa:localhost:" + CONTAINER.getDefaultInternalDatabasePort();
-        jdbcConnection = objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, CONTAINER.getUsername(),
-                CONTAINER.getPassword());
-    }
-
-    private static void installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
+    private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
             throws InterruptedException, BucketAccessException, TimeoutException {
         final Bucket bucket = CONTAINER.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
-        adapterScript = adapterSchema.createAdapterScriptBuilder() //
+        return adapterSchema.createAdapterScriptBuilder() //
                 .name("EXASOL_ADAPTER") //
                 .language(Language.JAVA) //
                 .bucketFsContent("com.exasol.adapter.RequestDispatcher",
@@ -75,21 +71,32 @@ abstract class AbstractExasolSqlDialectIT {
 
     @AfterAll
     static void afterAll() throws SQLException {
+        dropAll(adapterScript, adapterSchema);
+        adapterScript = null;
+        adapterSchema = null;
         connection.close();
-        CONTAINER.stop();
     }
 
     @BeforeEach
     void beforeEach() {
         this.sourceSchema = objectFactory.createSchema("SOURCE_SCHEMA");
+        this.user = objectFactory.createLoginUser("VS_USER", "VS_USER_PWD").grant(this.sourceSchema, SELECT);
+        this.jdbcConnection = createAdapterConnectionDefinition(this.user);
         this.virtualSchema = null;
+    }
+
+    private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
+        final String jdbcUrl = "jdbc:exa:localhost:" + CONTAINER.getDefaultInternalDatabasePort();
+        return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 
     @AfterEach
     void afterEach() {
-        dropAll(this.sourceSchema, this.virtualSchema);
-        this.sourceSchema = null;
+        dropAll(this.virtualSchema, this.jdbcConnection, this.user, this.sourceSchema);
         this.virtualSchema = null;
+        this.jdbcConnection = null;
+        this.user = null;
+        this.sourceSchema = null;
     }
 
     /**
@@ -137,11 +144,11 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    private VirtualSchema createVirtualSchema(final Schema sourceSchema) {
+    protected VirtualSchema createVirtualSchema(final Schema sourceSchema) {
         return objectFactory.createVirtualSchemaBuilder("THE_VS").dialectName(EXASOL_DIALECT) //
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
-                .connectionDefinition(jdbcConnection) //
+                .connectionDefinition(this.jdbcConnection) //
                 .properties(getConnectionSepcificVirtualSchemaProperties()) //
                 .build();
     }
@@ -159,7 +166,7 @@ abstract class AbstractExasolSqlDialectIT {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
-    private ResultSet query(final String sql) throws SQLException {
+    protected ResultSet query(final String sql) throws SQLException {
         return connection.createStatement().executeQuery(sql);
     }
 
@@ -175,7 +182,7 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("CHAR").row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
     }
 
-    private String pad(final String text, final int padTo) {
+    protected String pad(final String text, final int padTo) {
         return text + " ".repeat(padTo - text.length());
     }
 
@@ -275,12 +282,18 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testIdentifierCaseSensitivityOnTable() {
         Schema mixedCaseSchema = null;
-        mixedCaseSchema = objectFactory.createSchema("MixedCaseSchema");
-        final Table table = mixedCaseSchema.createTable("MixedCaseTable", "Column1", "VARCHAR(20)", "column2",
-                "VARCHAR(20)", "COLUMN3", "VARCHAR(20)").insert("foo", "bar", "baz");
-        this.virtualSchema = createVirtualSchema(mixedCaseSchema);
-        assertVsQuery("SELECT \"Column1\", \"column2\", COLUMN3 FROM " + getVirtualTableName(this.virtualSchema, table),
-                table().row("foo", "bar", "baz").matches());
+        try {
+            mixedCaseSchema = objectFactory.createSchema("MixedCaseSchema");
+            this.user.grant(mixedCaseSchema, SELECT);
+            final Table table = mixedCaseSchema.createTable("MixedCaseTable", "Column1", "VARCHAR(20)", "column2",
+                    "VARCHAR(20)", "COLUMN3", "VARCHAR(20)").insert("foo", "bar", "baz");
+            this.virtualSchema = createVirtualSchema(mixedCaseSchema);
+            assertVsQuery(
+                    "SELECT \"Column1\", \"column2\", COLUMN3 FROM " + getVirtualTableName(this.virtualSchema, table),
+                    table().row("foo", "bar", "baz").matches());
+        } finally {
+            dropAll(mixedCaseSchema);
+        }
     }
 
     private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
@@ -548,7 +561,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .adapterScript(adapterScript) //
                 .dialectName(EXASOL_DIALECT) //
                 .properties(properties) //
-                .connectionDefinition(jdbcConnection) //
+                .connectionDefinition(this.jdbcConnection) //
                 .build();
         assertThat(query("SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)),
                 instanceOf(ResultSet.class));

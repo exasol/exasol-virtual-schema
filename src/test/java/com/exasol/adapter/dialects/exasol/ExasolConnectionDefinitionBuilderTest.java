@@ -35,7 +35,7 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
         mockExasolNamedConnection();
         setImportFromExaProperties();
         setConnectionNameProperty();
-        assertThat(calculateConnectionDefinition(), equalTo("AT '" + EXA_CONNECTION_NAME + "'"));
+        assertThat(calculateConnectionDefinition(), equalTo("AT \"" + EXA_CONNECTION_NAME + "\""));
     }
 
     private void setImportFromExaProperties() {

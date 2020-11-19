@@ -19,16 +19,15 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
     public String buildConnectionDefinition(final AdapterProperties properties,
             final ExaConnectionInformation exaConnectionInformation) {
         if (properties.containsKey(ExasolProperties.EXASOL_IMPORT_PROPERTY)) {
-            return buildImportFromExaConnectionDefinition(properties, exaConnectionInformation);
+            return buildImportFromExaConnectionDefinition(properties);
         } else {
             return super.buildConnectionDefinition(properties, exaConnectionInformation);
         }
     }
 
-    private String buildImportFromExaConnectionDefinition(final AdapterProperties properties,
-            final ExaConnectionInformation exaConnectionInformation) {
+    private String buildImportFromExaConnectionDefinition(final AdapterProperties properties) {
         if (properties.containsKey(EXASOL_CONNECTION_PROPERTY) && properties.hasConnectionName()) {
-            return "AT '" + getExasolConnectionName(properties) + "'";
+            return "AT \"" + getExasolConnectionName(properties) + "\"";
         } else {
             throw new IllegalArgumentException(
                     "Incomplete remote connection information. Please specify a named EXA connection \""
