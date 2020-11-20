@@ -20,6 +20,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -314,51 +316,23 @@ abstract class AbstractExasolSqlDialectIT {
         virtualSchema.drop();
     }
 
-    @Test
-    void testGroupConcat() {
-        final Table table = createSingleColumnTable("INTEGER").insert(101).insert(102).insert(103).insert(104);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT GROUP_CONCAT(" + getColumnName(table, 0) + ") FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row("101,102,103,104").matches());
-    }
-
-    private String getColumnName(final Table table, final int index) {
-        return table.getColumns().get(index).getName();
-    }
-
-    @Test
-    void testGroupConcatOrderBy() {
+    @CsvSource(value = { //
+            "GROUP_CONCAT(A)                            : 101,102,103,104",
+            "GROUP_CONCAT(A ORDER BY B)                 : 102,103,101,104",
+            "GROUP_CONCAT(A ORDER BY B DESC)            : 104,101,103,102",
+            "GROUP_CONCAT(A ORDER BY B DESC NULLS LAST) : 101,103,102,104",
+            "GROUP_CONCAT(A SEPARATOR ';' || ' ')       : 101; 102; 103; 104" } //
+            , delimiter = ':')
+    @ParameterizedTest
+    void testGroupConcatOrderBy(final String concat, final String concatResult) {
         final Table table = this.sourceSchema.createTable("GROUP_CONCAT_TABLE", "A", "INTEGER", "B", "INTEGER")
-                .insert(101, 3).insert(102, 1).insert(103, 2).insert(104, null);
+                .insert(101, 3) //
+                .insert(102, 1) //
+                .insert(103, 2) //
+                .insert(104, null);
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT GROUP_CONCAT(A ORDER BY B) FROM " + getVirtualTableName(this.virtualSchema, table), //
-                table().row("102,103,101,104").matches());
-    }
-
-    @Test
-    void testGroupConcatOrderByDesc() {
-        final Table table = this.sourceSchema.createTable("GROUP_CONCAT_TABLE", "A", "INTEGER", "B", "INTEGER")
-                .insert(101, 3).insert(102, 1).insert(103, 2).insert(104, null);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT GROUP_CONCAT(A ORDER BY B DESC NULLS LAST) FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row("101,103,102,104").matches());
-    }
-
-    @Test
-    void testGroupConcatOrderByDescNullsLast() {
-        final Table table = this.sourceSchema.createTable("GROUP_CONCAT_TABLE", "A", "INTEGER", "B", "INTEGER")
-                .insert(101, 3).insert(102, 1).insert(103, 2).insert(104, null);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT GROUP_CONCAT(A ORDER BY B DESC NULLS LAST) FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row("101,103,102,104").matches());
-    }
-
-    @Test
-    void testGroupConcatSeparator() {
-        final Table table = createSingleColumnTable("INTEGER").insert(101).insert(102).insert(103).insert(104);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT GROUP_CONCAT(" + getColumnName(table, 0) + " SEPARATOR ';'||' ') FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row("101; 102; 103; 104").matches());
+        final String sql = "SELECT " + concat + "FROM " + getVirtualTableName(this.virtualSchema, table);
+        assertVsQuery(sql, table().row(concatResult).matches());
     }
 
     @Test
@@ -367,6 +341,10 @@ abstract class AbstractExasolSqlDialectIT {
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT EXTRACT(MONTH FROM " + getColumnName(table, 0) + ") FROM "
                 + getVirtualTableName(this.virtualSchema, table), table().row((short) 11).matches());
+    }
+
+    private String getColumnName(final Table table, final int index) {
+        return table.getColumns().get(index).getName();
     }
 
     @Test

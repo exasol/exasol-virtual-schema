@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 4.0.0, released 2020-11-??
+# Exasol Virtual Schema Common 4.0.0, released 2020-11-20
 
 Code name: Fixed credentials exposure in EXA connection
 
