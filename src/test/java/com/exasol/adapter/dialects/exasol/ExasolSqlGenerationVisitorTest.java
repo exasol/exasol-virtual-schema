@@ -20,8 +20,8 @@ class ExasolSqlGenerationVisitorTest {
     @Test
     void testVisitSqlLiteralTimestampUtcThrowsException() {
         when(this.exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled()).thenReturn(false);
-        final ExasolSqlGenerationVisitor exasolSqlGenerationVisitor =
-                new ExasolSqlGenerationVisitor(this.exasolSqlDialect, null);
+        final ExasolSqlGenerationVisitor exasolSqlGenerationVisitor = new ExasolSqlGenerationVisitor(
+                this.exasolSqlDialect, null);
         final SqlLiteralTimestampUtc sqlLiteralTimestampUtc = new SqlLiteralTimestampUtc("2015-12-01 12:01:01.1234");
         assertThrows(UnsupportedOperationException.class,
                 () -> exasolSqlGenerationVisitor.visit(sqlLiteralTimestampUtc));
@@ -30,9 +30,11 @@ class ExasolSqlGenerationVisitorTest {
     @Test
     void testVisitSqlLiteralTimestampUtc() {
         when(this.exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled()).thenReturn(true);
+        final String value = "2015-12-01 12:01:01.1234";
+        when(this.exasolSqlDialect.getStringLiteral(value)).thenReturn("'" + value + "'");
         final ExasolSqlGenerationVisitor exasolSqlGenerationVisitor =
                 new ExasolSqlGenerationVisitor(this.exasolSqlDialect, null);
-        final SqlLiteralTimestampUtc sqlLiteralTimestampUtc = new SqlLiteralTimestampUtc("2015-12-01 12:01:01.1234");
+        final SqlLiteralTimestampUtc sqlLiteralTimestampUtc = new SqlLiteralTimestampUtc(value);
         assertThat(exasolSqlGenerationVisitor.visit(sqlLiteralTimestampUtc),
                 equalTo("TIMESTAMP '2015-12-01 12:01:01.1234'"));
     }

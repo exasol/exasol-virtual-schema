@@ -15,8 +15,13 @@ addons:
 install:
   - travis_retry mvn dependency:resolve
 
+env:
+   - DOCKER_DB_VERSION=7.0.2
+   - DOCKER_DB_VERSION=6.2.11
+
 script:
-  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent org.jacoco:jacoco-maven-plugin:prepare-agent-integration verify sonar:sonar -Dsonar.login=${SONAR_TOKEN}
+  - mvn clean org.jacoco:jacoco-maven-plugin:prepare-agent org.jacoco:jacoco-maven-plugin:prepare-agent-integration
+    verify sonar:sonar -Dsonar.login=${SONAR_TOKEN} -Dcom.exasol.dockerdb.image=${DOCKER_DB_VERSION}
 
 cache:
   directories:

@@ -109,13 +109,13 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
-    public Capabilities getCapabilities() {
-        return CAPABILITIES;
+    public String applyQuote(final String identifier) {
+        return super.quoteIdentifierWithDoubleQuotes(identifier);
     }
 
     @Override
-    public String applyQuote(final String identifier) {
-        return "\"" + identifier.replace("\"", "\"\"") + "\"";
+    public Capabilities getCapabilities() {
+        return CAPABILITIES;
     }
 
     @Override
@@ -131,6 +131,11 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     public NullSorting getDefaultNullSorting() {
         return NullSorting.NULLS_SORTED_HIGH;
+    }
+
+    @Override
+    public String getStringLiteral(final String value) {
+        return super.quoteLiteralStringWithSingleQuote(value);
     }
 
     @Override

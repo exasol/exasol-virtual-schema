@@ -18,7 +18,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-6.0.0-exasol-3.1.1.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-7.0.0-exasol-3.1.1.jar;
 /
 ```
 
@@ -100,6 +100,10 @@ Add the following parameters to `CREATE VIRTUAL SCHEMA`:
 The parameter `IS_LOCAL` provides an additional speed-up in this particular use case. 
 The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
 And that `SELECT` can be directly executed by the core database, whereas the `IMPORT` statement takes a detour via the ExaLoader.
+
+**Important:** Please note that since the generated `SELECT` command runs with the permissions of the owner of the Virtual Schema, that user must have privileges to access what you plan to select!
+
+`IMPORT` statements use a connection definition which allows connecting with a different user account. Generated `SELECT` statements do not open additional connections (hence the "local" moniker) so they inherit the context of the Virtual Schema query they are executed in &mdash; including permissions.
 
 #### Data Source is an Exasol Instance or Cluster Only Reachable via JDBC
 
