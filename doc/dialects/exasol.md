@@ -18,7 +18,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-7.0.0-exasol-3.1.1.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-7.0.0-exasol-4.0.0.jar;
 /
 ```
 
@@ -27,85 +27,101 @@ CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
 Define the connection to the other Exasol cluster as shown below.
 
 ```sql
-CREATE CONNECTION EXASOL_CONNECTION 
+CREATE CONNECTION JDBC_CONNECTION 
 TO 'jdbc:exa:<host>:<port>' 
 USER '<user>' 
 IDENTIFIED BY '<password>';
 ```
 
-## Using IMPORT FROM EXA Instead of IMPORT FROM JDBC
+You can learn more about [defining named connections](https://docs.exasol.com/sql/create_connection.htm) in the Exasol online handbook.
+
+## Choosing the Type of Connection
+
+You have three options to pick from when connecting to an Exasol instance or cluster. The options are explained below.
+
+### Using IMPORT FROM EXA
 
 Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading data from Exasol. You can tell the adapter to use this command instead of `IMPORT FROM JDBC` by setting the `IMPORT_FROM_EXA` property. 
-In this case you have to provide the additional `EXA_CONNECTION_STRING` which is the connection string used for the internally used `IMPORT FROM EXA` command (it also supports ranges like `192.168.6.11..14:8563`). Please note, that the `CONNECTION` object must still have the JDBC connection string in `AT`, because the Adapter Script uses a JDBC connection to obtain the metadata when a schema is created or refreshed. 
-For the internally used `IMPORT FROM EXA` statement, the address from `EXA_CONNECTION_STRING` and the user name and password from the connection will be used.
 
-### Creating a Virtual Schema
+In this case you have to provide the additional `EXA_CONNECTION` which contains the name of the connection definition used for the internally used `IMPORT FROM EXA` command.
+
+That means that in this case you will have **two** named connections: a JDBC connection for the Virtual Schema adapter and an EXA connection for the EXALoader &mdash; which runs the `IMPORT`.
+
+Please refer to the [CREATE CONNECTION](https://docs.exasol.com/sql/create_connection.htm) documentation for more details about how to define an EXA connection.
+
+#### Creating a Virtual Schema With EXA Import
+
+```sql
+CREATE CONNECTION EXA_CONNECTION
+TO '<host-or-list>:<port>'
+USER '<user>'
+PASSWORD '<password>'
+```
 
 ```sql
 CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL 
-    USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
+USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     SQL_DIALECT     = 'EXASOL'
-    CONNECTION_NAME = 'EXASOL_CONNECTION'
+    CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>'
     IMPORT_FROM_EXA = 'true'
-    EXA_CONNECTION_STRING = '<host>:<port>';
+    EXA_CONNECTION  = 'EXA_CONNECTION';
 ```
 
-## Using IMPORT FROM JDBC
+### Using IMPORT FROM JDBC
 
-### Creating a Virtual Schema
+Should the EXA connection not be an option for you, you can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower.
+
+#### Creating a Virtual Schema With JDBC Import
 
 ```sql
 CREATE VIRTUAL SCHEMA <virtual schema name> 
-    USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
+USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     WITH
     SQL_DIALECT     = 'EXASOL'
-    CONNECTION_NAME = 'EXASOL_CONNECTION'
+    CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
 ```
 
-## Known limitations
+### Using IS_LOCAL
 
-* Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas 
-can produce an incorrect results. We recommend using 'TIMESTAMP' instead. If you are willing to take the risk
-and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following
-additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`. 
-We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
+If the data source is the same Exasol instance or cluster Virtual Schemas runs on, then the best possible connection type is a so called "local" connection.
 
-## Supported Capabilities
-
-The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
-
-## Connection Types
-
-You can use different connection options depending on a type of source Exasol database.
-
-### Data Source a Remote Exasol Instance or Cluster
-
-Add the following parameters to `CREATE VIRTUAL SCHEMA`:
-
-    IMPORT_FROM_EXA = 'true'
-    EXA_CONNECTION_STRING = '<host-or-range>:<port>'
-
-You additionally need to provide a named connection with JDBC details so that Virtual Schema can read the metadata.
-
-#### Data Source is the Same Exasol Instance or Cluster Virtual Schemas Runs on
-
-In this case the best possible connection type is a so called "local" connection.
-
-Add the following parameters to `CREATE VIRTUAL SCHEMA`:
+Add the following parameter to `CREATE VIRTUAL SCHEMA`:
 
     IS_LOCAL = 'true'
 
 The parameter `IS_LOCAL` provides an additional speed-up in this particular use case. 
+
 The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
+
 And that `SELECT` can be directly executed by the core database, whereas the `IMPORT` statement takes a detour via the ExaLoader.
 
 **Important:** Please note that since the generated `SELECT` command runs with the permissions of the owner of the Virtual Schema, that user must have privileges to access what you plan to select!
 
 `IMPORT` statements use a connection definition which allows connecting with a different user account. Generated `SELECT` statements do not open additional connections (hence the "local" moniker) so they inherit the context of the Virtual Schema query they are executed in &mdash; including permissions.
 
-#### Data Source is an Exasol Instance or Cluster Only Reachable via JDBC
+#### Creating a Local Virtual Schema
 
-While this connection type works, it is also the slowest option and exists mainly to support integration tests on the ExaLoader. 
-We recommend that you use `IMPORT FROM EXA` instead.
+```sql
+CREATE VIRTUAL SCHEMA <virtual schema name> 
+USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
+    WITH
+    SQL_DIALECT     = 'EXASOL'
+    CONNECTION_NAME = 'JDBC_CONNECTION'
+    SCHEMA_NAME     = '<schema name>';
+    IS_LOCAL        = 'true'
+```
+
+Note that you still need to provide a JDBC connection. This is used by the Virtual Schema adapter internally. It is not used for mass data transfer though. And that is where the performance gain comes from.
+
+## Supported Capabilities
+
+The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
+
+## Known limitations
+
+* Using literals and constant expressions with data type `TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results.
+   * We recommend using `TIMESTAMP` instead.
+   * If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
+   * We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.

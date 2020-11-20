@@ -47,7 +47,7 @@ FN_AGG_COUNT_TUPLE
 
 * #15: Improved the documentation.
 
-## Refactoring:
+## Refactoring
 
 * #18: Use test-db-builder for integration tests.
 * #22: Updated to the new major version of `virtual-schema-common-jdbc`.
