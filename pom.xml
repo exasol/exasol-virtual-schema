@@ -293,7 +293,7 @@
                 <groupId>org.sonatype.ossindex.maven</groupId>
                 <artifactId>ossindex-maven-plugin</artifactId>
                 <version>3.1.0</version>
-                 <executions>
+                <executions>
                     <execution>
                         <phase>package</phase>
                         <goals>

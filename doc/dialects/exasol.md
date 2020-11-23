@@ -91,7 +91,7 @@ Add the following parameter to `CREATE VIRTUAL SCHEMA`:
 
     IS_LOCAL = 'true'
 
-The parameter `IS_LOCAL` provides an additional speed-up in this particular use case. 
+The `IS_LOCAL` parameter provides an additional speed-up in this particular use case. 
 
 The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
 
@@ -121,7 +121,7 @@ The Exasol SQL dialect supports all capabilities that are supported by the virtu
 
 ## Known limitations
 
-* Using literals and constant expressions with data type `TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results.
+* Using literals and constant expressions with `TIMESTAMP WITH LOCAL TIME ZONE` data type in Virtual Schemas can produce an incorrect results.
    * We recommend using `TIMESTAMP` instead.
    * If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
    * We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.

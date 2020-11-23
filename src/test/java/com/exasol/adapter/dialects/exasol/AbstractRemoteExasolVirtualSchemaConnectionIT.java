@@ -11,26 +11,6 @@ import com.exasol.dbbuilder.dialects.Table;
  * instance or cluster.
  */
 abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExasolSqlDialectIT {
-    @Override
-    @Test
-    void testCharMappingUtf8() {
-        final Table table = createSingleColumnTable("CHAR(20) UTF8").insert("Howdy.").insert("Grüzi.");
-        assertVirtualTableContents(table, table("VARCHAR").row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
-    }
-
-    @Override
-    @Test
-    void testCharMappingAscii() {
-        final Table table = createSingleColumnTable("CHAR(20) ASCII").insert("sun").insert("rain");
-        assertVirtualTableContents(table, table("VARCHAR").row(pad("sun", 20)).row(pad("rain", 20)).matches());
-    }
-
-    @Override
-    @Test
-    void testCastVarcharToChar() {
-        assertCast("VARCHAR(20)", "CHAR(40)", "VARCHAR", "Hello.", pad("Hello.", 40));
-    }
-
     @Test
     void testInvervalYearToMonthMapping() {
         final Table table = createSingleColumnTable("INTERVAL YEAR (9) TO MONTH")//

@@ -40,7 +40,7 @@ abstract class AbstractExasolSqlDialectIT {
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> CONTAINER = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
-    public static final String EXASOL_DIALECT = "EXASOL";
+    private static final String EXASOL_DIALECT = "EXASOL";
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
@@ -122,7 +122,7 @@ abstract class AbstractExasolSqlDialectIT {
      *
      * @return raw properties
      */
-    protected abstract Map<String, String> getConnectionSepcificVirtualSchemaProperties();
+    protected abstract Map<String, String> getConnectionSpecificVirtualSchemaProperties();
 
     @Test
     void testVarcharMappingUtf8() {
@@ -151,7 +151,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
                 .connectionDefinition(this.jdbcConnection) //
-                .properties(getConnectionSepcificVirtualSchemaProperties()) //
+                .properties(getConnectionSpecificVirtualSchemaProperties()) //
                 .build();
     }
 
@@ -532,7 +532,7 @@ abstract class AbstractExasolSqlDialectIT {
     void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         final Map<String, String> properties = new HashMap<>();
-        properties.putAll(getConnectionSepcificVirtualSchemaProperties());
+        properties.putAll(getConnectionSpecificVirtualSchemaProperties());
         properties.put("IGNORE_ERRORS", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
         this.virtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
                 .sourceSchema(this.sourceSchema) //
