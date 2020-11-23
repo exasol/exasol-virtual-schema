@@ -28,9 +28,9 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 ## Deprecation Warning
 
-Starting with version 4.0.0 of the Exasol SQL dialect, the new property `EXA_CONNECTION` replaces the property `EXA_CONNECTION_STRING`, for improved security.
+Starting with version 4.0.0 of the Exasol SQL dialect, the new `EXA_CONNECTION` property replaces the `EXA_CONNECTION_STRING` property, for improved security.
 
-It takes the name of a connection definition in case you are using `IMPORT ... FROM EXA`. For details please consult the [user guide][user-guide].
+It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide][user-guide].
 
 ## Table of Contents
 

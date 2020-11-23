@@ -40,7 +40,7 @@ abstract class AbstractExasolSqlDialectIT {
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> CONTAINER = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
-    public static final String EXASOL_DIALECT = "EXASOL";
+    private static final String EXASOL_DIALECT = "EXASOL";
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
@@ -122,7 +122,7 @@ abstract class AbstractExasolSqlDialectIT {
      *
      * @return raw properties
      */
-    protected abstract Map<String, String> getConnectionSepcificVirtualSchemaProperties();
+    protected abstract Map<String, String> getConnectionSpecificVirtualSchemaProperties();
 
     @Test
     void testVarcharMappingUtf8() {

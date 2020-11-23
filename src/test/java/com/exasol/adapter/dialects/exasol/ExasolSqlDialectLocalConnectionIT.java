@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Test;
 import com.exasol.dbbuilder.dialects.Table;
 
 /**
- * This class exercises a set of tests defined in the base class for on a local Exasol, using {@code SELECT} instead of
+ * This class exercises a set of tests defined in the base class on a local Exasol, using {@code SELECT} instead of
  * {@code IMPORT}
  * <p>
- * This tests takes the following specialties of a local connection into account:
+ * These tests take the following specialties of a local connection into account:
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are present in the result set without modification</li>
@@ -20,7 +20,7 @@ import com.exasol.dbbuilder.dialects.Table;
  */
 class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Override
-    protected Map<String, String> getConnectionSepcificVirtualSchemaProperties() {
+    protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
         return Map.of("IS_LOCAL", "true");
     }
 

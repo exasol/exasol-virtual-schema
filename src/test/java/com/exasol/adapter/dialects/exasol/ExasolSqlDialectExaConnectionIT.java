@@ -16,14 +16,14 @@ import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
 /**
- * This class exercises a set of tests defined in the base class for on a local Exasol, using {@code IMPORT} via a EXA
+ * This class exercises a set of tests defined in the base class on a local Exasol, using {@code IMPORT} via a EXA
  * connection.
  * <p>
  * In this case the Adapter uses a different (JDBC) connection to attach to the database than the ExaLoader which runs
  * this {@code IMPORT}.
  * </p>
  * <p>
- * This tests takes the following specialties of a local connection into account:
+ * These tests take the following specialties of a local connection into account:
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
@@ -51,7 +51,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractExasolSqlDialectIT {
     }
 
     @Override
-    protected Map<String, String> getConnectionSepcificVirtualSchemaProperties() {
+    protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
         return Map.of("IMPORT_FROM_EXA", "true", EXASOL_CONNECTION_PROPERTY, this.exaConnection.getName());
     }
 

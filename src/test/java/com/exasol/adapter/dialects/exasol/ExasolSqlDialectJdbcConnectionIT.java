@@ -10,14 +10,14 @@ import org.junit.jupiter.api.Test;
 import com.exasol.dbbuilder.dialects.Table;
 
 /**
- * This class exercises a set of tests defined in the base class for on a local Exasol, using {@code IMPORT} via a JDBC
+ * This class exercises a set of tests defined in the base class on a local Exasol, using {@code IMPORT} via a JDBC
  * connection.
  * <p>
  * In this case the Adapter uses the same JDBC connection to attach to the database that the ExaLoader needs for running
  * the {@code IMPORT}.
  * </p>
  * <p>
- * This tests takes the following specialties of a local connection into account:
+ * These tests take the following specialties of a local connection into account:
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
@@ -25,7 +25,7 @@ import com.exasol.dbbuilder.dialects.Table;
  */
 class ExasolSqlDialectJdbcConnectionIT extends AbstractExasolSqlDialectIT {
     @Override
-    protected Map<String, String> getConnectionSepcificVirtualSchemaProperties() {
+    protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
         return Collections.emptyMap();
     }
 
