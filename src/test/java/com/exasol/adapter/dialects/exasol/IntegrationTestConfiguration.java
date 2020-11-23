@@ -21,7 +21,6 @@ public final class IntegrationTestConfiguration {
      * @return reference to the {@code docker-db} image.
      */
     public static String getDockerImageReference() {
-        final String reference = System.getProperty("com.exasol.dockerdb.image");
-        return reference == null ? DEFAULT_DOCKER_DB_REFERENCE : reference;
+        return System.getProperty("com.exasol.dockerdb.image", DEFAULT_DOCKER_DB_REFERENCE);
     }
 }

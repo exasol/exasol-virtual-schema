@@ -70,7 +70,7 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
 
 ### Using IMPORT FROM JDBC
 
-Should the EXA connection not be an option for you, you can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower.
+Should the EXA connection not be an option for you, you can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower because it lacks the parallelization the `IMPORT FROM EXA` variant.
 
 #### Creating a Virtual Schema With JDBC Import
 

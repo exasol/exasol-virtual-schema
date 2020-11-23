@@ -466,6 +466,14 @@ abstract class AbstractExasolSqlDialectIT {
                         .matches());
     }
 
+    private void createVirtualSchemaWithTablesForJoinTest() {
+        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+                .insert("K1", "L1").insert(null, "L2").insert("K3", "L3");
+        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+                .insert("K1", "R1").insert("K2", "R2").insert(null, "R3");
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+    }
+
     @Test
     void testLeftJoinWithProjection() {
         createVirtualSchemaWithTablesForJoinTest();
@@ -475,14 +483,6 @@ abstract class AbstractExasolSqlDialectIT {
                         .row("K3", "L3", null) //
                         .row(null, "L2", null) //
                         .matches());
-    }
-
-    private void createVirtualSchemaWithTablesForJoinTest() {
-        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
-                .insert("K1", "L1").insert(null, "L2").insert("K3", "L3");
-        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
-                .insert("K1", "R1").insert("K2", "R2").insert(null, "R3");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
     }
 
     @Test
