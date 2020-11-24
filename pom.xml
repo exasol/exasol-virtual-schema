@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>exasol-virtual-schema</artifactId>
@@ -129,7 +127,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>1.1.0</version>
+            <version>2.0.0</version>
             <scope>test</scope>
         </dependency>
         <!-- Overrides Junit 4.12 which is used in test containers but contains a security issue: https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
@@ -139,9 +137,34 @@
             <version>4.13.1</version>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>com.exasol</groupId>
+            <artifactId>udf-debugging-java</artifactId>
+            <version>0.3.0</version>
+            <scope>test</scope>
+        </dependency>
+    <dependency><artifactId>org.jacoco.agent</artifactId><groupId>org.jacoco</groupId><version>0.8.5</version><classifier>runtime</classifier><scope>runtime</scope></dependency></dependencies>
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.exasol</groupId>
+                <artifactId>project-keeper-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <modules>
+                        <module>jar_artifact</module>
+                        <module>integration_tests</module>
+                        <module>udf_coverage</module>
+                    </modules>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -149,9 +172,7 @@
                 <configuration>
                     <!-- Set the highest log level for coverage testing, so that we have a chance to 
                         reach branches in the logging lambdas too. -->
-                    <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties
-                        ${argLine}
-                    </argLine>
+                    <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties ${argLine}</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -178,14 +199,35 @@
                             <goal>report</goal>
                         </goals>
                     </execution>
-                    <execution>
-                        <id>report-integration</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report-integration</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                    
+                <execution>
+            <id>merge-it-results</id>
+            <phase>verify</phase>
+            <goals>
+                <goal>merge</goal>
+            </goals>
+            <configuration>
+                <fileSets>
+                    <fileSet>
+                        <directory>${project.build.directory}/</directory>
+                        <includes>
+                            <include>jacoco-it.exec</include>
+                            <include>jacoco-udf.exec</include>
+                        </includes>
+                    </fileSet>
+                </fileSets>
+                <destFile>${project.build.directory}/aggregate-it.exec</destFile>
+            </configuration>
+        </execution><execution>
+            <id>report-integration-with-udf</id>
+            <phase>verify</phase>
+            <goals>
+                <goal>report-integration</goal>
+            </goals>
+            <configuration>
+                <dataFile>${project.build.directory}/aggregate-it.exec</dataFile>
+            </configuration>
+        </execution></executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -215,7 +257,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            <groupId>org.apache.maven.plugins</groupId></plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
@@ -223,10 +265,10 @@
                 <configuration>
                     <!-- Set the highest log level for coverage testing, so that we have a chance to 
                         reach branches in the logging lambdas too. -->
-                    <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties
-                        ${argLine}
-                    </argLine>
-                </configuration>
+                    <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties ${argLine}</argLine>
+                <systemPropertyVariables>
+            <test.coverage>true</test.coverage>
+        </systemPropertyVariables></configuration>
                 <executions>
                     <execution>
                         <goals>
@@ -263,7 +305,7 @@
                 </executions>
                 <configuration>
                     <charset>UTF-8</charset>
-                    <doclint />
+                    <doclint/>
                     <serialwarn>true</serialwarn>
                     <failOnError>true</failOnError>
                     <failOnWarnings>true</failOnWarnings>
@@ -303,8 +345,8 @@
                 </executions>
                 <configuration>
                     <excludeVulnerabilityIds>
-                        <!-- Ignores CVE-2020-15250, because we use Java 11 and Junit 4.13.1 which contains a fix:
-                        https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
+                        <!-- Ignores CVE-2020-15250, because we use Java 11 and Junit 4.13.1 which contains 
+                            a fix: https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
                         <exclude>7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1</exclude>
                     </excludeVulnerabilityIds>
                 </configuration>
@@ -322,7 +364,9 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
+            <configuration>
+        <rulesUri>file:///${project.basedir}/versionsMavenPluginRules.xml</rulesUri>
+    </configuration></plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
@@ -386,7 +430,25 @@
                     </execution>
                 </executions>
             </plugin>
-        </plugins>
+        <plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-jacoco</id>
+            <goals>
+                <goal>copy-dependencies</goal>
+            </goals>
+            <phase>compile</phase>
+            <configuration>
+                <includeArtifactIds>org.jacoco.agent</includeArtifactIds>
+                <includeClassifiers>runtime</includeClassifiers>
+                <outputDirectory>${project.build.directory}/jacoco-agent</outputDirectory>
+                <stripVersion>true</stripVersion>
+            </configuration>
+        </execution>
+    </executions>
+</plugin></plugins>
         <pluginManagement>
             <plugins>
                 <!-- This pseudo-plug-in configuration exists to help Eclipse's M2E to map plug-in executions. 
@@ -408,7 +470,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute />
+                                        <execute/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>

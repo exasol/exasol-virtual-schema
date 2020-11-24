@@ -22,4 +22,5 @@ The old variant is intentionally not supported anymore to tighten security.
 
 ## Plugin Updates
 
+* Added `project-keeper-maven-plugin:0.4.0`
 * Updated `jacoco-maven-plugin:0.8.5` to `0.8.6`

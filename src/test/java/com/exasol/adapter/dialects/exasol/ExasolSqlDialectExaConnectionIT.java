@@ -38,7 +38,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void beforeEach() {
         super.beforeEach();
         this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME,
-                "127.0.0.1:" + CONTAINER.getDefaultInternalDatabasePort(), this.user.getName(),
+                "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort(), this.user.getName(),
                 this.user.getPassword());
     }
 
@@ -67,8 +67,8 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
                         not(anyOf( //
                                 containsString(this.user.getName()), //
                                 containsString(this.user.getPassword()), //
-                                containsString(CONTAINER.getUsername()), //
-                                containsString(CONTAINER.getPassword()) //
+                                containsString(EXASOL.getUsername()), //
+                                containsString(EXASOL.getPassword()) //
                         )), //
                         anything(), //
                         anything() //
