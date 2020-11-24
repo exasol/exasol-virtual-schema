@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema</url>
@@ -75,7 +75,7 @@
             <artifactId>exasol-jdbc</artifactId>
             <version>7.0.3</version>
         </dependency>
-        <!--Unit test dependencies-->
+        <!--Unit test dependencies -->
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>virtual-schema-common-jdbc</artifactId>
@@ -101,7 +101,7 @@
             <version>3.6.0</version>
             <scope>test</scope>
         </dependency>
-        <!--Integration test dependencies-->
+        <!--Integration test dependencies -->
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
@@ -132,6 +132,13 @@
             <version>1.1.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- Overrides Junit 4.12 which is used in test containers but contains a security issue: https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -150,7 +157,7 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.5</version>
+                <version>0.8.6</version>
                 <executions>
                     <execution>
                         <id>prepare-agent</id>
@@ -196,7 +203,7 @@
                     <descriptors>
                         <descriptor>src/assembly/all-dependencies.xml</descriptor>
                     </descriptors>
-                    <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${version}</finalName>
+                    <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${project.version}</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
@@ -256,7 +263,7 @@
                 </executions>
                 <configuration>
                     <charset>UTF-8</charset>
-                    <doclint/>
+                    <doclint />
                     <serialwarn>true</serialwarn>
                     <failOnError>true</failOnError>
                     <failOnWarnings>true</failOnWarnings>
@@ -296,7 +303,7 @@
                 </executions>
                 <configuration>
                     <excludeVulnerabilityIds>
-                        <!-- Ignores CVE-2020-15250, because we use Java 11 and junit 4.13.1 which contains a fix:
+                        <!-- Ignores CVE-2020-15250, because we use Java 11 and Junit 4.13.1 which contains a fix:
                         https://ossindex.sonatype.org/vuln/7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1 -->
                         <exclude>7ea56ad4-8a8b-4e51-8ed9-5aad83d8efb1</exclude>
                     </excludeVulnerabilityIds>
@@ -401,7 +408,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <execute/>
+                                        <execute />
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>

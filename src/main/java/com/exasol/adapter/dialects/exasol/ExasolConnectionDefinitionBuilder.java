@@ -1,9 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
-import static com.exasol.adapter.AdapterProperties.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
-
-import java.util.logging.Logger;
+import static com.exasol.adapter.AdapterProperties.CONNECTION_NAME_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 
 import com.exasol.ExaConnectionInformation;
 import com.exasol.adapter.AdapterProperties;
@@ -17,39 +15,28 @@ import com.exasol.adapter.jdbc.BaseConnectionDefinitionBuilder;
  * a separate property.
  */
 public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionBuilder {
-    private static final Logger LOGGER = Logger.getLogger(ExasolConnectionDefinitionBuilder.class.getName());
-
     @Override
     public String buildConnectionDefinition(final AdapterProperties properties,
             final ExaConnectionInformation exaConnectionInformation) {
         if (properties.containsKey(ExasolProperties.EXASOL_IMPORT_PROPERTY)) {
-            return buildImportFromExaConnectionDefinition(properties, exaConnectionInformation);
+            return buildImportFromExaConnectionDefinition(properties);
         } else {
             return super.buildConnectionDefinition(properties, exaConnectionInformation);
         }
     }
 
-    private String buildImportFromExaConnectionDefinition(final AdapterProperties properties,
-            final ExaConnectionInformation exaConnectionInformation) {
-        if (properties.containsKey(EXASOL_CONNECTION_STRING_PROPERTY) && properties.hasConnectionName()) {
-            return mixNamedConnectionWithExasolConnectionString(properties, exaConnectionInformation);
+    private String buildImportFromExaConnectionDefinition(final AdapterProperties properties) {
+        if (properties.containsKey(EXASOL_CONNECTION_PROPERTY) && properties.hasConnectionName()) {
+            return "AT \"" + getExasolConnectionName(properties) + "\"";
         } else {
             throw new IllegalArgumentException(
-                    "Incomplete remote connection information. Please specify an Exasol connection string with property \""
-                            + EXASOL_CONNECTION_STRING_PROPERTY + "\" and a named connection with \""
-                            + CONNECTION_NAME_PROPERTY + "\".");
+                    "Incomplete remote connection information. Please specify a named EXA connection \""
+                            + EXASOL_CONNECTION_PROPERTY + "\" for the ExaLoader and a named JDBC connection with \""
+                            + CONNECTION_NAME_PROPERTY + "\" for the Virtual Schema adapter.");
         }
     }
 
-    private String mixNamedConnectionWithExasolConnectionString(final AdapterProperties properties,
-            final ExaConnectionInformation exaConnectionInformation) {
-        final String exasolConnectionString = getExasolConnectionString(properties);
-        LOGGER.finer(() -> "Mixing Exasol connection string \"" + exasolConnectionString + "\" into named connection.");
-        return getConnectionDefinition(exasolConnectionString, exaConnectionInformation.getUser(),
-                exaConnectionInformation.getPassword());
-    }
-
-    private String getExasolConnectionString(final AdapterProperties properties) {
-        return properties.get(EXASOL_CONNECTION_STRING_PROPERTY);
+    private String getExasolConnectionName(final AdapterProperties properties) {
+        return properties.get(EXASOL_CONNECTION_PROPERTY);
     }
 }

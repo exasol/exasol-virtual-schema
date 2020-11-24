@@ -1,5 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -15,12 +17,12 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.jdbc.*;
 
 class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinitionBuilderTestBase {
-    private static final String EXASOL_CONNECTION_STRING = "thehost:2345";
+    private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
 
     @BeforeEach
     void beforeEach() {
-        this.exaConnectionInformation = mock(ExaConnectionInformation.class);
         this.rawProperties = new HashMap<>();
+        this.exaConnectionInformation = mock(ExaConnectionInformation.class);
     }
 
     @Override
@@ -33,19 +35,19 @@ class ExasolConnectionDefinitionBuilderTest extends AbstractConnectionDefinition
         mockExasolNamedConnection();
         setImportFromExaProperties();
         setConnectionNameProperty();
-        assertThat(calculateConnectionDefinition(), equalTo("AT '" + EXASOL_CONNECTION_STRING + "' USER '"
-                + CONNECTION_USER + "' IDENTIFIED BY '" + CONNECTION_PW + "'"));
+        assertThat(calculateConnectionDefinition(), equalTo("AT \"" + EXA_CONNECTION_NAME + "\""));
     }
 
     private void setImportFromExaProperties() {
-        this.rawProperties.put(ExasolProperties.EXASOL_IMPORT_PROPERTY, "true");
-        this.rawProperties.put(ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY, EXASOL_CONNECTION_STRING);
+        this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "true");
+        this.rawProperties.put(EXASOL_CONNECTION_PROPERTY, EXA_CONNECTION_NAME);
     }
 
     @Test
     void testBuildConnectionDefinitionWithoutConnectionInfomationThrowsException() {
         setImportFromExaProperties();
-        assertThrows(IllegalArgumentException.class, () -> new BaseConnectionDefinitionBuilder()
-                .buildConnectionDefinition(new AdapterProperties(this.rawProperties), null));
+        final AdapterProperties properties = new AdapterProperties(this.rawProperties);
+        final BaseConnectionDefinitionBuilder builder = new BaseConnectionDefinitionBuilder();
+        assertThrows(IllegalArgumentException.class, () -> builder.buildConnectionDefinition(properties, null));
     }
 }

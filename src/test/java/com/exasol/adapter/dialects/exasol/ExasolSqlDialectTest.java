@@ -2,7 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_STRING_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.reflect.ReflectionUtils.getMethodReturnViaReflection;
@@ -52,13 +52,13 @@ class ExasolSqlDialectTest {
         this.rawProperties = new HashMap<>();
     }
 
-    @CsvSource({"A1, \"A1\"", //
+    @CsvSource({ "A1, \"A1\"", //
             "A_1, \"A_1\"", //
             "A,\"A\"", //
             "A_a_1, \"A_a_1\"", //
             "1, \"1\"", //
             "1a, \"1a\", \"1a\"", //
-            "'a\"b', \"a\"\"b\""})
+            "'a\"b', \"a\"\"b\"" })
     @ParameterizedTest
     void testApplyQuote(final String identifier, final String expectedQuotingResult) {
         assertThat(this.dialect.applyQuote(identifier), equalTo(expectedQuotingResult));
@@ -118,24 +118,20 @@ class ExasolSqlDialectTest {
                 List.of(true), List.of(true));
         final SqlLimit limit = new SqlLimit(10);
         return SqlStatementSelect.builder().selectList(selectList).fromClause(fromClause).whereClause(whereClause)
-                                 .groupBy(groupBy).having(having).orderBy(orderBy).limit(limit).build();
+                .groupBy(groupBy).having(having).orderBy(orderBy).limit(limit).build();
     }
 
     private TableMetadata getClicksTableMetadata() {
         final List<ColumnMetadata> columns = new ArrayList<>();
         final ColumnAdapterNotesJsonConverter converter = ColumnAdapterNotesJsonConverter.getInstance();
         columns.add(ColumnMetadata.builder().name("USER_ID")
-                                  .adapterNotes(
-                                          converter.convertToJson(ColumnAdapterNotes.builder().jdbcDataType(3).build()))
-                                  .type(DataType.createDecimal(18, 0)).nullable(true).identity(false).defaultValue("")
-                                  .comment("")
-                                  .build());
+                .adapterNotes(converter.convertToJson(ColumnAdapterNotes.builder().jdbcDataType(3).build()))
+                .type(DataType.createDecimal(18, 0)).nullable(true).identity(false).defaultValue("").comment("")
+                .build());
         columns.add(ColumnMetadata.builder().name("URL")
-                                  .adapterNotes(converter
-                                          .convertToJson(ColumnAdapterNotes.builder().jdbcDataType(12).build()))
-                                  .type(DataType.createVarChar(10000, DataType.ExaCharset.UTF8)).nullable(true)
-                                  .identity(false)
-                                  .defaultValue("").comment("").build());
+                .adapterNotes(converter.convertToJson(ColumnAdapterNotes.builder().jdbcDataType(12).build()))
+                .type(DataType.createVarChar(10000, DataType.ExaCharset.UTF8)).nullable(true).identity(false)
+                .defaultValue("").comment("").build());
         return new TableMetadata("CLICKS", "", columns, "");
     }
 
@@ -173,17 +169,17 @@ class ExasolSqlDialectTest {
     }
 
     @Test
-    void checkValidBoolOptions1() throws PropertyValidationException {
+    void checkValidBoolOptionsWithExaConnection() throws PropertyValidationException {
         setMandatoryProperties();
         this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "TrUe");
-        this.rawProperties.put(EXASOL_CONNECTION_STRING_PROPERTY, "localhost:5555");
+        this.rawProperties.put(EXASOL_CONNECTION_PROPERTY, "MY_EXA_CONNECTION");
         final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
-    void checkValidBoolOptions2() throws PropertyValidationException {
+    void checkValidBoolOptionsWithExaConnectionExplicitlyDisabled() throws PropertyValidationException {
         setMandatoryProperties();
         this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "FalSe");
         final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
@@ -194,13 +190,13 @@ class ExasolSqlDialectTest {
     @Test
     void testInconsistentExasolProperties() {
         setMandatoryProperties();
-        this.rawProperties.put(EXASOL_CONNECTION_STRING_PROPERTY, "localhost:5555");
+        this.rawProperties.put(EXASOL_CONNECTION_PROPERTY, "localhost:5555");
         final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
-                containsString("You defined the property EXA_CONNECTION_STRING without setting IMPORT_FROM_EXA "));
+                containsString("You defined the property EXA_CONNECTION without setting IMPORT_FROM_EXA "));
     }
 
     @Test
@@ -212,7 +208,7 @@ class ExasolSqlDialectTest {
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
-                containsString("You defined the property IMPORT_FROM_EXA, please also define EXA_CONNECTION_STRING"));
+                containsString("You defined the property IMPORT_FROM_EXA, please also define EXA_CONNECTION"));
     }
 
     @Test

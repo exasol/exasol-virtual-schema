@@ -26,6 +26,12 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 * Access Exasol database using Virtual Schema.
 
+## Deprecation Warning
+
+Starting with version 4.0.0 of the Exasol SQL dialect, the new `EXA_CONNECTION` property replaces the `EXA_CONNECTION_STRING` property, for improved security.
+
+It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide][user-guide].
+
 ## Table of Contents
 
 ### Information for Users
@@ -91,7 +97,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 [sonatype-oss-index-maven-plugin]: https://sonatype.github.io/ossindex-maven/maven-plugin/
 [test-db-builder]: https://github.com/exasol/test-db-builder/
 [versions-maven-plugin]: https://www.mojohaus.org/versions-maven-plugin/
-[virtual-schema-common-jdbc]:https://github.com/exasol/virtual-schema-common-jdbc
+[virtual-schema-common-jdbc]: https://github.com/exasol/virtual-schema-common-jdbc
 
 [user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
 [virtual-schemas]: https://github.com/exasol/virtual-schemas
