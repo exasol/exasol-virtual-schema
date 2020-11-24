@@ -15,7 +15,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.hamcrest.Matcher;
@@ -357,84 +358,55 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testCastVarcharToChar() {
-        assertCast("VARCHAR(20)", "CHAR(40)", "Hello.", pad("Hello.", 40));
+        // assertCast("VARCHAR(20)", "CHAR(40)", "Hello.", pad("Hello.", 40));
+        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").verify(pad("Hello.", 40));
     }
 
-    protected void assertCast(final String sourceType, final String castToType, final Object sourceValue,
-            final Object expectedValue) {
-        assertCast(sourceType, castToType, deriveResultTypeFromCastType(castToType), sourceValue, expectedValue);
-    }
-
-    protected String deriveResultTypeFromCastType(final String castToType) {
-        return castToType.replaceAll("\\(.*?\\)", "").replaceAll(" +", " ").trim();
-    }
-
-    protected void assertCast(final String sourceType, final String castToType, final String resultType,
-            final Object sourceValue, final Object expectedValue) {
-        assertCast(sourceType, castToType, resultType, List.of(sourceValue), List.of(expectedValue));
-    }
-
-    protected void assertCast(final String sourceType, final String castToType, final List<Object> sourceValues,
-            final List<Object> expectedValues) {
-        assertCast(sourceType, castToType, deriveResultTypeFromCastType(castToType), sourceValues, expectedValues);
-    }
-
-    protected void assertCast(final String sourceType, final String castToType, final String resultType,
-            final List<Object> sourceValues, final List<Object> expectedValues) {
-        final Table table = createSingleColumnTable(sourceType);
-        for (final Object sourceValue : sourceValues) {
-            table.insert(sourceValue);
-        }
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final Builder expected = table(resultType);
-        for (final Object expectedValue : expectedValues) {
-            expected.row(expectedValue);
-        }
-        assertVsQuery("SELECT CAST(" + getColumnName(table, 0) + " AS " + castToType + ") FROM "
-                + getVirtualTableName(this.virtualSchema, table), expected.matches());
+    protected CastAssertionBuilder castFrom(final String from) {
+        return new CastAssertionBuilder(this, from);
     }
 
     @Test
     void testCastBooleanToVarchar() {
-        assertCast("BOOLEAN", "VARCHAR(5)", List.of(true, false), List.of("TRUE", "FALSE"));
+        castFrom("BOOLEAN").to("VARCHAR(5)").input(true, false).verify("TRUE", "FALSE");
     }
 
     @Test
     void testCastVarcharToDate() {
-        assertCast("VARCHAR(30)", "DATE", "2020-10-17", java.sql.Date.valueOf("2020-10-17"));
+        castFrom("VARCHAR(30)").to("DATE").input("2020-10-17").verify(java.sql.Date.valueOf("2020-10-17"));
     }
 
     @Test
     void testCastVarcharasDecimal() {
-        assertCast("VARCHAR(6)", "DECIMAL(5,1)", "1234.5", BigDecimal.valueOf(1234.5));
+        castFrom("VARCHAR(6)").to("DECIMAL(5,1)").input("1234.5").verify(BigDecimal.valueOf(1234.5));
     }
 
     @Test
     void testCastVarcharAsDouble() {
-        assertCast("VARCHAR(6)", "DOUBLE PRECISION", "1234.5", 1234.5);
+        castFrom("VARCHAR(6)").to("DOUBLE PRECISION").input("1234.5").verify(1234.5);
     }
 
     @Test
     void testCastVarcharAsGeometry() {
-        assertCast("VARCHAR(20)", "GEOMETRY(5)", "VARCHAR", "POINT(2 5)", "POINT (2 5)");
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
     }
 
     @Test
     void testCastVarcharAsTimestamp() {
         final String timestampAsString = "2016-06-01 13:17:02.081";
-        assertCast("VARCHAR(30)", "TIMESTAMP", timestampAsString, Timestamp.valueOf(timestampAsString));
+        castFrom("VARCHAR(30)").to("TIMESTAMP").input(timestampAsString).verify(Timestamp.valueOf(timestampAsString));
     }
 
     @Test
     void testCastVarcharAsTimestampWithLocalTimezone() {
         final String timestamp = "2017-11-03 14:18:02.081";
-        assertCast("VARCHAR(30)", "TIMESTAMP WITH LOCAL TIME ZONE", "TIMESTAMP", timestamp,
-                Timestamp.valueOf(timestamp));
+        castFrom("VARCHAR(30)").to("TIMESTAMP WITH LOCAL TIME ZONE").input(timestamp).accept("TIMESTAMP")
+                .verify(Timestamp.valueOf(timestamp));
     }
 
     @Test
     void castIntegerAsVarchar() {
-        assertCast("INTEGER", "VARCHAR(5)", 12345, "12345");
+        castFrom("INTEGER").to("VARCHAR(5)").input(12345).verify("12345");
     }
 
     @Test
@@ -554,5 +526,71 @@ abstract class AbstractExasolSqlDialectIT {
         assertThat(exception.getMessage(),
                 containsString("Attention! Using literals and constant expressions with datatype "
                         + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
+    }
+
+    /**
+     * The CastAssertionBuilder is a convenience class that helps formulating cast assertions in a more readable way.
+     */
+    static class CastAssertionBuilder {
+        private final String fromType;
+        private String castToType;
+        private String acceptType;
+        private Object[] inputValues;
+        private final AbstractExasolSqlDialectIT parent;
+
+        public CastAssertionBuilder(final AbstractExasolSqlDialectIT parent, final String from) {
+            this.parent = parent;
+            this.fromType = from;
+        }
+
+        public CastAssertionBuilder to(final String castToType) {
+            this.castToType = castToType;
+            return this;
+        }
+
+        public CastAssertionBuilder accept(final String acceptedType) {
+            this.acceptType = acceptedType;
+            return this;
+        }
+
+        public CastAssertionBuilder input(final Object... input) {
+            this.inputValues = input;
+            return this;
+        }
+
+        public void verify(final Object... expectedValues) {
+            final Table table = prepareInputTable();
+            this.parent.virtualSchema = this.parent.createVirtualSchema(this.parent.sourceSchema);
+            final Builder expectedTable = prepareExpectation(expectedValues);
+            this.parent.assertVsQuery(createCastQuery(table), expectedTable.matches());
+        }
+
+        private Table prepareInputTable() {
+            final Table table = this.parent.createSingleColumnTable(this.fromType);
+            for (final Object sourceValue : this.inputValues) {
+                table.insert(sourceValue);
+            }
+            return table;
+        }
+
+        private Builder prepareExpectation(final Object... expectedValues) {
+            this.acceptType = this.acceptType == null //
+                    ? deriveResultTypeFromCastType(this.castToType) //
+                    : this.acceptType;
+            final Builder expectedTable = table(this.acceptType);
+            for (final Object expectedValue : expectedValues) {
+                expectedTable.row(expectedValue);
+            }
+            return expectedTable;
+        }
+
+        private String deriveResultTypeFromCastType(final String castToType) {
+            return castToType.replaceAll("\\(.*?\\)", "").replaceAll(" +", " ").trim();
+        }
+
+        private String createCastQuery(final Table table) {
+            return "SELECT CAST(" + this.parent.getColumnName(table, 0) + " AS " + this.castToType + ") FROM "
+                    + this.parent.getVirtualTableName(this.parent.virtualSchema, table);
+        }
     }
 }

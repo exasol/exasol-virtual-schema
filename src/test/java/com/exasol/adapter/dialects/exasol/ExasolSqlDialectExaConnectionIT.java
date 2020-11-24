@@ -96,6 +96,6 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     @Override
     @Test
     void testCastVarcharToChar() {
-        assertCast("VARCHAR(20)", "CHAR(40)", "VARCHAR", "Hello.", pad("Hello.", 40));
+        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
     }
 }

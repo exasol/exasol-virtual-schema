@@ -47,12 +47,13 @@ abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExa
 
     @Test
     void testCastVarcharAsIntervalDayToSecond() {
-        assertCast("VARCHAR(30)", "INTERVAL DAY (5) TO SECOND (2)", "VARCHAR", "+00003 12:50:10.12",
-                "+00003 12:50:10.12");
+        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12").accept("VARCHAR")
+                .verify("+00003 12:50:10.12");
     }
 
     @Test
     void testCastVarcharAsIntervalYearToMonth() {
-        assertCast("VARCHAR(30)", "INTERVAL YEAR (5) TO MONTH", "VARCHAR", "+00004-06", "+00004-06");
+        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("VARCHAR")
+                .verify("+00004-06");
     }
 }
