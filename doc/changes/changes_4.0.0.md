@@ -19,3 +19,7 @@ The old variant is intentionally not supported anymore to tighten security.
 ## Refactoring
 
 * #24: Refactored integration tests.
+
+## Plugin Updates
+
+* Updated `jacoco-maven-plugin:0.8.5` to `0.8.6`
