@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +35,14 @@ import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
+import com.exasol.udfdebugging.UdfTestSetup;
+import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
     @Container
-    protected static final ExasolContainer<? extends ExasolContainer<?>> CONTAINER = new ExasolContainer<>(
+    protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
     private static final String EXASOL_DIALECT = "EXASOL";
     private static ExasolSchema adapterSchema;
@@ -54,18 +57,32 @@ abstract class AbstractExasolSqlDialectIT {
     @BeforeAll
     static void beforeAll() throws BucketAccessException, InterruptedException, TimeoutException, IOException,
             NoDriverFoundException, SQLException {
-        connection = CONTAINER.createConnection("");
-        objectFactory = new ExasolObjectFactory(connection);
+        connection = EXASOL.createConnection("");
+        objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
+    }
+    
+    private static ExasolObjectFactory setUpObjectFactory() throws UnknownHostException
+    {
+        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol() , EXASOL.getDefaultBucket());
+        return new ExasolObjectFactory(connection, 
+            ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
+    }
+    
+    private static String getTestHostIpFromInsideExasol() {
+        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+        if (networks.size() == 0) {
+            return null;
+        }
+        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
             throws InterruptedException, BucketAccessException, TimeoutException {
-        final Bucket bucket = CONTAINER.getDefaultBucket();
+        final Bucket bucket = EXASOL.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
-        return adapterSchema.createAdapterScriptBuilder() //
-                .name("EXASOL_ADAPTER") //
+        return adapterSchema.createAdapterScriptBuilder("EXASOL_ADAPTER") //
                 .language(Language.JAVA) //
                 .bucketFsContent("com.exasol.adapter.RequestDispatcher",
                         "/buckets/bfsdefault/default/" + VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION)
@@ -89,7 +106,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
-        final String jdbcUrl = "jdbc:exa:localhost:" + CONTAINER.getDefaultInternalDatabasePort();
+        final String jdbcUrl = "jdbc:exa:localhost:" + EXASOL.getDefaultInternalDatabasePort();
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 

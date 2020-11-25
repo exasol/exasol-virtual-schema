@@ -32,12 +32,8 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
         super(connectionFactory, properties, Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY,
                 EXASOL_CONNECTION_PROPERTY, IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY));
-        this.omitParenthesesMap.add(SYSDATE);
-        this.omitParenthesesMap.add(SYSTIMESTAMP);
-        this.omitParenthesesMap.add(CURRENT_SCHEMA);
-        this.omitParenthesesMap.add(CURRENT_SESSION);
-        this.omitParenthesesMap.add(CURRENT_STATEMENT);
-        this.omitParenthesesMap.add(CURRENT_USER);
+        this.omitParenthesesMap.addAll(
+                Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT, CURRENT_USER));
     }
 
     @Override
