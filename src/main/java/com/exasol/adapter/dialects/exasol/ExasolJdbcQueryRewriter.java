@@ -1,13 +1,13 @@
 package com.exasol.adapter.dialects.exasol;
 
-import com.exasol.adapter.dialects.BaseQueryRewriter;
+import com.exasol.adapter.dialects.ImportIntoQueryRewriter;
 import com.exasol.adapter.dialects.SqlDialect;
 import com.exasol.adapter.jdbc.*;
 
 /**
  * Exasol-specific query rewriter for regular JDBC connections to the remote Exasol data source.
  */
-public class ExasolJdbcQueryRewriter extends BaseQueryRewriter {
+public class ExasolJdbcQueryRewriter extends ImportIntoQueryRewriter{
     /**
      * Create a new instance of the {@link ExasolJdbcQueryRewriter}.
      *

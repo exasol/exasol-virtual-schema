@@ -1,28 +1,25 @@
 package com.exasol.adapter.dialects.exasol;
 
-import com.exasol.ExaConnectionInformation;
-import com.exasol.ExaMetadata;
-import com.exasol.adapter.AdapterException;
-import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.dialects.*;
-import com.exasol.adapter.jdbc.*;
-import com.exasol.adapter.sql.SqlNodeVisitor;
-import com.exasol.adapter.sql.SqlStatement;
+import java.sql.SQLException;
+
+import com.exasol.adapter.dialects.AbstractQueryRewriter;
+import com.exasol.adapter.dialects.SqlDialect;
+import com.exasol.adapter.jdbc.ConnectionDefinitionBuilder;
+import com.exasol.adapter.jdbc.RemoteMetadataReader;
 
 /**
  * Exasol-specific query rewriter for {@code IMPORT FROM EXA}.
  */
-public class ExasolFromExaQueryRewriter extends BaseQueryRewriter {
+public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
     /**
      * Create a new instance of the {@link ExasolFromExaQueryRewriter}.
      *
      * @param dialect              dialect
      * @param remoteMetadataReader remote metadata reader
-     * @param connectionFactory    factory for the JDBC connection to remote data source
      */
-    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
-            final ConnectionFactory connectionFactory) {
-        super(dialect, remoteMetadataReader, connectionFactory);
+    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader
+           ) {
+        super(dialect, remoteMetadataReader);
     }
 
     @Override
@@ -31,15 +28,8 @@ public class ExasolFromExaQueryRewriter extends BaseQueryRewriter {
     }
 
     @Override
-    public String rewrite(final SqlStatement statement, final ExaMetadata exaMetadata,
-            final AdapterProperties properties) throws AdapterException {
-        final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
-                properties.getSchemaName(), false);
-        final SqlNodeVisitor<String> sqlGeneratorVisitor = this.dialect.getSqlGenerationVisitor(context);
-        final ExaConnectionInformation exaConnectionInformation = getConnectionInformation(exaMetadata, properties);
-        final String connectionDefinition = this.connectionDefinitionBuilder.buildConnectionDefinition(properties,
-                exaConnectionInformation);
+    protected String generateImportStatement(String connectionDefinition, String pushdownQuery) throws SQLException {
         return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '"
-                + statement.accept(sqlGeneratorVisitor).replace("'", "''") + "'";
+                + pushdownQuery.replace("'", "''") + "'";
     }
 }
