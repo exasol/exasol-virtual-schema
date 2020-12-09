@@ -62,7 +62,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
                 CONNECTION_NAME_PROPERTY, "exasol_connection", //
                 EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
-        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null, null);
+        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null);
         assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
                 equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\"" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
@@ -70,7 +70,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
     @Test
     void testConnectionDefinitionBuilderClass() {
         final SqlDialect dialect = new ExasolSqlDialect(null, AdapterProperties.emptyProperties());
-        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null, null);
+        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null);
         assertThat(getMethodReturnViaReflection(queryRewriter, "createConnectionDefinitionBuilder"),
                 instanceOf(ExasolConnectionDefinitionBuilder.class));
     }

@@ -84,7 +84,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
         if (this.properties.isLocalSource()) {
             return new ExasolLocalQueryRewriter(this);
         } else if (isImportFromExa(this.properties)) {
-            return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
+            return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader());
         } else {
             return new ExasolJdbcQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
         }
