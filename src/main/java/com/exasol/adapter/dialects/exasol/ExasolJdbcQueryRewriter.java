@@ -1,13 +1,17 @@
 package com.exasol.adapter.dialects.exasol;
 
-import com.exasol.adapter.dialects.ImportIntoQueryRewriter;
+import java.sql.SQLException;
+
 import com.exasol.adapter.dialects.SqlDialect;
+import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
 import com.exasol.adapter.jdbc.*;
 
 /**
  * Exasol-specific query rewriter for regular JDBC connections to the remote Exasol data source.
  */
-public class ExasolJdbcQueryRewriter extends ImportIntoQueryRewriter{
+public class ExasolJdbcQueryRewriter extends AbstractQueryRewriter {
+    private final ConnectionFactory connectionFactory;
+
     /**
      * Create a new instance of the {@link ExasolJdbcQueryRewriter}.
      *
@@ -17,11 +21,21 @@ public class ExasolJdbcQueryRewriter extends ImportIntoQueryRewriter{
      */
     public ExasolJdbcQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
-        super(dialect, remoteMetadataReader, connectionFactory);
+        super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
+        this.connectionFactory = connectionFactory;
     }
 
     @Override
-    protected ConnectionDefinitionBuilder createConnectionDefinitionBuilder() {
-        return new ExasolConnectionDefinitionBuilder();
+    protected String generateImportStatement(String connectionDefinition, String pushdownQuery) throws SQLException {
+        final String columnDescription = this.createImportColumnsDescription(pushdownQuery);
+        return "IMPORT INTO (" + columnDescription + ") FROM JDBC " + connectionDefinition + " STATEMENT '"
+                + pushdownQuery.replace("'", "''") + "'";
+    }
+
+    private String createImportColumnsDescription(final String query) throws SQLException {
+        final ColumnMetadataReader columnMetadataReader = this.remoteMetadataReader.getColumnMetadataReader();
+        final ResultSetMetadataReader resultSetMetadataReader = new ResultSetMetadataReader(
+                this.connectionFactory.getConnection(), columnMetadataReader);
+        return resultSetMetadataReader.describeColumns(query);
     }
 }

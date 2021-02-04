@@ -20,6 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -91,8 +92,8 @@ class ExasolSqlDialectTest {
                 + " WHERE 1 < \"USER_ID\"" + " GROUP BY \"USER_ID\"" + " HAVING 1 < COUNT(\"URL\")"
                 + " ORDER BY \"USER_ID\"" + " LIMIT 10";
         final SqlGenerationContext context = new SqlGenerationContext("", schemaName, false);
-        final SqlNodeVisitor<String> generator = this.dialect.getSqlGenerationVisitor(context);
-        final String actualSql = node.accept(generator);
+        final SqlGenerator generator = this.dialect.getSqlGenerator(context);
+        final String actualSql = generator.generateSqlFor(node);
         assertThat(SqlNormalizer.normalizeSql(actualSql), equalTo(SqlNormalizer.normalizeSql(expectedSql)));
     }
 
@@ -196,7 +197,7 @@ class ExasolSqlDialectTest {
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
-                containsString("You defined the property EXA_CONNECTION without setting IMPORT_FROM_EXA "));
+                containsString("You defined the property 'EXA_CONNECTION' without setting 'IMPORT_FROM_EXA' "));
     }
 
     @Test
@@ -208,7 +209,7 @@ class ExasolSqlDialectTest {
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
-                containsString("You defined the property IMPORT_FROM_EXA, please also define EXA_CONNECTION"));
+                containsString("You defined the property 'IMPORT_FROM_EXA'. Please also define 'EXA_CONNECTION'"));
     }
 
     @Test
@@ -238,7 +239,7 @@ class ExasolSqlDialectTest {
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(), containsString(
-                "The value 'asdasd' for the property IS_LOCAL is invalid. It has to be either 'true' or 'false' (case "
+                "The value 'asdasd' for the property 'IS_LOCAL' is invalid. It has to be either 'true' or 'false' (case "
                         + "insensitive)"));
     }
 

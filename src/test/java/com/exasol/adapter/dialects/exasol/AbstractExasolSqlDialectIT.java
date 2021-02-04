@@ -14,12 +14,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.net.UnknownHostException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import com.exasol.matcher.TypeMatchMode;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -62,17 +62,16 @@ abstract class AbstractExasolSqlDialectIT {
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
     }
-    
-    private static ExasolObjectFactory setUpObjectFactory() throws UnknownHostException
-    {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol() , EXASOL.getDefaultBucket());
-        return new ExasolObjectFactory(connection, 
-            ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
+
+    private static ExasolObjectFactory setUpObjectFactory() {
+        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(), EXASOL.getDefaultBucket());
+        return new ExasolObjectFactory(connection,
+                ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
     }
-    
+
     private static String getTestHostIpFromInsideExasol() {
         final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
-        if (networks.size() == 0) {
+        if (networks.isEmpty()) {
             return null;
         }
         return networks.values().iterator().next().getGateway();
@@ -226,7 +225,8 @@ abstract class AbstractExasolSqlDialectIT {
                 .row(0.0) //
                 .row(1.2) //
                 .row(9999.9) //
-                .matchesFuzzily()); // required because the JDBC driver turns DECIMAL into BigInteger
+                .matches(TypeMatchMode.NO_JAVA_TYPE_CHECK)); // required because the JDBC driver turns DECIMAL into
+                                                             // BigInteger
     }
 
     @Test
@@ -514,7 +514,7 @@ abstract class AbstractExasolSqlDialectIT {
                 + "SCHEMA_NAME = '" + this.sourceSchema.getFullyQualifiedName() + "' ";
         final SQLException exception = assertThrows(SQLException.class, () -> query(sql));
         assertThat(exception.getMessage(),
-                containsString("Could not access the connection information of connection \"NONEXISTENT_CONNECTION\""));
+                containsString("Could not access the connection information of connection 'NONEXISTENT_CONNECTION'"));
     }
 
     @Test
@@ -535,7 +535,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testCreateVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() throws SQLException {
+    void testCreateVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         final SQLException exception = assertThrows(SQLException.class, () -> query(
@@ -543,6 +543,80 @@ abstract class AbstractExasolSqlDialectIT {
         assertThat(exception.getMessage(),
                 containsString("Attention! Using literals and constant expressions with datatype "
                         + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsList() throws SQLException {
+        final Table table = this.sourceSchema.createTable("TEST_TABLE", "BOOL_COL", "BOOLEAN", "VARCHAR_COL",
+                "VARCHAR(100)", "DECIMAL_COL", "DECIMAL(18,0)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual(
+                "SELECT * FROM " + getVirtualTableName(this.virtualSchema, table));
+        assertThat(explainVirtual, containsString("SELECT \"TEST_TABLE\".\"BOOL_COL\", \"TEST_TABLE\".\"VARCHAR_COL\", "
+                + "\"TEST_TABLE\".\"DECIMAL_COL\" FROM"));
+    }
+
+    private String getExplainVirtual(String query) throws SQLException {
+        final ResultSet resultSet = query("EXPLAIN VIRTUAL " + query);
+        resultSet.next();
+        return resultSet.getString(2);
+    }
+
+    private void createVirtualSchemaWithoutSelectListProjectionCapability() {
+        final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
+        properties.put("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION");
+        this.virtualSchema = objectFactory
+                .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
+                .sourceSchema(this.sourceSchema) //
+                .adapterScript(adapterScript) //
+                .dialectName(EXASOL_DIALECT) //
+                .properties(properties) //
+                .connectionDefinition(this.jdbcConnection) //
+                .build();
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListJoin() throws SQLException {
+        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TR ON TL.C1 = TR.C1");
+        assertThat(explainVirtual,
+                containsString("SELECT \"TL\".\"C1\", \"TL\".\"C2\", \"TR\".\"C1\", \"TR\".\"C2\" FROM"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListJoinReversed() throws SQLException {
+        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TR INNER JOIN TL ON TL.C1 = TR.C1");
+        assertThat(explainVirtual,
+                containsString("SELECT \"TR\".\"C1\", \"TR\".\"C2\", \"TL\".\"C1\", \"TL\".\"C2\" FROM"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListNestedJoin() throws SQLException {
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TM", "M1", "VARCHAR(2)", "M2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual(
+                "SELECT * FROM TM INNER JOIN (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1");
+        assertThat(explainVirtual, containsString(
+                "SELECT \"TM\".\"M1\", \"TM\".\"M2\", \"TR\".\"R1\", \"TR\".\"R2\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListNestedJoinReversed() throws SQLException {
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TM", "M1", "VARCHAR(2)", "M2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual(
+                "SELECT * FROM (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested INNER JOIN TM ON TM.M1 = nested.R1");
+        assertThat(explainVirtual, containsString(
+                "SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TL\".\"L1\", \"TL\".\"L2\", \"TM\".\"M1\", \"TM\".\"M2\" FROM"));
     }
 
     /**

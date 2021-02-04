@@ -4,10 +4,8 @@ import static com.exasol.adapter.AdapterProperties.CONNECTION_NAME_PROPERTY;
 import static com.exasol.adapter.AdapterProperties.IS_LOCAL_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
-import static com.exasol.reflect.ReflectionUtils.getMethodReturnViaReflection;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
@@ -23,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.*;
+import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriterTestBase;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
 
@@ -65,13 +64,5 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
         final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null);
         assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
                 equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\"" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
-    }
-
-    @Test
-    void testConnectionDefinitionBuilderClass() {
-        final SqlDialect dialect = new ExasolSqlDialect(null, AdapterProperties.emptyProperties());
-        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null);
-        assertThat(getMethodReturnViaReflection(queryRewriter, "createConnectionDefinitionBuilder"),
-                instanceOf(ExasolConnectionDefinitionBuilder.class));
     }
 }

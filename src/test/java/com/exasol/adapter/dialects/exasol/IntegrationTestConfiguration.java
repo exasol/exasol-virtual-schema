@@ -4,7 +4,7 @@ import java.nio.file.Path;
 
 public final class IntegrationTestConfiguration {
     private static final String DEFAULT_DOCKER_DB_REFERENCE = "7.0.2";
-    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-8.0.0-exasol-4.0.0.jar";
+    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-9.0.0-exasol-4.0.1.jar";
     public static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
 
     private IntegrationTestConfiguration() {

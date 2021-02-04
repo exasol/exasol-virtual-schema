@@ -12,6 +12,7 @@ import java.util.Set;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.capabilities.*;
 import com.exasol.adapter.dialects.*;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.sql.SqlNodeVisitor;
 
@@ -115,7 +116,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
-    public boolean requiresCatalogQualifiedTableNames(final SqlGenerationContext context) {
+    public boolean requiresCatalogQualifiedTableNames(final SqlGenerationContext generator) {
         return false;
     }
 
@@ -143,7 +144,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
-    public SqlNodeVisitor<String> getSqlGenerationVisitor(final SqlGenerationContext context) {
+    public SqlGenerator getSqlGenerator(final SqlGenerationContext context) {
         return new ExasolSqlGenerationVisitor(this, context);
     }
 
