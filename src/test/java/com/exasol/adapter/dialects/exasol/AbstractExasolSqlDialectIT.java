@@ -15,15 +15,14 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
-import com.exasol.matcher.TypeMatchMode;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,6 +34,7 @@ import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
+import com.exasol.matcher.TypeMatchMode;
 import com.exasol.udfdebugging.UdfTestSetup;
 import com.github.dockerjava.api.model.ContainerNetwork;
 
@@ -545,13 +545,14 @@ abstract class AbstractExasolSqlDialectIT {
                         + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
     }
 
-    @Test
-    void testSelectStarConvertedToColumnsList() throws SQLException {
+    @ParameterizedTest
+    @ValueSource(strings = { "SELECT *", "SELECT BOOL_COL, VARCHAR_COL, DECIMAL_COL" })
+    void testSelectAllColumnsWithExplicitSelectList(String select) throws SQLException {
         final Table table = this.sourceSchema.createTable("TEST_TABLE", "BOOL_COL", "BOOLEAN", "VARCHAR_COL",
                 "VARCHAR(100)", "DECIMAL_COL", "DECIMAL(18,0)");
         createVirtualSchemaWithoutSelectListProjectionCapability();
         final String explainVirtual = getExplainVirtual(
-                "SELECT * FROM " + getVirtualTableName(this.virtualSchema, table));
+                select + " FROM " + getVirtualTableName(this.virtualSchema, table));
         assertThat(explainVirtual, containsString("SELECT \"TEST_TABLE\".\"BOOL_COL\", \"TEST_TABLE\".\"VARCHAR_COL\", "
                 + "\"TEST_TABLE\".\"DECIMAL_COL\" FROM"));
     }
@@ -577,46 +578,67 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testSelectStarConvertedToColumnsListJoin() throws SQLException {
-        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TR ON TL.C1 = TR.C1");
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TR ON TL.L1 = TR.R1");
+        assertThat(explainVirtual, containsString(
+                "SELECT \"TL\".\"L1\", \"TL\".\"L2\", \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\" FROM"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListJoinSameTable() throws SQLException {
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TL AS TL_2 ON TL.L1 = TL_2.L1");
         assertThat(explainVirtual,
-                containsString("SELECT \"TL\".\"C1\", \"TL\".\"C2\", \"TR\".\"C1\", \"TR\".\"C2\" FROM"));
+                containsString("SELECT \"TL\".\"L1\", \"TL\".\"L2\", \"TL_2\".\"L1\", \"TL_2\".\"L2\" FROM"));
+    }
+
+    @Test
+    void testSelectStarConvertedToColumnsListJoinSameTableReversed() throws SQLException {
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        createVirtualSchemaWithoutSelectListProjectionCapability();
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TL AS TL_2 INNER JOIN TL ON TL_2.L1 = TL.L1");
+        assertThat(explainVirtual,
+                containsString("SELECT \"TL_2\".\"L1\", \"TL_2\".\"L2\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
     }
 
     @Test
     void testSelectStarConvertedToColumnsListJoinReversed() throws SQLException {
-        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TR INNER JOIN TL ON TL.C1 = TR.C1");
-        assertThat(explainVirtual,
-                containsString("SELECT \"TR\".\"C1\", \"TR\".\"C2\", \"TL\".\"C1\", \"TL\".\"C2\" FROM"));
+        final String explainVirtual = getExplainVirtual("SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1");
+        assertThat(explainVirtual, containsString(
+                "SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
     }
 
     @Test
     void testSelectStarConvertedToColumnsListNestedJoin() throws SQLException {
         this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TM", "M1", "VARCHAR(2)", "M2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
+        this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
+                List.of("VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)"));
         createVirtualSchemaWithoutSelectListProjectionCapability();
         final String explainVirtual = getExplainVirtual(
                 "SELECT * FROM TM INNER JOIN (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1");
-        assertThat(explainVirtual, containsString(
-                "SELECT \"TM\".\"M1\", \"TM\".\"M2\", \"TR\".\"R1\", \"TR\".\"R2\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
+        assertThat(explainVirtual, containsString("SELECT \"TM\".\"M1\", \"TM\".\"M2\", \"TM\".\"M3\", \"TM\".\"M4\", "
+                + "\"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
     }
 
     @Test
     void testSelectStarConvertedToColumnsListNestedJoinReversed() throws SQLException {
         this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TM", "M1", "VARCHAR(2)", "M2", "VARCHAR(2)");
+        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
+        this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
+                List.of("VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)"));
         createVirtualSchemaWithoutSelectListProjectionCapability();
         final String explainVirtual = getExplainVirtual(
                 "SELECT * FROM (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested INNER JOIN TM ON TM.M1 = nested.R1");
-        assertThat(explainVirtual, containsString(
-                "SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TL\".\"L1\", \"TL\".\"L2\", \"TM\".\"M1\", \"TM\".\"M2\" FROM"));
+        assertThat(explainVirtual,
+                containsString("SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\", "
+                        + "\"TM\".\"M1\", \"TM\".\"M2\", \"TM\".\"M3\", \"TM\".\"M4\" FROM"));
     }
 
     /**
