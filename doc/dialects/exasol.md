@@ -18,7 +18,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-9.0.0-exasol-4.0.1.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-9.0.1-exasol-5.0.0.jar;
 /
 ```
 
@@ -61,7 +61,6 @@ PASSWORD '<password>'
 ```sql
 CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
-    SQL_DIALECT     = 'EXASOL'
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>'
     IMPORT_FROM_EXA = 'true'
@@ -78,7 +77,6 @@ Should the EXA connection not be an option for you, you can alternatively use a 
 CREATE VIRTUAL SCHEMA <virtual schema name> 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     WITH
-    SQL_DIALECT     = 'EXASOL'
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
 ```
@@ -107,7 +105,6 @@ And that `SELECT` can be directly executed by the core database, whereas the `IM
 CREATE VIRTUAL SCHEMA <virtual schema name> 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     WITH
-    SQL_DIALECT     = 'EXASOL'
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
     IS_LOCAL        = 'true'

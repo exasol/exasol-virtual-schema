@@ -44,7 +44,6 @@ abstract class AbstractExasolSqlDialectIT {
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
-    private static final String EXASOL_DIALECT = "EXASOL";
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
@@ -164,7 +163,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     protected VirtualSchema createVirtualSchema(final Schema sourceSchema) {
-        return objectFactory.createVirtualSchemaBuilder("THE_VS").dialectName(EXASOL_DIALECT) //
+        return objectFactory.createVirtualSchemaBuilder("THE_VS") //
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
                 .connectionDefinition(this.jdbcConnection) //
@@ -509,7 +508,6 @@ abstract class AbstractExasolSqlDialectIT {
     void CreateVirtualSchemaWithNonexistentConnectionThrowsException() {
         final String sql = "CREATE VIRTUAL SCHEMA VIRTUAL_SCHEMA_NONEXISTENT_CONNECTION\n" //
                 + "USING " + adapterScript.getFullyQualifiedName() + " WITH\n" //
-                + "SQL_DIALECT = 'EXASOL'\n" //
                 + "CONNECTION_NAME = 'NONEXISTENT_CONNECTION'\n" //
                 + "SCHEMA_NAME = '" + this.sourceSchema.getFullyQualifiedName() + "' ";
         final SQLException exception = assertThrows(SQLException.class, () -> query(sql));
@@ -526,7 +524,6 @@ abstract class AbstractExasolSqlDialectIT {
         this.virtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
-                .dialectName(EXASOL_DIALECT) //
                 .properties(properties) //
                 .connectionDefinition(this.jdbcConnection) //
                 .build();
@@ -570,7 +567,6 @@ abstract class AbstractExasolSqlDialectIT {
                 .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
-                .dialectName(EXASOL_DIALECT) //
                 .properties(properties) //
                 .connectionDefinition(this.jdbcConnection) //
                 .build();

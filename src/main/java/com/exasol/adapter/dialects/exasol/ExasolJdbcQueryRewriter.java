@@ -1,17 +1,14 @@
 package com.exasol.adapter.dialects.exasol;
 
-import java.sql.SQLException;
-
 import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
-import com.exasol.adapter.jdbc.*;
+import com.exasol.adapter.dialects.rewriting.ImportIntoTemporaryTableQueryRewriter;
+import com.exasol.adapter.jdbc.ConnectionFactory;
+import com.exasol.adapter.jdbc.RemoteMetadataReader;
 
 /**
  * Exasol-specific query rewriter for regular JDBC connections to the remote Exasol data source.
  */
-public class ExasolJdbcQueryRewriter extends AbstractQueryRewriter {
-    private final ConnectionFactory connectionFactory;
-
+public class ExasolJdbcQueryRewriter extends ImportIntoTemporaryTableQueryRewriter {
     /**
      * Create a new instance of the {@link ExasolJdbcQueryRewriter}.
      *
@@ -21,21 +18,6 @@ public class ExasolJdbcQueryRewriter extends AbstractQueryRewriter {
      */
     public ExasolJdbcQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
-        super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
-        this.connectionFactory = connectionFactory;
-    }
-
-    @Override
-    protected String generateImportStatement(String connectionDefinition, String pushdownQuery) throws SQLException {
-        final String columnDescription = this.createImportColumnsDescription(pushdownQuery);
-        return "IMPORT INTO (" + columnDescription + ") FROM JDBC " + connectionDefinition + " STATEMENT '"
-                + pushdownQuery.replace("'", "''") + "'";
-    }
-
-    private String createImportColumnsDescription(final String query) throws SQLException {
-        final ColumnMetadataReader columnMetadataReader = this.remoteMetadataReader.getColumnMetadataReader();
-        final ResultSetMetadataReader resultSetMetadataReader = new ResultSetMetadataReader(
-                this.connectionFactory.getConnection(), columnMetadataReader);
-        return resultSetMetadataReader.describeColumns(query);
+        super(dialect, remoteMetadataReader, connectionFactory, new ExasolConnectionDefinitionBuilder());
     }
 }

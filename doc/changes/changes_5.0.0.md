@@ -1,6 +1,10 @@
-# Exasol Virtual Schema Common 4.0.1, released 2020-??-??
+# Exasol Virtual Schema Common 5.0.0, released 2020-??-??
 
 Code name: 
+
+## Summary
+
+The `SQL_DIALECT` property is obsolete. Please, do not provide this property anymore.
 
 ## Refactoring
 
@@ -10,7 +14,7 @@ Code name:
 
 ### Runtime Dependencies
 
-* Updated `com.exasol:virtual-schema-common-jdbc:7.0.0` to `9.0.0`
+* Updated `com.exasol:virtual-schema-common-jdbc:7.0.0` to `9.0.1`
 * Updated `com.exasol:exasol-jdbc:7.0.3` to `7.0.4`
 * Updated `org.jacoco:org.jacoco.agent:0.8.5` to `0.8.6`
   

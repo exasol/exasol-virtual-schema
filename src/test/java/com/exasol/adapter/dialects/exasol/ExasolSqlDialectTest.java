@@ -262,7 +262,6 @@ class ExasolSqlDialectTest {
     }
 
     private void setMandatoryProperties() {
-        this.rawProperties.put(AdapterProperties.SQL_DIALECT_PROPERTY, "EXASOL");
         this.rawProperties.put(AdapterProperties.CONNECTION_NAME_PROPERTY, "MY_CONN");
     }
 
