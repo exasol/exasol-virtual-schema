@@ -8,7 +8,7 @@ The `SQL_DIALECT` property is obsolete. Please, do not provide this property any
 
 ## Refactoring
 
-#40: Updated to the latest common part and added integration tests for new logic.
+* #40: Updated to the latest common part and added integration tests for new logic.
 
 ## Dependency Updates
 

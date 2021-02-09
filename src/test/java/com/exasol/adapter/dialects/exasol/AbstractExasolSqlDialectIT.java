@@ -505,7 +505,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void CreateVirtualSchemaWithNonexistentConnectionThrowsException() {
+    void createVirtualSchemaWithNonexistentConnectionThrowsException() {
         final String sql = "CREATE VIRTUAL SCHEMA VIRTUAL_SCHEMA_NONEXISTENT_CONNECTION\n" //
                 + "USING " + adapterScript.getFullyQualifiedName() + " WITH\n" //
                 + "CONNECTION_NAME = 'NONEXISTENT_CONNECTION'\n" //

@@ -116,7 +116,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     }
 
     @Override
-    public boolean requiresCatalogQualifiedTableNames(final SqlGenerationContext generator) {
+    public boolean requiresCatalogQualifiedTableNames(final SqlGenerationContext context) {
         return false;
     }
 
