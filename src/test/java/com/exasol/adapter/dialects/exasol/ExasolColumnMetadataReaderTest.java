@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
-import com.exasol.adapter.jdbc.JdbcTypeDescription;
+import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
 
 class ExasolColumnMetadataReaderTest {
@@ -24,7 +24,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeGeometry() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_GEOMETRY, 0, 0, 0, "GEOMETRY");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
                 equalTo(DataType.createGeometry(3857)));
@@ -32,7 +32,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_TIMESTAMP, 0, 0, 0, "TIMESTAMP");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
                 equalTo(DataType.createTimestamp(true)));
@@ -40,7 +40,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeHashtype() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_HASHTYPE, 0, 0, 16, "HASHTYPE");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
                 equalTo(DataType.createHashtype(16)));
@@ -48,7 +48,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeDefault() {
-        final JdbcTypeDescription jdbcTypeDescription = new JdbcTypeDescription(Types.BOOLEAN, 0, 0, 0, "BOOLEAN");
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 0, 0, "BOOLEAN");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription), equalTo(DataType.createBool()));
     }
 }

@@ -4,7 +4,9 @@ import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTA
 
 import java.util.logging.Logger;
 
-import com.exasol.adapter.dialects.*;
+import com.exasol.adapter.dialects.SqlDialect;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationVisitor;
 import com.exasol.adapter.sql.SqlLiteralTimestampUtc;
 
 /**
@@ -19,8 +21,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
      * @param dialect {@link ExasolSqlDialect} dialect
      * @param context SQL generation context
      */
-    ExasolSqlGenerationVisitor(final SqlDialect dialect,
-            final SqlGenerationContext context) {
+    ExasolSqlGenerationVisitor(final SqlDialect dialect, final SqlGenerationContext context) {
         super(dialect, context);
     }
 
@@ -32,13 +33,13 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
             return super.visit(literal);
         } else {
             throw new UnsupportedOperationException(
-                    "Attention! Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` " +
-                            "in Virtual Schemas can produce an incorrect results. We recommend using 'TIMESTAMP' instead. " +
-                            "If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, " +
-                            "create a Virtual Schema with the following additional property " +
-                            "IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'. " +
-                            "We also recommend to set Exasol system `time_zone` " +
-                            "to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.");
+                    "Attention! Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` "
+                            + "in Virtual Schemas can produce an incorrect results. We recommend using 'TIMESTAMP' instead. "
+                            + "If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, "
+                            + "create a Virtual Schema with the following additional property " + "IGNORE_ERRORS = '"
+                            + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'. "
+                            + "We also recommend to set Exasol system `time_zone` "
+                            + "to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.");
         }
     }
 }

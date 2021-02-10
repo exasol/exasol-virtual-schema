@@ -4,7 +4,7 @@ import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.*;
-import com.exasol.adapter.sql.SqlNodeVisitor;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.sql.SqlStatement;
 
 /**
@@ -32,7 +32,7 @@ public class ExasolLocalQueryRewriter implements QueryRewriter {
             final AdapterProperties properties) throws AdapterException {
         final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
                 properties.getSchemaName(), false);
-        final SqlNodeVisitor<String> sqlGeneratorVisitor = this.dialect.getSqlGenerationVisitor(context);
-        return statement.accept(sqlGeneratorVisitor);
+        final SqlGenerator sqlGeneratorVisitor = this.dialect.getSqlGenerator(context);
+        return sqlGeneratorVisitor.generateSqlFor(statement);
     }
 }

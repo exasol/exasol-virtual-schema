@@ -2,9 +2,8 @@ package com.exasol.adapter.dialects.exasol;
 
 import java.sql.SQLException;
 
-import com.exasol.adapter.dialects.AbstractQueryRewriter;
 import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.jdbc.ConnectionDefinitionBuilder;
+import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
 import com.exasol.adapter.jdbc.RemoteMetadataReader;
 
 /**
@@ -17,19 +16,12 @@ public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
      * @param dialect              dialect
      * @param remoteMetadataReader remote metadata reader
      */
-    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader
-           ) {
-        super(dialect, remoteMetadataReader);
-    }
-
-    @Override
-    protected ConnectionDefinitionBuilder createConnectionDefinitionBuilder() {
-        return new ExasolConnectionDefinitionBuilder();
+    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader) {
+        super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
     }
 
     @Override
     protected String generateImportStatement(String connectionDefinition, String pushdownQuery) throws SQLException {
-        return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '"
-                + pushdownQuery.replace("'", "''") + "'";
+        return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '" + pushdownQuery.replace("'", "''") + "'";
     }
 }
