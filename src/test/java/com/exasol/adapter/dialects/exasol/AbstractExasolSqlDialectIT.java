@@ -542,22 +542,20 @@ abstract class AbstractExasolSqlDialectIT {
                         + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
     }
 
+    // SELECT * tests
     @ParameterizedTest
     @ValueSource(strings = { "SELECT *", "SELECT BOOL_COL, VARCHAR_COL, DECIMAL_COL" })
-    void testSelectAllColumnsWithExplicitSelectList(String select) throws SQLException {
+    void testSelectAllColumnsWithExplicitSelectList(String select) {
         final Table table = this.sourceSchema.createTable("TEST_TABLE", "BOOL_COL", "BOOLEAN", "VARCHAR_COL",
                 "VARCHAR(100)", "DECIMAL_COL", "DECIMAL(18,0)");
+        table.insert(true, "varchar_1", 10);
+        table.insert(false, "varchar_2", -10);
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual(
-                select + " FROM " + getVirtualTableName(this.virtualSchema, table));
-        assertThat(explainVirtual, containsString("SELECT \"TEST_TABLE\".\"BOOL_COL\", \"TEST_TABLE\".\"VARCHAR_COL\", "
-                + "\"TEST_TABLE\".\"DECIMAL_COL\" FROM"));
-    }
-
-    private String getExplainVirtual(String query) throws SQLException {
-        final ResultSet resultSet = query("EXPLAIN VIRTUAL " + query);
-        resultSet.next();
-        return resultSet.getString(2);
+        assertVsQuery(select + " FROM " + getVirtualTableName(this.virtualSchema, table), //
+                table() //
+                        .row(true, "varchar_1", 10) //
+                        .row(false, "varchar_2", -10) //
+                        .matches(TypeMatchMode.NO_JAVA_TYPE_CHECK));
     }
 
     private void createVirtualSchemaWithoutSelectListProjectionCapability() {
@@ -573,68 +571,105 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testSelectStarConvertedToColumnsListJoin() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
+    void testSelectStarConvertedToColumnsListJoinSameTable() {
+        final Table table = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        table.insert("L1_1", "L2_1");
+        table.insert("L1_2", "L2_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TR ON TL.L1 = TR.R1");
-        assertThat(explainVirtual, containsString(
-                "SELECT \"TL\".\"L1\", \"TL\".\"L2\", \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\" FROM"));
+        assertVsQuery("SELECT * FROM TL JOIN TL AS TL_2 ON TL.L1 = TL_2.L1", //
+                table() //
+                        .row("L1_1", "L2_1", "L1_1", "L2_1") //
+                        .row("L1_2", "L2_2", "L1_2", "L2_2") //
+                        .matches());
     }
 
     @Test
-    void testSelectStarConvertedToColumnsListJoinSameTable() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+    void testSelectStarConvertedToColumnsListJoinSameTableReversed() {
+        final Table table = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        table.insert("L1_1", "L2_1");
+        table.insert("L1_2", "L2_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TL INNER JOIN TL AS TL_2 ON TL.L1 = TL_2.L1");
-        assertThat(explainVirtual,
-                containsString("SELECT \"TL\".\"L1\", \"TL\".\"L2\", \"TL_2\".\"L1\", \"TL_2\".\"L2\" FROM"));
+        assertVsQuery("SELECT * FROM TL AS TL_2 JOIN TL ON TL_2.L1 = TL.L1", //
+                table() //
+                        .row("L1_1", "L2_1", "L1_1", "L2_1") //
+                        .row("L1_2", "L2_2", "L1_2", "L2_2") //
+                        .matches());
     }
 
-    @Test
-    void testSelectStarConvertedToColumnsListJoinSameTableReversed() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
+    // This test is disabled because of the bug in the database (SPOT-11347).
+    void testSelectStarConvertedToColumnsListJoin() {
+        final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
+                "VARCHAR(5)");
+        tableLeft.insert("ON", "L2_1");
+        tableLeft.insert("ON", "L2_2");
+        tableRight.insert("ON", "R2_1", "R3_1");
+        tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TL AS TL_2 INNER JOIN TL ON TL_2.L1 = TL.L1");
-        assertThat(explainVirtual,
-                containsString("SELECT \"TL_2\".\"L1\", \"TL_2\".\"L2\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
+        assertVsQuery("SELECT * FROM TL JOIN TR ON TL.L1 = TR.R1", //
+                table() //
+                        .row("ON", "L2_1", "ON", "R2_1", "R3_1") //
+                        .row("ON", "L2_2", "ON", "R2_2", "R3_2") //
+                        .matches());
     }
 
-    @Test
-    void testSelectStarConvertedToColumnsListJoinReversed() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
+    // This test is disabled because of the bug in the database (SPOT-11347).
+    void testSelectStarConvertedToColumnsListJoinReversed() {
+        final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
+                "VARCHAR(5)");
+        tableLeft.insert("ON", "L2_1");
+        tableLeft.insert("ON", "L2_2");
+        tableRight.insert("ON", "R2_1", "R3_1");
+        tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual("SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1");
-        assertThat(explainVirtual, containsString(
-                "SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
+        assertVsQuery("SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1", //
+                table() //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_2") //
+                        .matches());
     }
 
-    @Test
+    // This test is disabled because of the bug in the database (SPOT-11347).
     void testSelectStarConvertedToColumnsListNestedJoin() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
-        this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
-                List.of("VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)"));
+        final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
+                "VARCHAR(5)");
+        final Table tableMiddle = this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
+                List.of("VARCHAR(5)", "VARCHAR(5)", "VARCHAR(5)", "VARCHAR(5)"));
+        tableLeft.insert("ON", "L2_1");
+        tableLeft.insert("ON", "L2_2");
+        tableRight.insert("ON", "R2_1", "R3_1");
+        tableRight.insert("ON", "R2_2", "R3_2");
+        tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
+        tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual(
-                "SELECT * FROM TM INNER JOIN (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1");
-        assertThat(explainVirtual, containsString("SELECT \"TM\".\"M1\", \"TM\".\"M2\", \"TM\".\"M3\", \"TM\".\"M4\", "
-                + "\"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\" FROM"));
+        assertVsQuery("SELECT * FROM TM JOIN (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1", //
+                table() //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_2", "R3_2", "ON", "L2_2") //
+                        .matches());
     }
 
-    @Test
+    // This test is disabled because of the bug in the database (SPOT-11347).
     void testSelectStarConvertedToColumnsListNestedJoinReversed() throws SQLException {
-        this.sourceSchema.createTable("TL", "L1", "VARCHAR(2)", "L2", "VARCHAR(2)");
-        this.sourceSchema.createTable("TR", "R1", "VARCHAR(2)", "R2", "VARCHAR(2)", "R3", "VARCHAR(2)");
-        this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
-                List.of("VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)", "VARCHAR(2)"));
+        final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
+        final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
+                "VARCHAR(5)");
+        final Table tableMiddle = this.sourceSchema.createTable("TM", List.of("M1", "M2", "M3", "M4"),
+                List.of("VARCHAR(5)", "VARCHAR(5)", "VARCHAR(5)", "VARCHAR(5)"));
+        tableLeft.insert("ON", "L2_1");
+        tableLeft.insert("ON", "L2_2");
+        tableRight.insert("ON", "R2_1", "R3_1");
+        tableRight.insert("ON", "R2_2", "R3_2");
+        tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
+        tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        final String explainVirtual = getExplainVirtual(
-                "SELECT * FROM (SELECT * FROM TR INNER JOIN TL ON TL.L1 = TR.R1) nested INNER JOIN TM ON TM.M1 = nested.R1");
-        assertThat(explainVirtual,
-                containsString("SELECT \"TR\".\"R1\", \"TR\".\"R2\", \"TR\".\"R3\", \"TL\".\"L1\", \"TL\".\"L2\", "
-                        + "\"TM\".\"M1\", \"TM\".\"M2\", \"TM\".\"M3\", \"TM\".\"M4\" FROM"));
+        assertVsQuery("SELECT * FROM (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested JOIN TM ON TM.M1 = nested.R1", //
+                table() //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_1", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
+                        .matches());
     }
 
     /**
