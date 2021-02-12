@@ -1,6 +1,6 @@
-# Exasol Virtual Schema Common 5.0.0, released 2020-??-??
+# Exasol Virtual Schema Common 5.0.0, released 2020-02-12
 
-Code name: 
+Code name: Removed `SQL_DIALECT` property
 
 ## Summary
 
@@ -9,6 +9,7 @@ The `SQL_DIALECT` property is obsolete. Please, do not provide this property any
 ## Refactoring
 
 * #40: Updated to the latest common part and added integration tests for new logic.
+* #42: Enabled disabled integration tests after Exasol docker 7.0.7 became available.
 
 ## Dependency Updates
 
@@ -20,7 +21,7 @@ The `SQL_DIALECT` property is obsolete. Please, do not provide this property any
   
 ### Test Dependencies
 
-* Updated `com.exasol:exasol-testcontainer:3.3.1` to `3.4.1`
+* Updated `com.exasol:exasol-testcontainer:3.3.1` to `3.5.0`
 * Updated `com.exasol:hamcrest-resultset-matcher:1.2.1` to `1.3.0`
 * Updated `com.exasol:test-db-builder-java:2.0.0` to `3.0.0`
 * Updated `org.mockito:mockito-junit-jupiter:3.6.0` to `3.7.7`

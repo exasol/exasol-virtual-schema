@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
@@ -20,6 +19,7 @@ import java.util.concurrent.TimeoutException;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -44,6 +44,7 @@ abstract class AbstractExasolSqlDialectIT {
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
+    private static final String EXASOL_DOCKER_REGEX = "(?:(?:[8-9]|\\d{2,})\\.|7\\.0\\.(?:[7-9]|\\d{2,})|7\\.(?:[1-9]|d{2,}))";
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
@@ -54,8 +55,8 @@ abstract class AbstractExasolSqlDialectIT {
     private ConnectionDefinition jdbcConnection;
 
     @BeforeAll
-    static void beforeAll() throws BucketAccessException, InterruptedException, TimeoutException, IOException,
-            NoDriverFoundException, SQLException {
+    static void beforeAll()
+            throws BucketAccessException, InterruptedException, TimeoutException, NoDriverFoundException, SQLException {
         connection = EXASOL.createConnection("");
         objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
@@ -596,7 +597,8 @@ abstract class AbstractExasolSqlDialectIT {
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
+    @Test
+    @EnabledIfSystemProperty(named = "com.exasol.dockerdb.image", matches = EXASOL_DOCKER_REGEX)
     void testSelectStarConvertedToColumnsListJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -606,14 +608,17 @@ abstract class AbstractExasolSqlDialectIT {
         tableRight.insert("ON", "R2_1", "R3_1");
         tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TL JOIN TR ON TL.L1 = TR.R1", //
+        assertVsQuery("SELECT * FROM TL JOIN TR ON TL.L1 = TR.R1 ORDER BY L2", //
                 table() //
                         .row("ON", "L2_1", "ON", "R2_1", "R3_1") //
+                        .row("ON", "L2_1", "ON", "R2_2", "R3_2") //
+                        .row("ON", "L2_2", "ON", "R2_1", "R3_1") //
                         .row("ON", "L2_2", "ON", "R2_2", "R3_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
+    @Test
+    @EnabledIfSystemProperty(named = "com.exasol.dockerdb.image", matches = EXASOL_DOCKER_REGEX)
     void testSelectStarConvertedToColumnsListJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -623,15 +628,18 @@ abstract class AbstractExasolSqlDialectIT {
         tableRight.insert("ON", "R2_1", "R3_1");
         tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1", //
+        assertVsQuery("SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1 ORDER BY R2", //
                 table() //
                         .row("ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
-    void testSelectStarConvertedToColumnsListNestedJoin() throws SQLException {
+    @Test
+    @EnabledIfSystemProperty(named = "com.exasol.dockerdb.image", matches = EXASOL_DOCKER_REGEX)
+    void testSelectStarConvertedToColumnsListNestedJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
                 "VARCHAR(5)");
@@ -644,15 +652,22 @@ abstract class AbstractExasolSqlDialectIT {
         tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
         tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TM JOIN (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1", //
+        assertVsQuery(
+                "SELECT * FROM TM JOIN (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1 ORDER BY R2) nested ON nested.R1 = TM.M1 ORDER BY M2", //
                 table() //
                         .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_2", "R3_2", "ON", "L2_1") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_2", "R3_2", "ON", "L2_2") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_2", "R3_2", "ON", "L2_1") //
                         .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_2", "R3_2", "ON", "L2_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
-    void testSelectStarConvertedToColumnsListNestedJoinReversed() throws SQLException {
+    // This test is disable until we investigate this issue: https://github.com/exasol/exasol-virtual-schema/issues/43
+    void testSelectStarConvertedToColumnsListNestedJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
                 "VARCHAR(5)");
@@ -665,9 +680,16 @@ abstract class AbstractExasolSqlDialectIT {
         tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
         tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested JOIN TM ON TM.M1 = nested.R1", //
+        assertVsQuery(
+                "SELECT * FROM (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1 ORDER BY L2) nested JOIN TM ON TM.M1 = nested.R1 ORDER BY R2", //
                 table() //
                         .row("ON", "R2_1", "R3_1", "ON", "L2_1", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_1", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
                         .matches());
     }
