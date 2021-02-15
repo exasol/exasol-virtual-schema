@@ -302,15 +302,16 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     boolean checkIfLocalAndExasolVersionHigherOrEqual7_0_7() {
-        final String local = System.getProperty("com.exasol.integration");
-        return local != null && checkIfExasolVersionHigherThan7_0_7();
+        final boolean local = Boolean.valueOf(System.getProperty("com.exasol.integration", "true"));
+        return local && checkIfExasolVersionHigherThan7_0_7();
     }
 
     boolean checkIfExasolVersionHigherThan7_0_7() {
-        final ExasolDockerImageReference dockerImageReference = EXASOL.getDockerImageReference();
-        String exasolVersion = dockerImageReference.getMajor() + "." + dockerImageReference.getMinor() + "."
-                + dockerImageReference.getFixVersion();
-        return exasolVersion.matches(EXASOL_DOCKER_VERSION_HIGHER_OR_EQUAL_7_0_7_REGEX);
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        final int major = imageReference.getMajor();
+        final int minor = imageReference.getMinor();
+        final int fix = imageReference.getFixVersion();
+        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
     }
 
     @Test
