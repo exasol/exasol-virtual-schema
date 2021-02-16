@@ -12,14 +12,15 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
+import com.exasol.containers.ExasolDockerImageReference;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -54,8 +55,8 @@ abstract class AbstractExasolSqlDialectIT {
     private ConnectionDefinition jdbcConnection;
 
     @BeforeAll
-    static void beforeAll() throws BucketAccessException, InterruptedException, TimeoutException, IOException,
-            NoDriverFoundException, SQLException {
+    static void beforeAll()
+            throws BucketAccessException, InterruptedException, TimeoutException, NoDriverFoundException, SQLException {
         connection = EXASOL.createConnection("");
         objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
@@ -292,10 +293,31 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testGeometryMapping() {
+    @DisabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
+    void testGeometryMappingIfNotLocalOn7_0_7() {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         // Note that the JDBC driver reports the result as VARCHAR
         assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+    }
+
+    boolean checkIfLocalAndExasolVersionHigherOrEqual7_0_7() {
+        final boolean local = Boolean.parseBoolean(System.getProperty("com.exasol.integration.local", "false"));
+        return local && checkIfExasolVersionHigherThan7_0_7();
+    }
+
+    boolean checkIfExasolVersionHigherThan7_0_7() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        final int major = imageReference.getMajor();
+        final int minor = imageReference.getMinor();
+        final int fix = imageReference.getFixVersion();
+        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
+    }
+
+    @Test
+    @EnabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
+    void testGeometryMappingIfLocalAndAfter7_0_7() {
+        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
+        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
     }
 
     @Test
@@ -403,8 +425,15 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testCastVarcharAsGeometry() {
+    @DisabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
+    void testCastVarcharAsGeometryIfPre7_0_7OrNotLocal() {
         castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+    }
+
+    @Test
+    @EnabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
+    void testCastVarcharAsGeometryIfLocalAndAfter7_0_7() {
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("GEOMETRY").verify("POINT (2 5)");
     }
 
     @Test
@@ -576,7 +605,7 @@ abstract class AbstractExasolSqlDialectIT {
         table.insert("L1_1", "L2_1");
         table.insert("L1_2", "L2_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TL JOIN TL AS TL_2 ON TL.L1 = TL_2.L1", //
+        assertVsQuery("SELECT * FROM TL JOIN TL AS TL_2 ON TL.L1 = TL_2.L1 ORDER BY TL.L1", //
                 table() //
                         .row("L1_1", "L2_1", "L1_1", "L2_1") //
                         .row("L1_2", "L2_2", "L1_2", "L2_2") //
@@ -589,14 +618,15 @@ abstract class AbstractExasolSqlDialectIT {
         table.insert("L1_1", "L2_1");
         table.insert("L1_2", "L2_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TL AS TL_2 JOIN TL ON TL_2.L1 = TL.L1", //
+        assertVsQuery("SELECT * FROM TL AS TL_2 JOIN TL ON TL_2.L1 = TL.L1 ORDER BY TL_2.L1", //
                 table() //
                         .row("L1_1", "L2_1", "L1_1", "L2_1") //
                         .row("L1_2", "L2_2", "L1_2", "L2_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
+    @Test
+    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -606,14 +636,17 @@ abstract class AbstractExasolSqlDialectIT {
         tableRight.insert("ON", "R2_1", "R3_1");
         tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TL JOIN TR ON TL.L1 = TR.R1", //
+        assertVsQuery("SELECT * FROM TL JOIN TR ON TL.L1 = TR.R1 ORDER BY L2, R2", //
                 table() //
                         .row("ON", "L2_1", "ON", "R2_1", "R3_1") //
+                        .row("ON", "L2_1", "ON", "R2_2", "R3_2") //
+                        .row("ON", "L2_2", "ON", "R2_1", "R3_1") //
                         .row("ON", "L2_2", "ON", "R2_2", "R3_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
+    @Test
+    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -623,15 +656,18 @@ abstract class AbstractExasolSqlDialectIT {
         tableRight.insert("ON", "R2_1", "R3_1");
         tableRight.insert("ON", "R2_2", "R3_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1", //
+        assertVsQuery("SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1 ORDER BY R2, L2", //
                 table() //
                         .row("ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
-    void testSelectStarConvertedToColumnsListNestedJoin() throws SQLException {
+    @Test
+    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
+    void testSelectStarConvertedToColumnsListNestedJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
                 "VARCHAR(5)");
@@ -644,15 +680,23 @@ abstract class AbstractExasolSqlDialectIT {
         tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
         tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM TM JOIN (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1", //
+        assertVsQuery(
+                "SELECT * FROM TM JOIN (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested ON nested.R1 = TM.M1 ORDER BY M2, R2, L2", //
                 table() //
                         .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_2", "R3_2", "ON", "L2_1") //
+                        .row("ON", "M2_1", "M3_1", "M4_1", "ON", "R2_2", "R3_2", "ON", "L2_2") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_1", "R3_1", "ON", "L2_1") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_1", "R3_1", "ON", "L2_2") //
+                        .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_2", "R3_2", "ON", "L2_1") //
                         .row("ON", "M2_2", "M3_2", "M4_2", "ON", "R2_2", "R3_2", "ON", "L2_2") //
                         .matches());
     }
 
-    // This test is disabled because of the bug in the database (SPOT-11347).
-    void testSelectStarConvertedToColumnsListNestedJoinReversed() throws SQLException {
+    @Test
+    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
+    void testSelectStarConvertedToColumnsListNestedJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
                 "VARCHAR(5)");
@@ -665,9 +709,16 @@ abstract class AbstractExasolSqlDialectIT {
         tableMiddle.insert("ON", "M2_1", "M3_1", "M4_1");
         tableMiddle.insert("ON", "M2_2", "M3_2", "M4_2");
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery("SELECT * FROM (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested JOIN TM ON TM.M1 = nested.R1", //
+        assertVsQuery(
+                "SELECT * FROM (SELECT * FROM TR JOIN TL ON TL.L1 = TR.R1) nested JOIN TM ON TM.M1 = nested.R1 ORDER BY R2, L2, M2", //
                 table() //
                         .row("ON", "R2_1", "R3_1", "ON", "L2_1", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_1", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_1", "R3_1", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1", "ON", "M2_1", "M3_1", "M4_1") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_1", "ON", "M2_2", "M3_2", "M4_2") //
+                        .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
                         .matches());
     }
