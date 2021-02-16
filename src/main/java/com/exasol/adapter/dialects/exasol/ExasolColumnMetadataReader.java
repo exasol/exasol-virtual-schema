@@ -12,6 +12,7 @@ import com.exasol.adapter.dialects.IdentifierConverter;
 import com.exasol.adapter.jdbc.BaseColumnMetadataReader;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
+import com.exasol.errorreporting.ExaError;
 
 /**
  * This class implements Exasol-specific reading of column metadata.
@@ -93,7 +94,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), Integer.parseInt(matcher.group(2)),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
         } else {
-            throw new IllegalStateException("Failed to extract INTERVAL precision");
+            throw new IllegalStateException(ExaError.messageBuilder("E-VS-EXA-2") //
+                    .message("Failed to extract INTERVAL DAY TO SECOND precision").toString());
         }
     }
 
@@ -106,7 +108,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
         } else {
-            throw new IllegalStateException("Failed to extract INTERVAL precision");
+            throw new IllegalStateException(ExaError.messageBuilder("E-VS-EXA-3") //
+                    .message("Failed to extract INTERVAL YEAR TO MONTH precision").toString());
         }
     }
 }

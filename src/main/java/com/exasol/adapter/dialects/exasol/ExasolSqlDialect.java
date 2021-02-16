@@ -15,6 +15,7 @@ import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.sql.SqlNodeVisitor;
+import com.exasol.errorreporting.ExaError;
 
 /**
  * Exasol SQL dialect.
@@ -61,7 +62,8 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
         try {
             return new ExasolMetadataReader(this.connectionFactory.getConnection(), this.properties);
         } catch (final SQLException exception) {
-            throw new RemoteMetadataReaderException("Unable to create Exasol remote metadata reader.", exception);
+            throw new RemoteMetadataReaderException(ExaError.messageBuilder("E-VS-EXA-4") //
+                    .message("Unable to create Exasol remote metadata reader.").toString(), exception);
         }
     }
 
