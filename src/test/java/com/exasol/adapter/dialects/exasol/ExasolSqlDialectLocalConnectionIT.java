@@ -20,7 +20,7 @@ import com.exasol.dbbuilder.dialects.Table;
  */
 class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     static {
-        System.setProperty("com.exasol.integration", "local");
+        System.setProperty("com.exasol.integration.local", "true");
     }
 
     @Override

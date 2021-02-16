@@ -45,7 +45,6 @@ abstract class AbstractExasolSqlDialectIT {
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
-    private static final String EXASOL_DOCKER_VERSION_HIGHER_OR_EQUAL_7_0_7_REGEX = "(?:(?:[8-9]|\\d{2,})\\.|7\\.0\\.(?:[7-9]|\\d{2,})|7\\.(?:[1-9]|d{2,}))";
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
@@ -302,7 +301,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     boolean checkIfLocalAndExasolVersionHigherOrEqual7_0_7() {
-        final boolean local = Boolean.valueOf(System.getProperty("com.exasol.integration", "true"));
+        final boolean local = Boolean.parseBoolean(System.getProperty("com.exasol.integration.local", "false"));
         return local && checkIfExasolVersionHigherThan7_0_7();
     }
 
