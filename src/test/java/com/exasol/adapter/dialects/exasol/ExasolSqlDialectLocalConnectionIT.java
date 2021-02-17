@@ -19,9 +19,6 @@ import com.exasol.dbbuilder.dialects.Table;
  * <ul>
  */
 class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
-    static {
-        System.setProperty("com.exasol.integration.local", "true");
-    }
 
     @Override
     protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {

@@ -293,31 +293,10 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @DisabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
-    void testGeometryMappingIfNotLocalOn7_0_7() {
+    void testGeometryMapping() {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         // Note that the JDBC driver reports the result as VARCHAR
         assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
-    }
-
-    boolean checkIfLocalAndExasolVersionHigherOrEqual7_0_7() {
-        final boolean local = Boolean.parseBoolean(System.getProperty("com.exasol.integration.local", "false"));
-        return local && checkIfExasolVersionHigherThan7_0_7();
-    }
-
-    boolean checkIfExasolVersionHigherThan7_0_7() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        final int major = imageReference.getMajor();
-        final int minor = imageReference.getMinor();
-        final int fix = imageReference.getFixVersion();
-        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
-    }
-
-    @Test
-    @EnabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
-    void testGeometryMappingIfLocalAndAfter7_0_7() {
-        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
     }
 
     @Test
@@ -425,15 +404,8 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @DisabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
-    void testCastVarcharAsGeometryIfPre7_0_7OrNotLocal() {
+    void testCastVarcharAsGeometry() {
         castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
-    }
-
-    @Test
-    @EnabledIf("checkIfLocalAndExasolVersionHigherOrEqual7_0_7")
-    void testCastVarcharAsGeometryIfLocalAndAfter7_0_7() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("GEOMETRY").verify("POINT (2 5)");
     }
 
     @Test
@@ -643,6 +615,14 @@ abstract class AbstractExasolSqlDialectIT {
                         .row("ON", "L2_2", "ON", "R2_1", "R3_1") //
                         .row("ON", "L2_2", "ON", "R2_2", "R3_2") //
                         .matches());
+    }
+
+    boolean checkIfExasolVersionHigherThan7_0_7() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        final int major = imageReference.getMajor();
+        final int minor = imageReference.getMinor();
+        final int fix = imageReference.getFixVersion();
+        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
     }
 
     @Test

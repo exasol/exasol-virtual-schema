@@ -8,6 +8,7 @@ import com.exasol.adapter.dialects.SqlDialect;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationVisitor;
 import com.exasol.adapter.sql.SqlLiteralTimestampUtc;
+import com.exasol.errorreporting.ExaError;
 
 /**
  * This class generates SQL queries for the {@link ExasolSqlDialect}.
@@ -32,14 +33,15 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
             LOGGER.info("IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "' property is enabled.");
             return super.visit(literal);
         } else {
-            throw new UnsupportedOperationException(
-                    "Attention! Using literals and constant expressions with datatype `TIMESTAMP WITH LOCAL TIME ZONE` "
-                            + "in Virtual Schemas can produce an incorrect results. We recommend using 'TIMESTAMP' instead. "
-                            + "If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, "
-                            + "create a Virtual Schema with the following additional property " + "IGNORE_ERRORS = '"
-                            + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "'. "
+            throw new UnsupportedOperationException(ExaError.messageBuilder("E-VS-EXA-5") //
+                    .message("Attention! Using literals and constant expressions with datatype "
+                            + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results")
+                    .mitigation("We recommend using 'TIMESTAMP' instead. If you are willing to take the risk and "
+                            + "want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema "
+                            + "with the following additional property IGNORE_ERRORS = {{switchParameter}}. "
                             + "We also recommend to set Exasol system `time_zone` "
-                            + "to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.");
+                            + "to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.")
+                    .parameter("switchParameter", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH).toString());
         }
     }
 }

@@ -6,6 +6,7 @@ import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECT
 import com.exasol.ExaConnectionInformation;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.jdbc.BaseConnectionDefinitionBuilder;
+import com.exasol.errorreporting.ExaError;
 
 /**
  * This class implements an Exasol-specific connection definition builder.
@@ -29,10 +30,14 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
         if (properties.containsKey(EXASOL_CONNECTION_PROPERTY) && properties.hasConnectionName()) {
             return "AT \"" + getExasolConnectionName(properties) + "\"";
         } else {
-            throw new IllegalArgumentException(
-                    "Incomplete remote connection information. Please specify a named EXA connection \""
-                            + EXASOL_CONNECTION_PROPERTY + "\" for the ExaLoader and a named JDBC connection with \""
-                            + CONNECTION_NAME_PROPERTY + "\" for the Virtual Schema adapter.");
+            throw new IllegalArgumentException(ExaError.messageBuilder("E-VS-EXA-1") //
+                    .message("Incomplete remote connection information") //
+                    .mitigation("Please specify a named EXA connection {{exasol_connection_property}}"
+                            + " for the ExaLoader and a named JDBC connection with {{connection_name_property}}"
+                            + " for the Virtual Schema adapter.") //
+                    .parameter("exasol_connection_property", EXASOL_CONNECTION_PROPERTY) //
+                    .parameter("connection_name_property", CONNECTION_NAME_PROPERTY) //
+                    .toString());
         }
     }
 

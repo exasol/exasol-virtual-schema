@@ -45,7 +45,7 @@ Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading da
 
 In this case you have to provide the additional `EXA_CONNECTION` which contains the name of the connection definition used for the internally used `IMPORT FROM EXA` command.
 
-That means that in this case you will have **two** named connections: a JDBC connection for the Virtual Schema adapter and an EXA connection for the EXALoader &mdash; which runs the `IMPORT`.
+That means you will have **two** named connections: a JDBC connection and an EXA connection. The Virtual Schema adapter uses the JDBC connection for reading metadata. The EXA connection is used by the EXALoader that runs the `IMPORT` statement.
 
 Please refer to the [CREATE CONNECTION](https://docs.exasol.com/sql/create_connection.htm) documentation for more details about how to define an EXA connection.
 
@@ -69,7 +69,7 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
 
 ### Using IMPORT FROM JDBC
 
-Should the EXA connection not be an option for you, you can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower because it lacks the parallelization the `IMPORT FROM EXA` variant.
+You can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower because it lacks the parallelization the `IMPORT FROM EXA` variant.
 
 #### Creating a Virtual Schema With JDBC Import
 
