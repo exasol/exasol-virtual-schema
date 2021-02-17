@@ -12,6 +12,8 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
@@ -50,5 +52,13 @@ class ExasolColumnMetadataReaderTest {
     void testMapJdbcTypeDefault() {
         final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 0, 0, "BOOLEAN");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription), equalTo(DataType.createBool()));
+    }
+
+    @ParameterizedTest
+    @CsvSource({ "GEOMETRY, 3857", //
+            "GEOMETRY(), 3857", //
+            "GEOMETRY(2222), 2222" })
+    void testExtractSrid(final String input, final int expected) {
+        assertThat(this.exasolColumnMetadataReader.extractSrid(input), equalTo(expected));
     }
 }

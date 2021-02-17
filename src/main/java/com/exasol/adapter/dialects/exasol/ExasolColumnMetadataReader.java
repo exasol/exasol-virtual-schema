@@ -1,7 +1,6 @@
 package com.exasol.adapter.dialects.exasol;
 
 import java.sql.*;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,8 +15,6 @@ import com.exasol.errorreporting.ExaError;
  * This class implements Exasol-specific reading of column metadata.
  */
 public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
-    public static final Logger LOGGER = Logger.getLogger(ExasolColumnMetadataReader.class.getName());
-
     static final int EXASOL_INTERVAL_DAY_TO_SECONDS = -104;
     static final int EXASOL_INTERVAL_YEAR_TO_MONTHS = -103;
     static final int EXASOL_GEOMETRY = 123;
@@ -25,6 +22,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_HASHTYPE = 126;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
     public static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
+    public static final String SRID_PATTERN = "\\(\\d+\\)";
 
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
@@ -80,11 +78,12 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
                 typeDescription.getByteSize(), typeDescription.getTypeName());
     }
 
-    private int extractSrid(final String typeDescriptionString) {
-        final int start = typeDescriptionString.indexOf("(");
-        if (start > -1) {
-            final int end = typeDescriptionString.indexOf(")");
-            return Integer.parseInt(typeDescriptionString.substring(start + 1, end));
+    protected int extractSrid(final String typeDescriptionString) {
+        final Pattern pattern = Pattern.compile(SRID_PATTERN);
+        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        if (matcher.find()) {
+            final String srid = matcher.group();
+            return Integer.parseInt(srid.substring(1, srid.length() - 1));
         } else {
             return DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER;
         }
