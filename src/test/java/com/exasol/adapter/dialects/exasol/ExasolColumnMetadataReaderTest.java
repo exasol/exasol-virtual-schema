@@ -25,9 +25,9 @@ class ExasolColumnMetadataReaderTest {
     @Test
     void testMapJdbcTypeGeometry() {
         final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
-                ExasolColumnMetadataReader.EXASOL_GEOMETRY, 0, 0, 0, "GEOMETRY");
+                ExasolColumnMetadataReader.EXASOL_GEOMETRY, 0, 2222, 0, "GEOMETRY");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createGeometry(3857)));
+                equalTo(DataType.createGeometry(2222)));
     }
 
     @Test
