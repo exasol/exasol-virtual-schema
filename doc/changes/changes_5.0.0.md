@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 5.0.0, released 2020-02-12
+# Exasol Virtual Schema Common 5.0.0, released 2021-02-18
 
 Code name: Removed `SQL_DIALECT` property
 
