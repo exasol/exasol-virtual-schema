@@ -546,7 +546,7 @@ abstract class AbstractExasolSqlDialectIT {
     // SELECT * tests
     @ParameterizedTest
     @ValueSource(strings = { "SELECT *", "SELECT BOOL_COL, VARCHAR_COL, DECIMAL_COL" })
-    void testSelectAllColumnsWithExplicitSelectList(String select) {
+    void testSelectAllColumnsWithExplicitSelectList(final String select) {
         final Table table = this.sourceSchema.createTable("TEST_TABLE", "BOOL_COL", "BOOLEAN", "VARCHAR_COL",
                 "VARCHAR(100)", "DECIMAL_COL", "DECIMAL(18,0)");
         table.insert(true, "varchar_1", 10);

@@ -6,6 +6,10 @@ Code name: Removed `SQL_DIALECT` property
 
 The `SQL_DIALECT` property is obsolete. Please, do not provide this property anymore.
 
+## Feature
+
+* #32: Get Geometry SRID(https://en.wikipedia.org/wiki/Spatial_reference_system#Identifier) from a system table instead of the hardcoded value.
+
 ## Refactoring
 
 * #40: Updated to the latest common part and added integration tests for new logic.
