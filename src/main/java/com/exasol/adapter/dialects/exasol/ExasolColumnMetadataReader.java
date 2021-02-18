@@ -22,7 +22,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_HASHTYPE = 126;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
     public static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
-    public static final String SRID_PATTERN = "\\(\\d+\\)";
+    public static final String SRID_PATTERN = "\\((\\d+)\\)";
 
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
@@ -82,8 +82,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         final Pattern pattern = Pattern.compile(SRID_PATTERN);
         final Matcher matcher = pattern.matcher(typeDescriptionString);
         if (matcher.find()) {
-            final String srid = matcher.group();
-            return Integer.parseInt(srid.substring(1, srid.length() - 1));
+            final String srid = matcher.group(1);
+            return Integer.parseInt(srid);
         } else {
             return DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER;
         }
