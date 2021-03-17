@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 
+# Exasol Virtual Schema
 
 [![Build Status](https://travis-ci.com/exasol/exasol-virtual-schema.svg?branch=master)](https://travis-ci.com/exasol/exasol-virtual-schema)
 [![Maven Central](https://img.shields.io/maven-central/v/com.exasol/exasol-virtual-schema)](https://search.maven.org/artifact/com.exasol/exasol-virtual-schema)
@@ -17,8 +17,7 @@ SonarCloud results:
 [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=duplicated_lines_density)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 [![Lines of Code](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=ncloc)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 
-This project contains the Exasol dialect for the Exasol's Virtual Schema.
-Use this dialect if you want to create a Virtual Schema based on the Exasol database.
+This project contains the Exasol dialect for the Exasol's Virtual Schema. Use this dialect if you want to create a Virtual Schema based on the Exasol database.
 
 If you want to set up a Virtual Schema for a different database system, please head over to the [Virtual Schemas Repository][virtual-schemas].
 
@@ -42,7 +41,7 @@ It takes the name of a connection definition in case you are using `IMPORT FROM 
 
 Find all the documentation in the [Virtual Schemas project][vs-doc].
 
-## Information for Developers 
+## Information for Developers
 
 * [Virtual Schema API Documentation][vs-api]
 
@@ -65,7 +64,6 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 | [Testcontainers](https://www.testcontainers.org/)                  | Container-based integration tests                      | MIT License                   |
 | [SLF4J](http://www.slf4j.org/)                                     | Logging facade                                         | MIT License                   |
 
-
 ### Maven Plug-ins
 
 | Plug-in                                                            | Purpose                                                | License                       |
@@ -84,6 +82,7 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 | [Versions Maven Plugin][versions-maven-plugin]                     | Checking if dependencies updates are available         | Apache License 2.0            |
 | [Test Database Builder][test-db-builder]                           | Fluent database interfaces for testing                 | MIT License                   |
 
+<!-- @formatter:off -->
 [artifact-ref-checker-plugin]: https://github.com/exasol/artifact-reference-checker-maven-plugin
 [exasol-jdbc-driver]: https://www.exasol.com/portal/display/DOWNLOAD/Exasol+Download+Section
 [maven-compiler-plugin]: https://maven.apache.org/plugins/maven-compiler-plugin/
@@ -95,11 +94,11 @@ Running the Virtual Schema requires a Java Runtime version 11 or later.
 [maven-source-plugin]: https://maven.apache.org/plugins/maven-source-plugin/
 [maven-surefire-plugin]: https://maven.apache.org/surefire/maven-surefire-plugin/
 [sonatype-oss-index-maven-plugin]: https://sonatype.github.io/ossindex-maven/maven-plugin/
-[test-db-builder]: https://github.com/exasol/test-db-builder/
+[test-db-builder]: https://github.com/exasol/test-db-builder-java
 [versions-maven-plugin]: https://www.mojohaus.org/versions-maven-plugin/
 [virtual-schema-common-jdbc]: https://github.com/exasol/virtual-schema-common-jdbc
-
 [user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
 [virtual-schemas]: https://github.com/exasol/virtual-schemas
 [vs-api]: https://github.com/exasol/virtual-schema-common-java/blob/master/doc/development/api/virtual_schema_api.md
 [vs-doc]: https://github.com/exasol/virtual-schemas/tree/master/doc
+<!-- @formatter:on -->
