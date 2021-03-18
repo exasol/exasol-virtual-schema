@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 5.0.1, released 2021-03-XX
+# Exasol Virtual Schema Common 5.0.1, released 2021-03-18
 
 Code name: Fixed double literals
 
