@@ -48,7 +48,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
 
     @Override
     public String visit(final SqlLiteralDouble literal) {
-        return "CAST(" + literal.getValue() + " AS DOUBLE)";
+        return "CAST(" + super.visit(literal) + " AS DOUBLE)";
     }
 
 }

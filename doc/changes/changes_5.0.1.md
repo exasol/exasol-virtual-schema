@@ -9,6 +9,7 @@ In this released we fixed double literals.
 ## Bugfixes:
 
 * #47: Fixed wrong data type for double literals
+* #49: Fixed double literal rendering
 
 ## Dependency Updates
 

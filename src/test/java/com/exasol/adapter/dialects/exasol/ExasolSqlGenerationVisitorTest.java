@@ -44,6 +44,6 @@ class ExasolSqlGenerationVisitorTest {
     void testVisitSqlLiteralDouble() {
         final ExasolSqlGenerationVisitor exasolSqlGenerationVisitor = new ExasolSqlGenerationVisitor(
                 this.exasolSqlDialect, null);
-        assertThat(exasolSqlGenerationVisitor.visit(new SqlLiteralDouble(1.23)), equalTo("CAST(1.23 AS DOUBLE)"));
+        assertThat(exasolSqlGenerationVisitor.visit(new SqlLiteralDouble(1.23)), equalTo("CAST(1.23E0 AS DOUBLE)"));
     }
 }
