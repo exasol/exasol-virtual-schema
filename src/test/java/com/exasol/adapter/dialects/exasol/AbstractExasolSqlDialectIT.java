@@ -17,10 +17,9 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
-import com.exasol.containers.ExasolDockerImageReference;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.*;
+import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,6 +30,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
+import com.exasol.containers.ExasolDockerImageReference;
 import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
@@ -297,6 +297,22 @@ abstract class AbstractExasolSqlDialectIT {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         // Note that the JDBC driver reports the result as VARCHAR
         assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+    }
+
+    @Test
+    void testDecimalLiteral() {
+        final Table table = createSingleColumnTable("BOOLEAN").insert(true);
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("SELECT 10.2 FROM " + getVirtualTableName(this.virtualSchema, table),
+                table("DECIMAL").row(BigDecimal.valueOf(10.2)).matches());
+    }
+
+    @Test
+    void testDoubleLiteral() {
+        final Table table = createSingleColumnTable("BOOLEAN").insert(true);
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("SELECT CAST(10.2 as DOUBLE) FROM " + getVirtualTableName(this.virtualSchema, table),
+                table("DOUBLE PRECISION").row(10.2).matches());
     }
 
     @Test

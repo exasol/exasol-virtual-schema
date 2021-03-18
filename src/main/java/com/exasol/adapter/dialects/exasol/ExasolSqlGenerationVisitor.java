@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import com.exasol.adapter.dialects.SqlDialect;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationVisitor;
+import com.exasol.adapter.sql.SqlLiteralDouble;
 import com.exasol.adapter.sql.SqlLiteralTimestampUtc;
 import com.exasol.errorreporting.ExaError;
 
@@ -44,4 +45,10 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
                     .parameter("switchParameter", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH).toString());
         }
     }
+
+    @Override
+    public String visit(final SqlLiteralDouble literal) {
+        return "CAST(" + literal.getValue() + " AS DOUBLE)";
+    }
+
 }
