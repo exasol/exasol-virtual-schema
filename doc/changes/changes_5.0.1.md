@@ -1,4 +1,4 @@
-# Exasol Virtual Schema Common 5.0.0, released 2021-03-XX
+# Exasol Virtual Schema Common 5.0.1, released 2021-03-XX
 
 Code name: Fixed double literals
 
@@ -14,12 +14,12 @@ In this released we fixed double literals.
 
 ### Compile Dependency Updates
 
-* Updated `com.exasol:virtual-schema-common-jdbc:9.0.1` to 9.0.2
+* Updated `com.exasol:virtual-schema-common-jdbc:9.0.1` to `9.0.2`
 
 ### Test Dependency Updates
 
-* Updated `com.exasol:virtual-schema-common-jdbc:9.0.1` to 9.0.2
+* Updated `com.exasol:virtual-schema-common-jdbc:9.0.1` to `9.0.2`
 
 ### Plugin Dependency Updates
 
-* Updated `com.exasol:project-keeper-maven-plugin:0.4.2` to 0.5.0
+* Updated `com.exasol:project-keeper-maven-plugin:0.4.2` to `0.5.0`
