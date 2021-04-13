@@ -55,7 +55,7 @@ Please refer to the [CREATE CONNECTION](https://docs.exasol.com/sql/create_conne
 CREATE CONNECTION EXA_CONNECTION
 TO '<host-or-list>:<port>'
 USER '<user>'
-PASSWORD '<password>'
+IDENTIFIED BY '<password>'
 ```
 
 ```sql
