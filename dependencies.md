@@ -78,6 +78,7 @@
 [57]: http://www.eclipse.org/legal/epl-v10.html
 [12]: https://github.com/exasol/exasol-testcontainers
 [30]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
+[11]: https://github.com/mockito/mockito/blob/main/LICENSE
 [16]: https://github.com/exasol/hamcrest-resultset-matcher
 [58]: https://maven.apache.org/plugins/maven-dependency-plugin/
 [62]: http://zlika.github.io/reproducible-build-maven-plugin
@@ -86,7 +87,6 @@
 [29]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [22]: https://github.com/exasol/udf-debugging-javat
 [50]: https://maven.apache.org/enforcer/maven-enforcer-plugin/
-[11]: https://github.com/mockito/mockito/blob/release/3.x/LICENSE
 [9]: https://www.eclipse.org/legal/epl-v20.html
 [68]: https://maven.apache.org/plugins/maven-install-plugin/
 [8]: https://junit.org/junit5/

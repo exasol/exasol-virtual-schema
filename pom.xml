@@ -117,7 +117,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>3.5.3</version>
+            <version>3.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -153,26 +153,6 @@
     </dependencies>
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>com.exasol</groupId>-->
-<!--                <artifactId>project-keeper-maven-plugin</artifactId>-->
-<!--                <version>0.7.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>verify</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--                <configuration>-->
-<!--                    <modules>-->
-<!--                        <module>jar_artifact</module>-->
-<!--                        <module>integration_tests</module>-->
-<!--                        <module>udf_coverage</module>-->
-<!--                        <module>maven_central</module>-->
-<!--                    </modules>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
