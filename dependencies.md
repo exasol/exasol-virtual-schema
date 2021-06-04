@@ -85,7 +85,7 @@
 [70]: https://maven.apache.org/plugins/maven-site-plugin/
 [19]: http://www.opensource.org/licenses/mit-license.php
 [29]: https://www.apache.org/licenses/LICENSE-2.0.txt
-[22]: https://github.com/exasol/udf-debugging-javat
+[22]: https://github.com/exasol/udf-debugging-java
 [50]: https://maven.apache.org/enforcer/maven-enforcer-plugin/
 [9]: https://www.eclipse.org/legal/epl-v20.html
 [68]: https://maven.apache.org/plugins/maven-install-plugin/
@@ -99,6 +99,6 @@
 [42]: https://maven.apache.org/plugins/maven-javadoc-plugin/
 [52]: https://github.com/exasol/artifact-reference-checker-maven-plugin
 [60]: https://github.com/exasol/error-code-crawler-maven-plugin
-[20]: https://github.com/exasol/test-db-builder
+[20]: https://github.com/exasol/test-db-builder-java
 [38]: https://maven.apache.org/plugins/maven-jar-plugin/
 [34]: https://maven.apache.org/plugins/maven-assembly-plugin/
