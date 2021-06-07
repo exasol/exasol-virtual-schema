@@ -1,0 +1,16 @@
+release-platforms:
+  - GitHub
+  - Maven
+  - Community
+community-tags:
+  - Virtual Schema
+  - Exasol
+  - Open Source
+  - GitHub
+community-project-name: Exasol Virtual Schema
+community-project-description: |
+  The Virtual Schema provides an abstraction layer that makes an external database accessible from an Exasol database through regular SQL commands.
+  The contents of the external database are mapped to virtual tables which look like, and can be queried as, any regular Exasol table.
+
+  The Exasol Virtual Schema uses Exasol database as a datasource. The datasource can be the same node/cluster where the virtual schema is created or it can also external.
+  The Exasol Virtual Schema provides three different connection types (JDBC, EXA and local). Please, check the [user guide](https://github.com/exasol/exasol-virtual-schema/blob/main/doc/dialects/exasol.md) for more datails

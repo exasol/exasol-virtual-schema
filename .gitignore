@@ -3,6 +3,7 @@
 # .settings : we need Eclipse settings for code formatter and clean-up rules
 .cache
 dependency-reduced-pom.xml
+pom.xml.versionsBackup
 
 # Intellij
 .idea
