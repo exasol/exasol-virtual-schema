@@ -1,6 +1,7 @@
 # Exasol Virtual Schema
 
 [![Build Status](https://github.com/exasol/exasol-virtual-schema/actions/workflows/ci-build.yml/badge.svg)](https://github.com/exasol/exasol-virtual-schema/actions/workflows/ci-build.yml)
+[![Maven Central](https://img.shields.io/maven-central/v/com.exasol/exasol-virtual-schema)](https://search.maven.org/artifact/com.exasol/exasol-virtual-schema)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 
@@ -26,14 +27,14 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 Starting with version 4.0.0 of the Exasol SQL dialect, the new `EXA_CONNECTION` property replaces the `EXA_CONNECTION_STRING` property, for improved security.
 
-It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide][virtual-schemas-user-guide].
+It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide](doc/dialects/exasol.md).
 
 ## Table of Contents
 
 ### Information for Users
 
 * [Virtual Schemas User Guide][virtual-schemas-user-guide]
-* [Generic Virtual Schema User Guide](doc/dialects/exasol.md)
+* [Exasol Dialect User Guide](doc/dialects/exasol.md)
 * [Changelog](doc/changes/changelog.md)
 * [Dependencies](dependencies.md)
 
@@ -43,4 +44,7 @@ Find all the documentation in the [Virtual Schemas project][vs-doc].
 
 * [Virtual Schema API Documentation][vs-api]
 
+<!-- @formatter:off -->
 [virtual-schemas-user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
+[vs-doc]: https://github.com/exasol/virtual-schemas
+[vs-api]: https://github.com/exasol/virtual-schema-common-java/blob/main/doc/development/api/virtual_schema_api.md

@@ -227,6 +227,7 @@
                         <module>jar_artifact</module>
                         <module>integration_tests</module>
                         <module>udf_coverage</module>
+                        <module>maven_central</module>
                     </modules>
                     <linkReplacements>
                         <linkReplacement>
