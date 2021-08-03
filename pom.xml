@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>5.0.2</version>
+    <version>5.0.3</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema</url>
@@ -73,6 +73,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-jdbc</artifactId>
+            <!-- updating to 7.0.10 is currently not possible since it breaks a test -->
             <version>7.0.7</version>
         </dependency>
         <dependency>
@@ -103,7 +104,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.11.0</version>
+            <version>3.11.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -117,37 +118,37 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>3.5.1</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.15.3</version>
+            <version>1.16.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.4.0</version>
+            <version>1.4.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>1.7.30</version>
+            <version>1.7.32</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>3.1.1</version>
+            <version>3.2.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -158,8 +159,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.and.failsafe.plugin.version}</version>
                 <configuration>
-                    <!-- Set the highest log level for coverage testing, so that we have a chance to 
-                        reach branches in the logging lambdas too. -->
+                    <!-- Set the highest log level for coverage testing, so that we have a chance to
+                                  reach branches in the logging lambdas too. -->
                     <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties ${argLine}</argLine>
                 </configuration>
             </plugin>
@@ -181,15 +182,7 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                    </execution>
-
-                    <execution>
-                        <id>merge-it-results</id>
+                        <id>merge-results</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>merge</goal>
@@ -199,25 +192,49 @@
                                 <fileSet>
                                     <directory>${project.build.directory}/</directory>
                                     <includes>
-                                        <include>jacoco-it.exec</include>
-                                        <include>jacoco-udf.exec</include>
+                                        <include>jacoco*.exec</include>
                                     </includes>
                                 </fileSet>
                             </fileSets>
-                            <destFile>${project.build.directory}/aggregate-it.exec</destFile>
+                            <destFile>${project.build.directory}/aggregate.exec</destFile>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>report-integration-with-udf</id>
+                        <id>report</id>
                         <phase>verify</phase>
                         <goals>
-                            <goal>report-integration</goal>
+                            <goal>report</goal>
                         </goals>
                         <configuration>
-                            <dataFile>${project.build.directory}/aggregate-it.exec</dataFile>
+                            <dataFile>${project.build.directory}/aggregate.exec</dataFile>
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.exasol</groupId>
+                <artifactId>project-keeper-maven-plugin</artifactId>
+                <version>0.10.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <modules>
+                        <module>jar_artifact</module>
+                        <module>integration_tests</module>
+                        <module>udf_coverage</module>
+                        <module>maven_central</module>
+                    </modules>
+                    <linkReplacements>
+                        <linkReplacement>
+                            LICENSE-exasol-jdbc.txt|https://www.exasol.com/support/secure/attachment/155343/EXASOL_SDK-7.0.11.tar.gz
+                        </linkReplacement>
+                    </linkReplacements>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -254,8 +271,8 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <version>${surefire.and.failsafe.plugin.version}</version>
                 <configuration>
-                    <!-- Set the highest log level for coverage testing, so that we have a chance to 
-                        reach branches in the logging lambdas too. -->
+                    <!-- Set the highest log level for coverage testing, so that we have a chance to
+                                  reach branches in the logging lambdas too. -->
                     <argLine>-Djava.util.logging.config.file=src/test/resources/logging.properties ${argLine}</argLine>
                     <systemPropertyVariables>
                         <test.coverage>true</test.coverage>
@@ -452,7 +469,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>error-code-crawler-maven-plugin</artifactId>
-                <version>0.4.0</version>
+                <version>0.5.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -478,8 +495,8 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!-- This pseudo-plug-in configuration exists to help Eclipse's M2E to map plug-in executions. 
-                    It has no impact on a regular Maven build. -->
+                <!-- This pseudo-plug-in configuration exists to help Eclipse's M2E to map plug-in executions.
+                            It has no impact on a regular Maven build. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>

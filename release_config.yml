@@ -2,6 +2,7 @@ release-platforms:
   - GitHub
   - Maven
   - Community
+  - Jira
 community-tags:
   - Virtual Schema
   - Exasol

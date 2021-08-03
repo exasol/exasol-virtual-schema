@@ -12,14 +12,10 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 import org.hamcrest.Matcher;
@@ -36,10 +32,7 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.DatabaseObject;
-import com.exasol.dbbuilder.dialects.Schema;
-import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.User;
+import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
@@ -63,8 +56,8 @@ abstract class AbstractExasolSqlDialectIT {
     private ConnectionDefinition jdbcConnection;
 
     @BeforeAll
-    static void beforeAll()
-            throws BucketAccessException, InterruptedException, TimeoutException, NoDriverFoundException, SQLException {
+    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
+            FileNotFoundException {
         connection = EXASOL.createConnection("");
         objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
@@ -86,7 +79,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
-            throws InterruptedException, BucketAccessException, TimeoutException {
+            throws BucketAccessException, TimeoutException, FileNotFoundException {
         final Bucket bucket = EXASOL.getDefaultBucket();
         bucket.uploadFile(PATH_TO_VIRTUAL_SCHEMAS_JAR, VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
         return adapterSchema.createAdapterScriptBuilder("EXASOL_ADAPTER") //
