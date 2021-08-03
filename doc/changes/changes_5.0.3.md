@@ -12,10 +12,6 @@ In this release we updated the dependencies. By that we fixed transitive CVE-202
 
 ## Dependency Updates
 
-### Compile Dependency Updates
-
-* Updated `com.exasol:exasol-jdbc:7.0.7` to `7.0.11`
-
 ### Test Dependency Updates
 
 * Updated `com.exasol:exasol-testcontainers:3.5.1` to `4.0.0`

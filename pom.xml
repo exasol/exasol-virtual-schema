@@ -73,7 +73,8 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-jdbc</artifactId>
-            <version>7.0.11</version>
+            <!-- updating to 7.0.10 is currently not possible since it breaks a test -->
+            <version>7.0.7</version>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
