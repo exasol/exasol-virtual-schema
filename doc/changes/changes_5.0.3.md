@@ -6,7 +6,7 @@ Code name: Dependency Updates
 
 In this release we updated the dependencies. By that we fixed transitive CVE-2021-36090.
 
-Bug Fixes:
+## Bug Fixes:
 
 * #52: Fixed broken links
 
