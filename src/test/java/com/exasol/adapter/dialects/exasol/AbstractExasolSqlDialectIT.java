@@ -28,6 +28,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundExceptio
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
@@ -106,7 +107,8 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
-        final String jdbcUrl = "jdbc:exa:localhost:" + EXASOL.getDefaultInternalDatabasePort();
+        final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
+        final String jdbcUrl = "jdbc:exa:localhost/" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 
@@ -639,7 +641,7 @@ abstract class AbstractExasolSqlDialectIT {
         final int major = imageReference.getMajor();
         final int minor = imageReference.getMinor();
         final int fix = imageReference.getFixVersion();
-        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
+        return (major > 7) || ((major == 7) && ((minor > 0) || (fix > 6)));
     }
 
     @Test
