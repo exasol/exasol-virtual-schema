@@ -312,8 +312,7 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testGeometryMapping() {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        // Note that the JDBC driver reports the result as VARCHAR
-        assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
     }
 
     @Test
@@ -439,7 +438,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testCastVarcharAsGeometry() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("GEOMETRY").verify("POINT (2 5)");
     }
 
     @Test
