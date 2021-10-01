@@ -203,7 +203,11 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     protected ResultSet query(final String sql) throws SQLException {
-        return connection.createStatement().executeQuery(sql);
+        try {
+            return connection.createStatement().executeQuery(sql);
+        } catch (final SQLException exception) {
+            throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
+        }
     }
 
     @Test
