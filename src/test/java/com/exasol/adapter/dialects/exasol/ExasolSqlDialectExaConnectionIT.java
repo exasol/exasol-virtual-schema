@@ -14,6 +14,7 @@ import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
 import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
+import com.exasol.containers.ExasolDockerImageReference;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
