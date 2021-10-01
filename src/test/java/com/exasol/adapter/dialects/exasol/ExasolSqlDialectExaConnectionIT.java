@@ -51,17 +51,6 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
         return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
     }
 
-    private boolean exasolVersionSupportsFingerprintInAddress() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        if (imageReference.getMajor() <= 6) {
-            return false;
-        }
-        if (imageReference.getMinor() == 0) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     @AfterEach
     void afterEach() {

@@ -13,13 +13,44 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 
+import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
+import com.exasol.bucketfs.Bucket;
+import com.exasol.bucketfs.BucketAccessException;
+import com.exasol.containers.ExasolContainer;
+import com.exasol.containers.ExasolDockerImageReference;
+import com.exasol.dbbuilder.dialects.DatabaseObject;
+import com.exasol.dbbuilder.dialects.Schema;
+import com.exasol.dbbuilder.dialects.Table;
+import com.exasol.dbbuilder.dialects.User;
+import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
+import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
+import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
+import com.exasol.dbbuilder.dialects.exasol.ExasolObjectConfiguration;
+import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
+import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
+import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
+import com.exasol.matcher.ResultSetStructureMatcher.Builder;
+import com.exasol.matcher.TypeMatchMode;
+import com.exasol.udfdebugging.UdfTestSetup;
+import com.github.dockerjava.api.model.ContainerNetwork;
+
 import org.hamcrest.Matcher;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -28,19 +59,6 @@ import org.opentest4j.AssertionFailedError;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
-import com.exasol.bucketfs.Bucket;
-import com.exasol.bucketfs.BucketAccessException;
-import com.exasol.containers.ExasolContainer;
-import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.*;
-import com.exasol.dbbuilder.dialects.exasol.*;
-import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
-import com.exasol.matcher.ResultSetStructureMatcher.Builder;
-import com.exasol.matcher.TypeMatchMode;
-import com.exasol.udfdebugging.UdfTestSetup;
-import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
@@ -93,6 +111,17 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
+    protected static boolean exasolVersionSupportsFingerprintInAddress() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        if (imageReference.getMajor() <= 6) {
+            return false;
+        }
+        if (imageReference.getMinor() == 0) {
+            return false;
+        }
+        return true;
+    }
+
     @AfterAll
     static void afterAll() throws SQLException {
         dropAll(adapterScript, adapterSchema);
@@ -116,13 +145,12 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private String getJdbcUrl() {
-        final Optional<String> fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
         final int port = EXASOL.getDefaultInternalDatabasePort();
-        if (fingerprint.isPresent()) {
-            return "jdbc:exa:localhost/" + fingerprint.get() + ":" + port;
-        } else {
-            return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
+        if (exasolVersionSupportsFingerprintInAddress()) {
+            final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl()).orElseThrow();
+            return "jdbc:exa:localhost/" + fingerprint + ":" + port;
         }
+        return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
     }
 
     @AfterEach
