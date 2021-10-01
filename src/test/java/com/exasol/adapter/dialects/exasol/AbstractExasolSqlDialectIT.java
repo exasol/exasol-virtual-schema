@@ -107,9 +107,18 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
-        final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
-        final String jdbcUrl = "jdbc:exa:localhost/" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
+        final String jdbcUrl = getJdbcUrl();
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
+    }
+
+    private String getJdbcUrl() {
+        final Optional<String> fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
+        final int port = EXASOL.getDefaultInternalDatabasePort();
+        if (fingerprint.isPresent()) {
+            return "jdbc:exa:localhost/" + fingerprint.get() + ":" + port;
+        } else {
+            return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
+        }
     }
 
     @AfterEach

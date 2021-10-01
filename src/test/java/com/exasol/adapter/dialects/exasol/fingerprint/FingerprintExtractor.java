@@ -1,5 +1,6 @@
 package com.exasol.adapter.dialects.exasol.fingerprint;
 
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -18,11 +19,14 @@ public class FingerprintExtractor {
      * @return fingerprint
      * @throws IllegalStateException if the URL has an invalid format or does not contain a fingerprint
      */
-    public static String extractFingerprint(final String jdbcUrl) {
+    public static Optional<String> extractFingerprint(final String jdbcUrl) {
+        if (jdbcUrl.contains("validateservercertificate=0")) {
+            return Optional.empty();
+        }
         final java.util.regex.Matcher matcher = Pattern.compile("jdbc:exa:[^/]+/([^:]+):.*").matcher(jdbcUrl);
         if (!matcher.matches()) {
             throw new IllegalStateException("Error extracting fingerprint from '" + jdbcUrl + "'");
         }
-        return matcher.group(1);
+        return Optional.of(matcher.group(1));
     }
 }
