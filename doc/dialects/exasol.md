@@ -1,7 +1,6 @@
 # Exasol SQL Dialect
 
-Connecting to an Exasol database is the simplest way to get started with Virtual Schemas.
-You don't have to install any JDBC driver, because it is already installed in the Exasol database and also included in the JAR of the JDBC adapter.
+Connecting to an Exasol database is the simplest way to get started with Virtual Schemas. You don't have to install any JDBC driver, because it is already installed in the Exasol database and also included in the JAR of the JDBC adapter.
 
 ## Installing the Adapter Script
 
@@ -24,12 +23,21 @@ CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
 
 ### Defining a Named Connection
 
-Define the connection to the other Exasol cluster as shown below.
+Define the connection to the other Exasol cluster as shown below:
 
 ```sql
-CREATE CONNECTION JDBC_CONNECTION 
-TO 'jdbc:exa:<host>:<port>' 
-USER '<user>' 
+CREATE CONNECTION JDBC_CONNECTION
+TO 'jdbc:exa:<host>:<port>'
+USER '<user>'
+IDENTIFIED BY '<password>';
+```
+
+For connecting via TLS you can specify the certificate's fingerprint in the JDBC URL like this:
+
+```sql
+CREATE CONNECTION JDBC_CONNECTION
+TO 'jdbc:exa:<host>/<fingerprint>:<port>'
+USER '<user>'
 IDENTIFIED BY '<password>';
 ```
 
@@ -41,7 +49,7 @@ You have three options to pick from when connecting to an Exasol instance or clu
 
 ### Using IMPORT FROM EXA
 
-Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading data from Exasol. You can tell the adapter to use this command instead of `IMPORT FROM JDBC` by setting the `IMPORT_FROM_EXA` property. 
+Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading data from another Exasol instance. You can tell the adapter to use this command instead of `IMPORT FROM JDBC` by setting the `IMPORT_FROM_EXA` property. 
 
 In this case you have to provide the additional `EXA_CONNECTION` which contains the name of the connection definition used for the internally used `IMPORT FROM EXA` command.
 
@@ -58,6 +66,15 @@ USER '<user>'
 IDENTIFIED BY '<password>'
 ```
 
+With Exasol 7.1.0 and later you can specify the TLS certificate's fingerprint:
+
+```sql
+CREATE CONNECTION EXA_CONNECTION
+TO '<host-or-list>/<fingerprint>:<port>'
+USER '<user>'
+IDENTIFIED BY '<password>'
+```
+
 ```sql
 CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
@@ -67,7 +84,7 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     EXA_CONNECTION  = 'EXA_CONNECTION';
 ```
 
-### Using IMPORT FROM JDBC
+### Using `IMPORT FROM JDBC`
 
 You can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower because it lacks the parallelization the `IMPORT FROM EXA` variant.
 
@@ -81,7 +98,7 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     SCHEMA_NAME     = '<schema name>';
 ```
 
-### Using IS_LOCAL
+### Using `IS_LOCAL`
 
 If the data source is the same Exasol instance or cluster Virtual Schemas runs on, then the best possible connection type is a so called "local" connection.
 
@@ -89,9 +106,9 @@ Add the following parameter to `CREATE VIRTUAL SCHEMA`:
 
     IS_LOCAL = 'true'
 
-The `IS_LOCAL` parameter provides an additional speed-up in this particular use case. 
+The `IS_LOCAL` parameter provides an additional speed-up in this particular use case.
 
-The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement. 
+The way this works is that Virtual Schema generates a regular `SELECT` statement instead of an `IMPORT` statement.
 
 And that `SELECT` can be directly executed by the core database, whereas the `IMPORT` statement takes a detour via the ExaLoader.
 

@@ -1,6 +1,10 @@
-# Exasol Virtual Schema 5.0.4, released 2021-10-01
+# Exasol Virtual Schema 5.0.4, released 2021-10-04
 
-Code name: Update dependencies (compared to 5.0.3)
+Code name: Support TLS connections
+
+## Summary
+
+This release updates the JDBC driver and thus supports TLS encrypted connections.
 
 ## Dependency Updates
 
