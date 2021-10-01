@@ -8,10 +8,12 @@ import static org.hamcrest.Matchers.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
+import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
@@ -37,9 +39,17 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME,
-                "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort(), this.user.getName(),
-                this.user.getPassword());
+        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME, getToAddress(),
+                this.user.getName(), this.user.getPassword());
+    }
+
+    private String getToAddress() {
+        final Optional<String> fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
+        if (fingerprint.isPresent()) {
+            return "127.0.0.1/" + fingerprint.get() + ":" + EXASOL.getDefaultInternalDatabasePort();
+        } else {
+            return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
+        }
     }
 
     @Override
