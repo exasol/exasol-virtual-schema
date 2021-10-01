@@ -39,17 +39,27 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME, getToAddress(),
+        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME, getTargetAddress(),
                 this.user.getName(), this.user.getPassword());
     }
 
-    private String getToAddress() {
-        final Optional<String> fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl());
-        if (fingerprint.isPresent()) {
-            return "127.0.0.1/" + fingerprint.get() + ":" + EXASOL.getDefaultInternalDatabasePort();
-        } else {
-            return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
+    private String getTargetAddress() {
+        if (exasolVersionSupportsFingerprintInAddress()) {
+            final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl()).orElseThrow();
+            return "127.0.0.1/" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
         }
+        return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
+    }
+
+    private boolean exasolVersionSupportsFingerprintInAddress() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        if (imageReference.getMajor() <= 6) {
+            return false;
+        }
+        if (imageReference.getMinor() == 0) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -101,11 +111,5 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testCharMappingAscii() {
         final Table table = createSingleColumnTable("CHAR(20) ASCII").insert("sun").insert("rain");
         assertVirtualTableContents(table, table("VARCHAR").row(pad("sun", 20)).row(pad("rain", 20)).matches());
-    }
-
-    @Override
-    @Test
-    void testCastVarcharToChar() {
-        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
     }
 }
