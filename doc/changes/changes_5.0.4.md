@@ -1,6 +1,6 @@
 # Exasol Virtual Schema 5.0.4, released 2021-10-01
 
-Code name: Update dependencies
+Code name: Update dependencies (compared to 5.0.3)
 
 ## Dependency Updates
 
