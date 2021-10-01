@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.*;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
