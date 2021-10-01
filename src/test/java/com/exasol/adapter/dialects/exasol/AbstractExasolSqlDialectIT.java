@@ -10,13 +10,13 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opentest4j.AssertionFailedError;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -44,6 +45,8 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
+    private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
+
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
@@ -108,6 +111,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
         final String jdbcUrl = getJdbcUrl();
+        LOGGER.fine(() -> "Creating connection to '" + jdbcUrl + "' for user '" + user.getName() + "'");
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 
@@ -169,7 +173,8 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
         } catch (final SQLException exception) {
-            fail("Unable to execute assertion query. Caused by: " + exception.getMessage());
+            throw new AssertionFailedError("Unable to execute assertion query. Caused by: " + exception.getMessage(),
+                    exception);
         } finally {
             virtualSchema.drop();
         }
@@ -348,7 +353,8 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
-            fail("Unable to run assertion query: " + sql + "\nCaused by: " + exception.getMessage());
+            throw new AssertionFailedError(
+                    "Unable to run assertion query: " + sql + "\nCaused by: " + exception.getMessage(), exception);
         }
     }
 
