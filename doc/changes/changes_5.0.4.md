@@ -23,7 +23,7 @@ This release updates the JDBC driver and thus supports TLS encrypted connections
 
 * Updated `com.exasol:artifact-reference-checker-maven-plugin:0.3.1` to `0.4.0`
 * Updated `com.exasol:error-code-crawler-maven-plugin:0.5.1` to `0.6.0`
-* Updated `com.exasol:project-keeper-maven-plugin:0.10.0` to `1.0.0`
+* Updated `com.exasol:project-keeper-maven-plugin:0.10.0` to `1.1.0`
 * Updated `org.apache.maven.plugins:maven-dependency-plugin:3.1.2` to `3.2.0`
 * Updated `org.apache.maven.plugins:maven-enforcer-plugin:3.0.0-M3` to `3.0.0`
 * Updated `org.apache.maven.plugins:maven-javadoc-plugin:3.3.0` to `3.3.1`
