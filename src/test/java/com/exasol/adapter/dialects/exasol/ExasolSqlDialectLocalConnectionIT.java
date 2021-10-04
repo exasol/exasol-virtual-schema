@@ -1,11 +1,13 @@
 package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import com.exasol.containers.ExasolDockerImageReference;
 import com.exasol.dbbuilder.dialects.Table;
 
 /**
@@ -73,13 +75,38 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Override
     @Test
     void testGeometryMapping() {
+        assumeDbVersion7OrLater();
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
+    }
+
+    @Test
+    void testGeometryMappingDbVersion6() {
+        assumeDbVersion6();
+        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
+        assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
     }
 
     @Override
     @Test
     void testCastVarcharAsGeometry() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("GEOMETRY").verify("POINT (2 5)");
+        assumeDbVersion7OrLater();
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
+    }
+
+    @Test
+    void testCastVarcharAsGeometryDbVersion6() {
+        assumeDbVersion6();
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+    }
+
+    private void assumeDbVersion6() {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        assumeTrue(version.getMajor() == 6, "Test only valid for DB version 6.*.* but not for " + version);
+    }
+
+    private void assumeDbVersion7OrLater() {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        assumeTrue(version.getMajor() >= 7, "Test only valid for DB version 7 or later but not for " + version);
     }
 }
