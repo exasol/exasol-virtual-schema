@@ -113,13 +113,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     protected static boolean exasolVersionSupportsFingerprintInAddress() {
         final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        if (imageReference.getMajor() <= 6) {
-            return false;
-        }
-        if (imageReference.getMinor() == 0) {
-            return false;
-        }
-        return true;
+        return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
     }
 
     @AfterAll
@@ -201,8 +195,7 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
         } catch (final SQLException exception) {
-            throw new AssertionFailedError("Unable to execute assertion query. Caused by: " + exception.getMessage(),
-                    exception);
+            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName());
         } finally {
             virtualSchema.drop();
         }
@@ -382,11 +375,11 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
+        System.out.println(sql);
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
-            throw new AssertionFailedError(
-                    "Unable to run assertion query: " + sql + "\nCaused by: " + exception.getMessage(), exception);
+            throw new AssertionFailedError("Unable to run assertion query: '" + sql + "'", exception);
         }
     }
 
