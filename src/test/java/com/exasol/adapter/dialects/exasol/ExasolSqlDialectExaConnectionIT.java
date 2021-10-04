@@ -13,7 +13,6 @@ import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
 import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
-import com.exasol.containers.ExasolDockerImageReference;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
@@ -100,5 +99,11 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testCharMappingAscii() {
         final Table table = createSingleColumnTable("CHAR(20) ASCII").insert("sun").insert("rain");
         assertVirtualTableContents(table, table("VARCHAR").row(pad("sun", 20)).row(pad("rain", 20)).matches());
+    }
+
+    @Override
+    @Test
+    void testCastVarcharToChar() {
+        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
     }
 }
