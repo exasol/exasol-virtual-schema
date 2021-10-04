@@ -375,7 +375,6 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
-        System.out.println(sql);
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
