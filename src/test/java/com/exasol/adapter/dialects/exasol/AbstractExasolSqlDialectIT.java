@@ -10,39 +10,61 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.EnabledIf;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
+import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.*;
-import com.exasol.dbbuilder.dialects.exasol.*;
+import com.exasol.dbbuilder.dialects.DatabaseObject;
+import com.exasol.dbbuilder.dialects.Schema;
+import com.exasol.dbbuilder.dialects.Table;
+import com.exasol.dbbuilder.dialects.User;
+import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
+import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
+import com.exasol.dbbuilder.dialects.exasol.ExasolObjectConfiguration;
+import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
+import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
+import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
 import com.exasol.udfdebugging.UdfTestSetup;
 import com.github.dockerjava.api.model.ContainerNetwork;
 
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.opentest4j.AssertionFailedError;
+import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
+    private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
+
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
@@ -89,6 +111,11 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
+    protected static boolean exasolVersionSupportsFingerprintInAddress() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
+    }
+
     @AfterAll
     static void afterAll() throws SQLException {
         dropAll(adapterScript, adapterSchema);
@@ -106,8 +133,18 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
-        final String jdbcUrl = "jdbc:exa:localhost:" + EXASOL.getDefaultInternalDatabasePort();
+        final String jdbcUrl = getJdbcUrl();
+        LOGGER.fine(() -> "Creating connection to '" + jdbcUrl + "' for user '" + user.getName() + "'");
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
+    }
+
+    private String getJdbcUrl() {
+        final int port = EXASOL.getDefaultInternalDatabasePort();
+        if (exasolVersionSupportsFingerprintInAddress()) {
+            final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl()).orElseThrow();
+            return "jdbc:exa:localhost/" + fingerprint + ":" + port;
+        }
+        return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
     }
 
     @AfterEach
@@ -158,7 +195,7 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
         } catch (final SQLException exception) {
-            fail("Unable to execute assertion query. Caused by: " + exception.getMessage());
+            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName());
         } finally {
             virtualSchema.drop();
         }
@@ -187,7 +224,11 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     protected ResultSet query(final String sql) throws SQLException {
-        return connection.createStatement().executeQuery(sql);
+        try {
+            return connection.createStatement().executeQuery(sql);
+        } catch (final SQLException exception) {
+            throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
+        }
     }
 
     @Test
@@ -337,7 +378,7 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
-            fail("Unable to run assertion query: " + sql + "\nCaused by: " + exception.getMessage());
+            throw new AssertionFailedError("Unable to run assertion query: '" + sql + "'", exception);
         }
     }
 
@@ -392,7 +433,6 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testCastVarcharToChar() {
-        // assertCast("VARCHAR(20)", "CHAR(40)", "Hello.", pad("Hello.", 40));
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").verify(pad("Hello.", 40));
     }
 
@@ -639,7 +679,7 @@ abstract class AbstractExasolSqlDialectIT {
         final int major = imageReference.getMajor();
         final int minor = imageReference.getMinor();
         final int fix = imageReference.getFixVersion();
-        return (major > 7) || (major == 7 && ((minor > 0) || (fix > 6)));
+        return (major > 7) || ((major == 7) && ((minor > 0) || (fix > 6)));
     }
 
     @Test

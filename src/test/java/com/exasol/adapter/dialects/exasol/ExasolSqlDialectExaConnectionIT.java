@@ -12,6 +12,7 @@ import java.util.Map;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
+import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
@@ -37,9 +38,16 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     @BeforeEach
     void beforeEach() {
         super.beforeEach();
-        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME,
-                "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort(), this.user.getName(),
-                this.user.getPassword());
+        this.exaConnection = objectFactory.createConnectionDefinition(EXA_CONNECTION_NAME, getTargetAddress(),
+                this.user.getName(), this.user.getPassword());
+    }
+
+    private String getTargetAddress() {
+        if (exasolVersionSupportsFingerprintInAddress()) {
+            final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl()).orElseThrow();
+            return "127.0.0.1/" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
+        }
+        return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
     }
 
     @Override
