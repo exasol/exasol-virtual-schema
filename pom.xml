@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>5.0.4</version>
+    <version>5.0.5</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema</url>
@@ -13,7 +13,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>11</java.version>
         <surefire.and.failsafe.plugin.version>3.0.0-M3</surefire.and.failsafe.plugin.version>
-        <vscjdbc.version>9.0.3</vscjdbc.version>
+        <vscjdbc.version>9.0.4</vscjdbc.version>
         <sonar.coverage.jacoco.xmlReportPaths>target/site/jacoco/jacoco.xml,target/site/jacoco-it/jacoco.xml
         </sonar.coverage.jacoco.xmlReportPaths>
         <gpg.skip>true</gpg.skip>
@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-jdbc</artifactId>
-            <version>7.1.1</version>
+            <version>7.1.2</version>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
@@ -103,7 +103,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>3.12.4</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -117,19 +117,19 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>5.1.0</version>
+            <version>5.1.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.16.0</version>
+            <version>1.16.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.5.0</version>
+            <version>1.5.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -147,7 +147,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
-            <version>0.4.0</version>
+            <version>0.4.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
