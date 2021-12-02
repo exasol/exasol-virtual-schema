@@ -21,8 +21,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
-    public static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
-    public static final String SRID_PATTERN = "\\((\\d+)\\)";
+    private static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
+    private static final String SRID_PATTERN = "\\((\\d+)\\)";
 
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
@@ -78,6 +78,13 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
                 typeDescription.getByteSize(), typeDescription.getTypeName());
     }
 
+    /**
+     * Extract the spacial reference system identifier (SRID) from a type description.
+     *
+     * @param typeDescriptionString a type description like {@code GEOMETRY(1234)} or {@code GEOMETRY}.
+     * @return the SRID from the type description or the default value
+     *         {@link #DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER}
+     */
     protected int extractSrid(final String typeDescriptionString) {
         final Pattern pattern = Pattern.compile(SRID_PATTERN);
         final Matcher matcher = pattern.matcher(typeDescriptionString);
