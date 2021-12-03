@@ -36,7 +36,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
         } else {
             throw new UnsupportedOperationException(ExaError.messageBuilder("E-VS-EXA-5") //
                     .message("Attention! Using literals and constant expressions with datatype "
-                            + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce a incorrect results.")
+                            + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.")
                     .mitigation("We recommend using 'TIMESTAMP' instead. If you are willing to take the risk and "
                             + "want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema "
                             + "with the following additional property IGNORE_ERRORS = {{switchParameter}}. "

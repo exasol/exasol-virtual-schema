@@ -581,7 +581,6 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testCastVarcharAsGeometry() {
-        // castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
         castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
     }
 
@@ -728,8 +727,8 @@ abstract class AbstractExasolSqlDialectIT {
         final SQLException exception = assertThrows(SQLException.class, () -> query(
                 "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)));
         assertThat(exception.getMessage(),
-                containsString("Attention! Using literals and constant expressions with datatype "
-                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce a incorrect results."));
+                containsString("E-VS-EXA-5: Attention! Using literals and constant expressions with datatype "
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results."));
     }
 
     // SELECT * tests
