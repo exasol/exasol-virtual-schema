@@ -1,10 +1,14 @@
 # Exasol Virtual Schema 6.0.0, released 2021-12-??
 
-Code name:
+Code name: Support native Exasol data types
+
+This release improves support for Exasol's data types `HASHTYPE`, `GEOMETRY`, `INTERVAL DAY TO SECOND`, and `INTERVAL YEAR TO MONTH`. The virtual schema now reports them as their real type, not as `CHAR` or `VARCHAR` as before.
+
+**This is a breaking change as the behaviour of the virtual schema changes.**
 
 ## Features
 
-* ISSUE_NUMBER: description
+* #60: Support native Exasol data types
 
 ## Dependency Updates
 
