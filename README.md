@@ -23,11 +23,13 @@ If you want to set up a Virtual Schema for a different database system, please h
 
 * Access Exasol database using Virtual Schema.
 
-## Deprecation Warning
+## Deprecation Warnings
 
-Starting with version 4.0.0 of the Exasol SQL dialect, the new `EXA_CONNECTION` property replaces the `EXA_CONNECTION_STRING` property, for improved security.
+* Starting with version 4.0.0 of the Exasol SQL dialect, the new `EXA_CONNECTION` property replaces the `EXA_CONNECTION_STRING` property, for improved security.
 
-It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide](doc/dialects/exasol.md).
+  It takes the name of a connection definition in case you are using `IMPORT FROM EXA`. For details please consult the [user guide](doc/dialects/exasol.md).
+
+* Version 6.0.0 and later of the Exasol Virtual Schema require Exasol 7.0 or later. If you need to use Exasol 6.2 please use version 5.0.5 of the Exasol Virtual Schema.
 
 ## Table of Contents
 

@@ -2,9 +2,9 @@
 
 Code name: Support native Exasol data types
 
-This release improves support for Exasol's data types `HASHTYPE`, `GEOMETRY`, `INTERVAL DAY TO SECOND`, and `INTERVAL YEAR TO MONTH`. The virtual schema now reports them as their real type, not as `CHAR` or `VARCHAR` as before.
+This release improves support for Exasol's data types `HASHTYPE`, `GEOMETRY`, `INTERVAL DAY TO SECOND`, and `INTERVAL YEAR TO MONTH`. The virtual schema now reports them as their real type, not as `CHAR` or `VARCHAR` as before. **This is a breaking change!**
 
-**This is a breaking change as the behaviour of the virtual schema changes.**
+This release does not support Exasol version 6.2 anymore. Please upgrade to Exasol 7.1 or use version 5.0.5.
 
 ## Features
 
