@@ -72,26 +72,11 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
         castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").verify("+00004-06");
     }
 
-    @Override
-    @Test
-    void testGeometryMapping() {
-        assumeDbVersion7OrLater();
-        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
-    }
-
     @Test
     void testGeometryMappingDbVersion6() {
         assumeDbVersion6();
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
-    }
-
-    @Override
-    @Test
-    void testCastVarcharAsGeometry() {
-        assumeDbVersion7OrLater();
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
     }
 
     @Test

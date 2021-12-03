@@ -106,4 +106,67 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testCastVarcharToChar() {
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
     }
+
+    @Override
+    @Test
+    void testHashtypeMapping() throws SQLException {
+        final String value = "550e8400-e29b-11d4-a716-446655440000";
+        final Table table = createSingleColumnTable("HASHTYPE").insert(value);
+        assertVirtualTableContents(table, table("VARCHAR").row(value.replace("-", "")).matches());
+    }
+
+    @Override
+    @Test
+    void testGeometryMapping() {
+        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
+        assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+    }
+
+    @Override
+    @Test
+    void testCastVarcharAsGeometry() {
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+    }
+
+    @Override
+    @Test
+    void testIntervalDayToSecondMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL DAY TO SECOND").insert("2 12:50:10.123");
+        assertVirtualTableContents(table, table("VARCHAR").row("+02 12:50:10.123").matches());
+    }
+
+    @Override
+    @Test
+    void testIntervalDayToSecondMappingCustom() {
+        final Table table = createSingleColumnTable("INTERVAL DAY (4) TO SECOND (6)").insert("2 12:50:10.123");
+        assertVirtualTableContents(table, table("VARCHAR").row("+0002 12:50:10.123000").matches());
+    }
+
+    @Override
+    @Test
+    void testIntervalYearToMonthMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR TO MONTH").insert("5-3");
+        assertVirtualTableContents(table, table("VARCHAR").row("+05-03").matches());
+    }
+
+    @Override
+    @Test
+    void testIntervalYearToMonthMappingCustom() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR (3) TO MONTH").insert("5-3");
+        assertVirtualTableContents(table, table("VARCHAR").row("+005-03").matches());
+    }
+
+    @Override
+    @Test
+    void testCastVarcharAsIntervalDayToSecond() {
+        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12").accept("VARCHAR")
+                .verify("+00003 12:50:10.12");
+    }
+
+    @Override
+    @Test
+    void testCastVarcharAsIntervalYearToMonth() {
+        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("VARCHAR")
+                .verify("+00004-06");
+    }
 }

@@ -29,7 +29,7 @@ abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExa
     }
 
     @Test
-    void testIntervalDayToSecontMapping() {
+    void testIntervalDayToSecondMapping() {
         final Table table = createSingleColumnTable("INTERVAL DAY (9) TO SECOND") //
                 .insert("-999999999 23:59:59.999") //
                 .insert("-1 12:34:56.789") //
@@ -43,17 +43,5 @@ abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExa
                 .row("+000000001 12:34:56.789") //
                 .row("+999999999 23:59:59.999") //
                 .matches());
-    }
-
-    @Test
-    void testCastVarcharAsIntervalDayToSecond() {
-        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12").accept("VARCHAR")
-                .verify("+00003 12:50:10.12");
-    }
-
-    @Test
-    void testCastVarcharAsIntervalYearToMonth() {
-        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("VARCHAR")
-                .verify("+00004-06");
     }
 }

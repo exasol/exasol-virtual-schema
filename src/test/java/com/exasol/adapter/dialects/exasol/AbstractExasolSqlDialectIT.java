@@ -8,61 +8,46 @@ import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+
+import org.hamcrest.Matcher;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.EnabledIf;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.opentest4j.AssertionFailedError;
+import org.opentest4j.MultipleFailuresError;
+import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.DatabaseObject;
-import com.exasol.dbbuilder.dialects.Schema;
-import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.User;
-import com.exasol.dbbuilder.dialects.exasol.AdapterScript;
+import com.exasol.dbbuilder.dialects.*;
+import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
-import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
-import com.exasol.dbbuilder.dialects.exasol.ExasolObjectConfiguration;
-import com.exasol.dbbuilder.dialects.exasol.ExasolObjectFactory;
-import com.exasol.dbbuilder.dialects.exasol.ExasolSchema;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
 import com.exasol.udfdebugging.UdfTestSetup;
 import com.github.dockerjava.api.model.ContainerNetwork;
 
-import org.hamcrest.Matcher;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIf;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.opentest4j.AssertionFailedError;
-import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
-
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
+    private static final String COLUMN1_NAME = "C1";
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
 
     @Container
@@ -187,7 +172,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     protected Table createSingleColumnTable(final String sourceType) {
         final String typeAsIdentifier = sourceType.replaceAll("[ ,]", "_").replaceAll("[()]", "");
-        return this.sourceSchema.createTable("SINGLE_COLUMN_TABLE_" + typeAsIdentifier, "C1", sourceType);
+        return this.sourceSchema.createTable("SINGLE_COLUMN_TABLE_" + typeAsIdentifier, COLUMN1_NAME, sourceType);
     }
 
     protected void assertVirtualTableContents(final Table table, final Matcher<ResultSet> matcher) {
@@ -195,7 +180,7 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
         } catch (final SQLException exception) {
-            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName());
+            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName(), exception);
         } finally {
             virtualSchema.drop();
         }
@@ -337,8 +322,101 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testGeometryMapping() {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        // Note that the JDBC driver reports the result as VARCHAR
-        assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
+    }
+
+    @Test
+    void testIntervalDayToSecondMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL DAY TO SECOND").insert("2 12:50:10.123");
+        assertVirtualTableContents(table, table("INTERVAL DAY TO SECOND").row("+02 12:50:10.123").matches());
+    }
+
+    @Test
+    void testIntervalDayToSecondMappingCustom() {
+        final Table table = createSingleColumnTable("INTERVAL DAY (4) TO SECOND (6)").insert("2 12:50:10.123");
+        assertVirtualTableContents(table, table("INTERVAL DAY TO SECOND").row("+0002 12:50:10.123000").matches());
+    }
+
+    @Test
+    void testIntervalYearToMonthMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR TO MONTH").insert("5-3");
+        assertVirtualTableContents(table, table("INTERVAL YEAR TO MONTH").row("+05-03").matches());
+    }
+
+    @Test
+    void testIntervalYearToMonthMappingCustom() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR (3) TO MONTH").insert("5-3");
+        assertVirtualTableContents(table, table("INTERVAL YEAR TO MONTH").row("+005-03").matches());
+    }
+
+    @Test
+    void testHashtypeMapping() throws SQLException {
+        final String value = "550e8400-e29b-11d4-a716-446655440000";
+        final Table table = createSingleColumnTable("HASHTYPE").insert(value);
+        assertVirtualTableContents(table, table("HASHTYPE").row(value.replace("-", "")).matches());
+    }
+
+    @CsvSource({ //
+            "HASHTYPE, HASHTYPE(16 BYTE), 550e8400-e29b-11d4-a716-446655440000",
+            "HASHTYPE(4 BYTE), HASHTYPE(4 BYTE), 550e8400", //
+            "GEOMETRY(3857), GEOMETRY(3857), POINT (2 3)", //
+            "INTERVAL DAY TO SECOND, INTERVAL DAY(2) TO SECOND(3), 2 12:50:10.123", //
+            "INTERVAL DAY (4) TO SECOND (6), INTERVAL DAY(4) TO SECOND(6), 2 12:50:10.123", //
+            "INTERVAL YEAR TO MONTH, INTERVAL YEAR(2) TO MONTH, 5-3", //
+            "INTERVAL YEAR (3) TO MONTH, INTERVAL YEAR(3) TO MONTH, 5-3", //
+            "DATE, DATE, 2021-12-02", //
+            "TIMESTAMP, TIMESTAMP, 2021-12-02 00:00:00.000", //
+            "TIMESTAMP WITH LOCAL TIME ZONE, TIMESTAMP WITH LOCAL TIME ZONE, 2021-12-02 00:00:00.000", //
+            "DOUBLE PRECISION, DOUBLE, 3.14", //
+            "DOUBLE, DOUBLE, 3.14", //
+            "'DECIMAL(4,3)', 'DECIMAL(4,3)', 3.141", //
+            "BOOLEAN, BOOLEAN, true", //
+            "CHAR(10), CHAR(10) UTF8, string", //
+            "CHAR(10) ASCII, CHAR(10) ASCII, string", //
+            "VARCHAR(10), VARCHAR(10) UTF8, string", //
+            "VARCHAR(10) ASCII, VARCHAR(10) ASCII, string", //
+    })
+    @ParameterizedTest
+    void testVirtualSchemaTypes(final String sourceType, final String expectedType, final String value)
+            throws SQLException {
+        testVirtualSchemaTypes(sourceType, expectedType, expectedType, value);
+    }
+
+    @CsvSource({ //
+            "GEOMETRY, GEOMETRY, GEOMETRY(3857), POINT (2 3)", //
+    })
+    @ParameterizedTest
+    void testVirtualSchemaTypes(final String sourceType, final String expectedTypeOfType,
+            final String expectedDescribeType, final String value) throws MultipleFailuresError {
+        final Table table = createSingleColumnTable(sourceType).insert(value);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertAll( //
+                    () -> assertThat("TYPOEOF column", getTypeofColumn(virtualSchema, table),
+                            equalTo(expectedTypeOfType)),
+                    () -> assertThat("DESCRIBE column type", getDescribeSqlType(virtualSchema, table),
+                            equalTo(expectedDescribeType)));
+        } finally {
+            virtualSchema.drop();
+            table.drop();
+        }
+    }
+
+    private String getTypeofColumn(final VirtualSchema virtualSchema, final Table table) throws SQLException {
+        try (final ResultSet result = query(
+                "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "DESCRIBE query did not return any rows");
+            return result.getString("TYPE");
+        }
+    }
+
+    private String getDescribeSqlType(final VirtualSchema virtualSchema, final Table table) throws SQLException {
+        try (final ResultSet result = query("DESCRIBE " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "DESCRIBE query did not return any rows");
+            final String columnName = result.getString("COLUMN_NAME");
+            assertThat(columnName, equalTo(table.getColumns().get(0).getName()));
+            return result.getString("SQL_TYPE");
+        }
     }
 
     @Test
@@ -384,7 +462,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testSelectingUnquotedMixedCaseTableThrowsException() {
-        final Table table = this.sourceSchema.createTable("MixedCaseTable", "C1", "BOOLEAN").insert(true);
+        final Table table = this.sourceSchema.createTable("MixedCaseTable", COLUMN1_NAME, "BOOLEAN").insert(true);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         final String virtualTableUnquotedName = virtualSchema.getFullyQualifiedName() + "." + table.getName();
         final SQLException exception = assertThrows(SQLException.class, () -> selectAllFrom(virtualTableUnquotedName));
@@ -462,7 +540,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testCastVarcharAsGeometry() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+        // castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
     }
 
     @Test
@@ -476,6 +555,18 @@ abstract class AbstractExasolSqlDialectIT {
         final String timestamp = "2017-11-03 14:18:02.081";
         castFrom("VARCHAR(30)").to("TIMESTAMP WITH LOCAL TIME ZONE").input(timestamp).accept("TIMESTAMP")
                 .verify(Timestamp.valueOf(timestamp));
+    }
+
+    @Test
+    void testCastVarcharAsIntervalDayToSecond() {
+        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12")
+                .accept("INTERVAL DAY TO SECOND").verify("+00003 12:50:10.12");
+    }
+
+    @Test
+    void testCastVarcharAsIntervalYearToMonth() {
+        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("INTERVAL YEAR TO MONTH")
+                .verify("+00004-06");
     }
 
     @Test
@@ -513,9 +604,9 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private void createVirtualSchemaWithTablesForJoinTest() {
-        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+        this.sourceSchema.createTable("TL", COLUMN1_NAME, "VARCHAR(2)", "C2", "VARCHAR(2)") //
                 .insert("K1", "L1").insert(null, "L2").insert("K3", "L3");
-        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+        this.sourceSchema.createTable("TR", COLUMN1_NAME, "VARCHAR(2)", "C2", "VARCHAR(2)") //
                 .insert("K1", "R1").insert("K2", "R2").insert(null, "R3");
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
     }

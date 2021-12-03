@@ -7,13 +7,13 @@ import java.sql.Types;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
@@ -45,7 +45,7 @@ class ExasolColumnMetadataReaderTest {
         final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_HASHTYPE, 0, 0, 16, "HASHTYPE");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createHashtype(16)));
+                equalTo(DataType.createHashtype(8)));
     }
 
     @Test
