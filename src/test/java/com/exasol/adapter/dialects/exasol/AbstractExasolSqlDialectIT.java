@@ -195,7 +195,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
-    private ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
+    protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
             throws SQLException {
         return selectAllFrom(getVirtualTableName(virtualSchema, table));
     }
