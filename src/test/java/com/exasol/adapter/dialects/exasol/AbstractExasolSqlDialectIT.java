@@ -433,31 +433,41 @@ abstract class AbstractExasolSqlDialectIT {
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         try {
             assertAll( //
-                    () -> assertThat("TYPOEOF column", getTypeofColumn(virtualSchema, table),
-                            equalTo(expectedTypeOfType)),
-                    () -> assertThat("DESCRIBE column type", getDescribeSqlType(virtualSchema, table),
-                            equalTo(expectedDescribeType)));
+                    () -> assertTypeofColumn(virtualSchema, table, expectedTypeOfType),
+                    () -> assertDescribeColumnType(virtualSchema, table, expectedDescribeType));
         } finally {
             virtualSchema.drop();
             table.drop();
         }
     }
 
-    private String getTypeofColumn(final VirtualSchema virtualSchema, final Table table) throws SQLException {
-        try (final ResultSet result = query(
-                "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
-            assertTrue(result.next(), "DESCRIBE query did not return any rows");
-            return result.getString("TYPE");
-        }
-    }
-
-    private String getDescribeSqlType(final VirtualSchema virtualSchema, final Table table) throws SQLException {
+    private void assertDescribeColumnType(final VirtualSchema virtualSchema, final Table table,
+            final String expectedType) throws SQLException {
         try (final ResultSet result = query("DESCRIBE " + getVirtualTableName(virtualSchema, table))) {
             assertTrue(result.next(), "DESCRIBE query did not return any rows");
             final String columnName = result.getString("COLUMN_NAME");
             assertThat(columnName, equalTo(table.getColumns().get(0).getName()));
-            return result.getString("SQL_TYPE");
+            final String actualType = result.getString("SQL_TYPE");
+            assertThat("DESCRIBE column type", actualType, equalTo(expectedType));
         }
+    }
+
+    private void assertTypeofColumn(final VirtualSchema virtualSchema, final Table table, final String expectedType)
+            throws SQLException {
+        if (!typeofFunctionSupported()) {
+            return;
+        }
+        try (final ResultSet result = query(
+                "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "DESCRIBE query did not return any rows");
+            final String actualType = result.getString("TYPE");
+            assertThat("TYPOEOF column", actualType, equalTo(expectedType));
+        }
+    }
+
+    private boolean typeofFunctionSupported() {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        return ((version.getMajor() == 7) && (version.getMinor() >= 1)) || (version.getMajor() > 7);
     }
 
     @Test
