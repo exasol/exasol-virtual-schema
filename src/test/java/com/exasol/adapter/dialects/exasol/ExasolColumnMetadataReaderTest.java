@@ -37,7 +37,7 @@ class ExasolColumnMetadataReaderTest {
         final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
                 ExasolColumnMetadataReader.EXASOL_TIMESTAMP, 0, 0, 0, "TIMESTAMP");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createTimestamp(true)));
+                equalTo(DataType.createTimestamp(false)));
     }
 
     @Test

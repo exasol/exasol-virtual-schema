@@ -228,6 +228,13 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("CHAR").row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
     }
 
+    /**
+     * Append {@code padTo} space characters {@code ""} to the given {@code text}
+     *
+     * @param text  the text to pad
+     * @param padTo the number of spaces to append
+     * @return the padded text
+     */
     protected String pad(final String text, final int padTo) {
         return text + " ".repeat(padTo - text.length());
     }
@@ -323,6 +330,40 @@ abstract class AbstractExasolSqlDialectIT {
     void testGeometryMapping() {
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
         assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
+    }
+
+    @Test
+    void testInvervalYearToMonthMappingMaxPrecision() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR (9) TO MONTH")//
+                .insert("-999999999-11") //
+                .insert("-1-1") //
+                .insert("0-0") //
+                .insert("1-1") //
+                .insert("999999999-11");
+        assertVirtualTableContents(table, table("INTERVAL YEAR TO MONTH") //
+                .row("-999999999-11") //
+                .row("-000000001-01") //
+                .row("+000000000-00") //
+                .row("+000000001-01") //
+                .row("+999999999-11") //
+                .matches());
+    }
+
+    @Test
+    void testIntervalDayToSecondMappingMaxPrecision() {
+        final Table table = createSingleColumnTable("INTERVAL DAY (9) TO SECOND") //
+                .insert("-999999999 23:59:59.999") //
+                .insert("-1 12:34:56.789") //
+                .insert("0 00:00:00.000") //
+                .insert("1 12:34:56.789") //
+                .insert("999999999 23:59:59.999");
+        assertVirtualTableContents(table, table("INTERVAL DAY TO SECOND") //
+                .row("-999999999 23:59:59.999") //
+                .row("-000000001 12:34:56.789") //
+                .row("+000000000 00:00:00.000") //
+                .row("+000000001 12:34:56.789") //
+                .row("+999999999 23:59:59.999") //
+                .matches());
     }
 
     @Test
@@ -688,7 +729,7 @@ abstract class AbstractExasolSqlDialectIT {
                 "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)));
         assertThat(exception.getMessage(),
                 containsString("Attention! Using literals and constant expressions with datatype "
-                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce a incorrect results."));
     }
 
     // SELECT * tests
