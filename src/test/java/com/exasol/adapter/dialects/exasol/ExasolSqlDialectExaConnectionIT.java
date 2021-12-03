@@ -30,7 +30,7 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
  * <ul>
  */
-class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
+class ExasolSqlDialectExaConnectionIT extends AbstractExasolSqlDialectIT {
     private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
 
