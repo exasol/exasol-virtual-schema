@@ -18,6 +18,13 @@ import com.exasol.errorreporting.ExaError;
 public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private static final Logger LOGGER = Logger.getLogger(ExasolColumnMetadataReader.class.getName());
 
+    private static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
+    private static final String TYPE_NAME_TIMESTAMP_WITH_LOCAL_TIME_ZONE = "TIMESTAMP WITH LOCAL TIME ZONE";
+    private static final String TYPE_NAME_INTERVAL_DAY_TO_SECOND = "INTERVAL DAY TO SECOND";
+    private static final String TYPE_NAME_INTERVAL_YEAR_TO_MONTH = "INTERVAL YEAR TO MONTH";
+    private static final String TYPE_NAME_GEOMETRY = "GEOMETRY";
+    private static final String TYPE_NAME_HASHTYPE = "HASHTYPE";
+
     static final int EXASOL_INTERVAL_DAY_TO_SECONDS = -104;
     static final int EXASOL_INTERVAL_YEAR_TO_MONTHS = -103;
     static final int EXASOL_GEOMETRY = 123;
@@ -55,61 +62,93 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     }
 
     private DataType map(final JDBCTypeDescription jdbcTypeDescription) {
-        final String typeName = jdbcTypeDescription.getTypeName();
-        final int jdbcType = jdbcTypeDescription.getJdbcType();
-        if ("HASHTYPE".equals(typeName) || (jdbcType == EXASOL_HASHTYPE)) {
-            if (jdbcTypeDescription.getByteSize() > 0) {
-                return DataType.createHashtype(jdbcTypeDescription.getByteSize() / 2);
-            } else {
-                return DataType.createHashtype(DEFAULT_HASHTYPE_SIZE);
-            }
+        DataType type = createTypeBasedOnTypeName(jdbcTypeDescription);
+        if (type != null) {
+            return type;
         }
-        if ("GEOMETRY".equals(typeName) || (jdbcType == EXASOL_GEOMETRY)) {
-            return DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize());
+        type = createTypeBasedOnJdbcType(jdbcTypeDescription);
+        if (type != null) {
+            return type;
         }
 
-        if ("INTERVAL YEAR TO MONTH".equals(typeName) && (jdbcType == EXASOL_INTERVAL_YEAR_TO_MONTHS)) {
+        return super.mapJdbcType(jdbcTypeDescription);
+    }
+
+    private DataType createTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
+        if (jdbcTypeDescription.getTypeName() == null) {
+            return null;
+        }
+        switch (jdbcTypeDescription.getTypeName()) {
+        case TYPE_NAME_HASHTYPE:
+            return createHashtypeType(jdbcTypeDescription);
+        case TYPE_NAME_GEOMETRY:
+            return createGeometryType(jdbcTypeDescription);
+        case TYPE_NAME_INTERVAL_YEAR_TO_MONTH:
+            return createIntervalYearToMonthType(jdbcTypeDescription);
+        case TYPE_NAME_INTERVAL_DAY_TO_SECOND:
+            return createIntervalDayToSecondType(jdbcTypeDescription);
+        case TYPE_NAME_TIMESTAMP_WITH_LOCAL_TIME_ZONE:
+            return DataType.createTimestamp(true);
+        case TYPE_NAME_TIMESTAMP:
+            return DataType.createTimestamp(false);
+        default:
+            return null;
+        }
+    }
+
+    private DataType createTypeBasedOnJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
+        switch (jdbcTypeDescription.getJdbcType()) {
+        case EXASOL_HASHTYPE:
+            return createHashtypeType(jdbcTypeDescription);
+        case EXASOL_GEOMETRY:
+            return createGeometryType(jdbcTypeDescription);
+        case EXASOL_INTERVAL_YEAR_TO_MONTHS:
+            return createIntervalYearToMonthType(jdbcTypeDescription);
+        case EXASOL_INTERVAL_DAY_TO_SECONDS:
+            return createIntervalDayToSecondType(jdbcTypeDescription);
+        case EXASOL_TIMESTAMP:
+            return DataType.createTimestamp(false);
+        default:
+            return null;
+        }
+    }
+
+    private DataType createGeometryType(final JDBCTypeDescription jdbcTypeDescription) {
+        return DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize());
+    }
+
+    private DataType createHashtypeType(final JDBCTypeDescription jdbcTypeDescription) {
+        if (jdbcTypeDescription.getByteSize() > 0) {
+            return DataType.createHashtype(jdbcTypeDescription.getByteSize() / 2);
+        } else {
+            return DataType.createHashtype(DEFAULT_HASHTYPE_SIZE);
+        }
+    }
+
+    private DataType createIntervalDayToSecondType(final JDBCTypeDescription jdbcTypeDescription) {
+        final int jdbcType = jdbcTypeDescription.getJdbcType();
+        if ((jdbcType == EXASOL_INTERVAL_DAY_TO_SECONDS)) {
+            if (jdbcTypeDescription.getDecimalScale() == 0) {
+                return DataType.createIntervalDaySecond(DEFAULT_INTERVAL_DAY_TO_SECOND_PRECISION,
+                        DEFAULT_INTERVAL_DAY_TO_SECOND_FRACTION);
+            } else {
+                return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
+                        jdbcTypeDescription.getDecimalScale());
+            }
+        }
+        return null;
+    }
+
+    private DataType createIntervalYearToMonthType(final JDBCTypeDescription jdbcTypeDescription) {
+        final int jdbcType = jdbcTypeDescription.getJdbcType();
+        if (jdbcType == EXASOL_INTERVAL_YEAR_TO_MONTHS) {
             if (jdbcTypeDescription.getPrecisionOrSize() == 0) {
                 return DataType.createIntervalYearMonth(DEFAULT_INTERVAL_YEAR_TO_MONTH_PRECISION);
             } else {
                 return DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize());
             }
         }
-
-        if ("INTERVAL YEAR TO MONTH".equals(typeName) && (jdbcType == Types.VARCHAR)) {
-            // TODO: Precision/size is equal to string length -> Calculate precision from string length?
-            return DataType.createIntervalYearMonth(DEFAULT_INTERVAL_YEAR_TO_MONTH_PRECISION);
-        }
-
-        if ("INTERVAL DAY TO SECOND".equals(typeName) && (jdbcType == EXASOL_INTERVAL_DAY_TO_SECONDS)) {
-            if (jdbcTypeDescription.getDecimalScale() == 0) {
-                return DataType.createIntervalDaySecond(DEFAULT_INTERVAL_DAY_TO_SECOND_PRECISION,
-                        DEFAULT_INTERVAL_DAY_TO_SECOND_FRACTION);
-            } else {
-                return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
-                        jdbcTypeDescription.getDecimalScale());
-            }
-        }
-
-        if ("INTERVAL DAY TO SECOND".equals(typeName) && (jdbcType == Types.VARCHAR)) {
-            if (jdbcTypeDescription.getDecimalScale() == 0) {
-                return DataType.createIntervalDaySecond(DEFAULT_INTERVAL_DAY_TO_SECOND_PRECISION,
-                        DEFAULT_INTERVAL_DAY_TO_SECOND_FRACTION);
-            } else {
-                return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
-                        jdbcTypeDescription.getDecimalScale());
-            }
-        }
-
-        if ("TIMESTAMP WITH LOCAL TIME ZONE".equals(typeName)) {
-            return DataType.createTimestamp(true);
-        }
-
-        if ("TIMESTAMP".equals(typeName) || (jdbcType == EXASOL_TIMESTAMP)) {
-            return DataType.createTimestamp(false);
-        }
-
-        return super.mapJdbcType(jdbcTypeDescription);
+        return null;
     }
 
     @Override

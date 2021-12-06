@@ -14,6 +14,7 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
+import com.exasol.adapter.metadata.DataType.ExaCharset;
 
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
@@ -116,7 +117,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeIntervalYearToMonthJdbcTypeVarcharUsesDefaultPrecision() {
-        assertTypeMapped(intervalYearToMonth(5).jdbcType(Types.VARCHAR), DataType.createIntervalYearMonth(2));
+        assertTypeMapped(intervalYearToMonth(5).jdbcType(Types.VARCHAR), DataType.createVarChar(5, ExaCharset.UTF8));
     }
 
     @Test
@@ -125,13 +126,13 @@ class ExasolColumnMetadataReaderTest {
     }
 
     @Test
-    void testMapJdbcTypeIntervalYearToMonthDifferentTypeNameVarchar() {
-        assertTypeMapped(intervalYearToMonth(2).typeName("VARCHAR"), DataType.createUnsupported());
+    void testMapJdbcTypeIntervalYearToMonthDifferentTypeNameUnsupported() {
+        assertTypeMapped(intervalYearToMonth(2).typeName("other"), DataType.createIntervalYearMonth(2));
     }
 
     @Test
-    void testMapJdbcTypeIntervalYearToMonthDifferentTypeNameUnsupported() {
-        assertTypeMapped(intervalYearToMonth(2).typeName("other"), DataType.createUnsupported());
+    void testMapJdbcTypeIntervalYearToMonthDifferentTypeNameUnsupportedNonDefaultPrecision() {
+        assertTypeMapped(intervalYearToMonth(3).typeName("other"), DataType.createIntervalYearMonth(3));
     }
 
     @Test
@@ -151,12 +152,12 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeIntervalDayToSecondJdbcTypeVarchar() {
-        assertTypeMapped(intervalDayToSecond(2, 3).jdbcType(Types.VARCHAR), DataType.createIntervalDaySecond(2, 3));
+        assertTypeMapped(intervalDayToSecond(2, 3).jdbcType(Types.VARCHAR), DataType.createVarChar(2, ExaCharset.UTF8));
     }
 
     @Test
     void testMapJdbcTypeIntervalDayToSecondJdbcTypeVarcharZeroFractionReturnsDefault() {
-        assertTypeMapped(intervalDayToSecond(5, 0).jdbcType(Types.VARCHAR), DataType.createIntervalDaySecond(2, 3));
+        assertTypeMapped(intervalDayToSecond(5, 0).jdbcType(Types.VARCHAR), DataType.createVarChar(5, ExaCharset.UTF8));
     }
 
     @Test
@@ -166,12 +167,12 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeIntervalDayToSecondOtherTypeName() {
-        assertTypeMapped(intervalDayToSecond(2, 3).typeName("other"), DataType.createUnsupported());
+        assertTypeMapped(intervalDayToSecond(2, 3).typeName("other"), DataType.createIntervalDaySecond(2, 3));
     }
 
     @Test
-    void testMapJdbcTypeIntervalDayToSecondTypeNameVarchar() {
-        assertTypeMapped(intervalDayToSecond(2, 3).typeName("VARCHAR"), DataType.createUnsupported());
+    void testMapJdbcTypeIntervalDayToSecondOtherTypeNameNonDefaultValues() {
+        assertTypeMapped(intervalDayToSecond(4, 6).typeName("other"), DataType.createIntervalDaySecond(4, 6));
     }
 
     @Test

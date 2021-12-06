@@ -1,18 +1,13 @@
 package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 /**
  * This class exercises a set of tests defined in the base class on a local Exasol, using {@code IMPORT} via a JDBC
@@ -36,30 +31,44 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractExasolSqlDialectIT {
 
     @Override
     @Test
+    void testIntervalDayToSecondMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL DAY TO SECOND").insert("2 12:50:10.123");
+        assertVirtualTableContents(table, table("VARCHAR").row("+02 12:50:10.123").matches());
+    }
+
+    @Override
+    @Test
     void testCastVarcharAsIntervalYearToMonth() {
-        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("INTERVAL YEAR TO MONTH")
-                .verify("+04-06");
+        castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").accept("VARCHAR")
+                .verify("+00004-06");
     }
 
     @Override
     @Test
     void testCastVarcharAsIntervalDayToSecond() {
-        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12")
-                .accept("INTERVAL DAY TO SECOND").verify("+03 12:50:10.120");
+        castFrom("VARCHAR(30)").to("INTERVAL DAY (5) TO SECOND (2)").input("+00003 12:50:10.12").accept("VARCHAR")
+                .verify("+00003 12:50:10.12");
     }
 
     @Override
     @Test
     void testIntervalYearToMonthMappingCustom() {
         final Table table = createSingleColumnTable("INTERVAL YEAR (3) TO MONTH").insert("5-3");
-        assertVirtualTableContents(table, table("INTERVAL YEAR TO MONTH").row("+05-03").matches());
+        assertVirtualTableContents(table, table("VARCHAR").row("+005-03").matches());
     }
 
     @Override
     @Test
     void testIntervalDayToSecondMappingCustom() {
         final Table table = createSingleColumnTable("INTERVAL DAY (4) TO SECOND (6)").insert("2 12:50:10.123");
-        assertVirtualTableContents(table, table("INTERVAL DAY TO SECOND").row("+02 12:50:10.123").matches());
+        assertVirtualTableContents(table, table("VARCHAR").row("+0002 12:50:10.123000").matches());
+    }
+
+    @Override
+    @Test
+    void testIntervalYearToMonthMappingDefault() {
+        final Table table = createSingleColumnTable("INTERVAL YEAR TO MONTH").insert("5-3");
+        assertVirtualTableContents(table, table("VARCHAR").row("+05-03").matches());
     }
 
     @Override
@@ -71,32 +80,30 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractExasolSqlDialectIT {
                 .insert("0-0") //
                 .insert("1-1") //
                 .insert("999999999-11");
-
-        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
-        try {
-            final SQLException thrown = assertThrows(SQLException.class,
-                    () -> selectAllFromCorrespondingVirtualTable(virtualSchema, table));
-            assertThat(thrown.getMessage(), containsString(
-                    "ETL-3031: [Column=0 Row=0] [Interval (year to month) conversion failed for '-999999999-11' - the leading precision of the interval is too small]"));
-        } finally {
-            virtualSchema.drop();
-        }
+        assertVirtualTableContents(table, table("VARCHAR") //
+                .row("-999999999-11") //
+                .row("-000000001-01") //
+                .row("+000000000-00") //
+                .row("+000000001-01") //
+                .row("+999999999-11") //
+                .matches());
     }
 
     @Override
     @Test
     void testIntervalDayToSecondMappingMaxPrecision() {
         final Table table = createSingleColumnTable("INTERVAL DAY (9) TO SECOND") //
-                .insert("-999999999 23:59:59.999");
-
-        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
-        try {
-            final SQLException thrown = assertThrows(SQLException.class,
-                    () -> selectAllFromCorrespondingVirtualTable(virtualSchema, table));
-            assertThat(thrown.getMessage(), containsString(
-                    "ETL-3032: [Column=0 Row=0] [Interval (day to second) conversion failed for '-999999999 23:59:59.999' - the leading precision of the interval is too small]"));
-        } finally {
-            virtualSchema.drop();
-        }
+                .insert("-999999999 23:59:59.999") //
+                .insert("-1 12:34:56.789") //
+                .insert("0 00:00:00.000") //
+                .insert("1 12:34:56.789") //
+                .insert("999999999 23:59:59.999");
+        assertVirtualTableContents(table, table("VARCHAR") //
+                .row("-999999999 23:59:59.999") //
+                .row("-000000001 12:34:56.789") //
+                .row("+000000000 00:00:00.000") //
+                .row("+000000001 12:34:56.789") //
+                .row("+999999999 23:59:59.999") //
+                .matches());
     }
 }
