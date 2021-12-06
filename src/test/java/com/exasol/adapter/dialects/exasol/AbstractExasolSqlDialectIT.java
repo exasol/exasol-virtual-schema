@@ -47,8 +47,10 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
-    private static final String COLUMN1_NAME = "C1";
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
+    
+    private static final String COLUMN1_NAME = "C1";
+    private static final String DEBUG_ADDRESS = null;
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
@@ -191,8 +193,19 @@ abstract class AbstractExasolSqlDialectIT {
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
                 .connectionDefinition(this.jdbcConnection) //
-                .properties(getConnectionSpecificVirtualSchemaProperties()) //
+                .properties(getVirtualSchemaProperties()) //
                 .build();
+    }
+
+    private Map<String, String> getVirtualSchemaProperties() {
+        final Map<String, String> properties = getConnectionSpecificVirtualSchemaProperties();
+        if ((DEBUG_ADDRESS == null) || DEBUG_ADDRESS.isBlank()) {
+            return properties;
+        }
+        final Map<String, String> propertiesWithDebugOption = new HashMap<>(properties);
+        propertiesWithDebugOption.put("DEBUG_ADDRESS", DEBUG_ADDRESS);
+        propertiesWithDebugOption.put("LOG_LEVEL", "ALL");
+        return propertiesWithDebugOption;
     }
 
     protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
