@@ -70,7 +70,6 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         if (type != null) {
             return type;
         }
-
         return super.mapJdbcType(jdbcTypeDescription);
     }
 
