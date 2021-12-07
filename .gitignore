@@ -20,3 +20,16 @@ pom.xml.versionsBackup
 Scripts
 .dbeaver*
 **/*.log
+
+local
+.directory
+venv/
+target
+.project
+.classpath
+~*
+*.lock
+*.bak
+*.orig
+*.old
+*.md.html
