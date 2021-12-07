@@ -1,5 +1,8 @@
 # Exasol Virtual Schema 6.0.0, released 2021-12-??
 
+
+**Note**: Fixing #60 requires updating to JDBC driver 7.1.4 once it is available. Don't release this until #60 is closed.
+
 Code name: Support native Exasol data types
 
 ## Summary
