@@ -27,7 +27,7 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * These tests take the following specialties of a local connection into account:
  * </p>
  * <ul>
- * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
+ * <li>{@code INTERVAL}, {@code GEOMETRY}, {@code HASHTYPE} and {@code CAHR} types are converted to {@code VARCHAR}</li>
  * <ul>
  */
 class ExasolSqlDialectExaConnectionIT extends AbstractExasolSqlDialectIT {

@@ -17,10 +17,10 @@ import com.exasol.dbbuilder.dialects.Table;
  * the {@code IMPORT}.
  * </p>
  * <p>
- * These tests take the following specialties of a local connection into account:
+ * These tests take the following specialties of a JDBC connection into account:
  * </p>
  * <ul>
- * <li>{@code INTERVAL} types precision is lost</li>
+ * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
  * <ul>
  */
 class ExasolSqlDialectJdbcConnectionIT extends AbstractExasolSqlDialectIT {
