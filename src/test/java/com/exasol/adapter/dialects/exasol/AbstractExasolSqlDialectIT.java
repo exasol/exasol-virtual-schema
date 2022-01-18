@@ -73,8 +73,8 @@ abstract class AbstractExasolSqlDialectIT {
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
     }
 
-    private static ExasolObjectFactory setUpObjectFactory() {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(), EXASOL.getDefaultBucket());
+    private static ExasolObjectFactory setUpObjectFactory() throws SQLException {
+        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(), EXASOL.getDefaultBucket(), EXASOL.createConnection());
         return new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
     }
