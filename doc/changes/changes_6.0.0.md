@@ -12,6 +12,10 @@ This release does not support Exasol version 6.2 any more. Please upgrade to Exa
 
 * #60: Support native Exasol data types
 
+## Documentation
+
+* 57: Explained how to disable TLS
+
 ## Dependency Updates
 
 ### Compile Dependency Updates
