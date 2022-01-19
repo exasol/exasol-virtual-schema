@@ -14,7 +14,7 @@ This release does not support Exasol version 6.2 any more. Please upgrade to Exa
 
 ## Documentation
 
-* 57: Explained how to disable TLS
+* #57: Explained how to disable TLS
 
 ## Dependency Updates
 
