@@ -135,7 +135,7 @@ With version 7.1 Exasol introduced TLS encryption on the database port. Other po
 
 ### Using TLS Connections
 
-To establish a TLS connection with an Exasol Virtual Schema, you must use Exasol Virtual Schema 5.0.3 or later and connect to an Exasol cluster running Exasol 7.1 or later. The reason why you need the Exasol Virtual Schema 5.0.3 or later is that with this version we built-in a JDBC driver that is TLS-capable.
+To establish a TLS connection with an Exasol Virtual Schema, you must use Exasol Virtual Schema 5.0.4 or later and connect to an Exasol cluster running Exasol 7.1 or later. The reason why you need the Exasol Virtual Schema 5.0.4 or later is that with this version we built-in a JDBC driver that is TLS-capable.
 
 Check the [JDBC driver documentation](https://docs.exasol.com/connect_exasol/drivers/jdbc.htm) in our online handbook for details.
 
