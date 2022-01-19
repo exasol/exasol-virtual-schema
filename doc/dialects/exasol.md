@@ -129,6 +129,31 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
 
 Note that you still need to provide a JDBC connection. This is used by the Virtual Schema adapter internally. It is not used for mass data transfer though. And that is where the performance gain comes from.
 
+## Transport Layer Security (TLS)
+
+With version 7.1 Exasol introduced TLS encryption on the database port. Other ports were TLS capable before that already.
+
+### Using TLS Connections
+
+To establish a TLS connection with an Exasol Virtual Schema, you must use Exasol Virtual Schema 5.0.4 or later and connect to an Exasol cluster running Exasol 7.1 or later. The reason why you need the Exasol Virtual Schema 5.0.4 or later is that with this version we built-in a JDBC driver that is TLS-capable.
+
+Check the [JDBC driver documentation](https://docs.exasol.com/connect_exasol/drivers/jdbc.htm) in our online handbook for details.
+
+### Disabling TLS
+
+If you want to connect to a cluster running Exasol 7.0.x or earlier with a recent Exasol Virtual Schema (5.0.4 or later), you _should_ explicitly disable TLS on in the JDBC connection the Virtual Schema uses, otherwise the driver will attempt to establish a TLS connection to the server that does not support it and the connection attempt will fail.
+
+The [JDBC driver property `legacyencryption`](https://docs.exasol.com/connect_exasol/drivers/jdbc.htm#SupportedDriverProperties) switches between TLS and the encryption scheme of older Exasol versions. Set it to `1` to disable TLS.
+
+Example:
+
+```sql
+CREATE CONNECTION LEGACY_JDBC_CONNECTION
+TO 'jdbc:exa:<host>:<port>;legacyencryption=1'
+USER '<user>'
+IDENTIFIED BY '<password>';
+```
+
 ## Supported Capabilities
 
 The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
