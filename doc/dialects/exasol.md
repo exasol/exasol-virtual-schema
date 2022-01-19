@@ -154,8 +154,6 @@ USER '<user>'
 IDENTIFIED BY '<password>';
 ```
 
-Remember that Virtual Schema adapter (the part rewriting the original query) and the EXALoader (responsible for the `IMPORT` statement execution) can use different drivers! The adapter always uses JDBC, the EXALoader can use EXA connections, an Exasol-proprietary connection variant.
-
 ## Supported Capabilities
 
 The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
