@@ -82,4 +82,11 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     void testCastVarcharAsGeometry() {
         castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
     }
+
+    @Test
+    void testDefaultHashType() {
+        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
+                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)")
+                .expectResultSetType("HASHTYPE").runAssert();
+    }
 }

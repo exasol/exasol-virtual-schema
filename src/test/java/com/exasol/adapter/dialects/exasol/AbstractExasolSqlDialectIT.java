@@ -8,8 +8,9 @@ import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -45,6 +46,8 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
+    private static final String DEBUG_ADDRESS = null;
+    private static final String COLUMN1_NAME = "C1";
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
@@ -188,8 +191,19 @@ abstract class AbstractExasolSqlDialectIT {
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
                 .connectionDefinition(this.jdbcConnection) //
-                .properties(getConnectionSpecificVirtualSchemaProperties()) //
+                .properties(getVirtualSchemaProperties()) //
                 .build();
+    }
+
+    private Map<String, String> getVirtualSchemaProperties() {
+        final Map<String, String> properties = getConnectionSpecificVirtualSchemaProperties();
+        if ((DEBUG_ADDRESS == null) || DEBUG_ADDRESS.isBlank()) {
+            return properties;
+        }
+        final Map<String, String> propertiesWithDebugOption = new HashMap<>(properties);
+        propertiesWithDebugOption.put("DEBUG_ADDRESS", DEBUG_ADDRESS);
+        propertiesWithDebugOption.put("LOG_LEVEL", "ALL");
+        return propertiesWithDebugOption;
     }
 
     private ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
@@ -728,6 +742,63 @@ abstract class AbstractExasolSqlDialectIT {
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
                         .matches());
+    }
+
+    protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
+        return DataTypeAssertion.builder(this).withColumnType(columnType);
+    }
+
+    void assertVirtualSchemaTypes(final DataTypeAssertion assertion) {
+        final Table table = createSingleColumnTable(assertion.getColumnType()).insert(assertion.getValue());
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertAll( //
+                    () -> assertTypeofColumn(virtualSchema, table, assertion.getExpectedTypeOf()),
+                    () -> assertDescribeColumnType(virtualSchema, table, assertion.getExpectedDescribeType()),
+                    () -> assertResultSetType(virtualSchema, table, assertion.getExpectedResultSetType()));
+        } finally {
+            virtualSchema.drop();
+            table.drop();
+        }
+    }
+
+    private void assertResultSetType(final VirtualSchema virtualSchema, final Table table, final String expectedType)
+            throws SQLException {
+        try (final ResultSet result = query(
+                "SELECT " + COLUMN1_NAME + " FROM " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "SELECT query did not return any rows. Make sure to insert rows.");
+            final String columnType = result.getMetaData().getColumnTypeName(1);
+            assertThat("ResultSet metadata column type name", columnType, equalTo(expectedType));
+        }
+    }
+
+    private void assertDescribeColumnType(final VirtualSchema virtualSchema, final Table table,
+            final String expectedType) throws SQLException {
+        try (final ResultSet result = query("DESCRIBE " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "DESCRIBE query did not return any rows");
+            final String columnName = result.getString("COLUMN_NAME");
+            assertThat(columnName, equalTo(table.getColumns().get(0).getName()));
+            final String actualType = result.getString("SQL_TYPE");
+            assertThat("DESCRIBE column type", actualType, equalTo(expectedType));
+        }
+    }
+
+    private void assertTypeofColumn(final VirtualSchema virtualSchema, final Table table, final String expectedType)
+            throws SQLException {
+        if (!typeofFunctionSupported()) {
+            return;
+        }
+        try (final ResultSet result = query(
+                "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
+            assertTrue(result.next(), "DESCRIBE query did not return any rows");
+            final String actualType = result.getString("TYPE");
+            assertThat("TYPOEOF column", actualType, equalTo(expectedType));
+        }
+    }
+
+    private boolean typeofFunctionSupported() {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        return ((version.getMajor() == 7) && (version.getMinor() >= 1)) || (version.getMajor() > 7);
     }
 
     /**

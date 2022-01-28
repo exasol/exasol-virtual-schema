@@ -48,4 +48,11 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
     void testCastVarcharToChar() {
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").verify(pad("Hello.", 40));
     }
+
+    @Test
+    void testDefaultHashType() {
+        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
+                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)")
+                .expectResultSetType("CHAR").runAssert();
+    }
 }
