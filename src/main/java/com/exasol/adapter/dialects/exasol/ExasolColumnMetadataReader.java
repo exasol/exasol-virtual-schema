@@ -38,6 +38,15 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
 
     @Override
     public DataType mapJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
+        final DataType resultType = getJdbcType(jdbcTypeDescription);
+        LOGGER.fine(() -> "Mapped JDBC type " + jdbcTypeDescription.getTypeName() + " ("
+                + jdbcTypeDescription.getJdbcType() + ") with byte size " + jdbcTypeDescription.getByteSize()
+                + ", decimal scale " + jdbcTypeDescription.getDecimalScale() + ", precision/size "
+                + jdbcTypeDescription.getPrecisionOrSize() + " to " + resultType);
+        return resultType;
+    }
+
+    private DataType getJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
         case EXASOL_INTERVAL_DAY_TO_SECONDS:
             return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
