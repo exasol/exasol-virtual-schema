@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.condition.EnabledIf;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -638,7 +637,6 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -657,16 +655,7 @@ abstract class AbstractExasolSqlDialectIT {
                         .matches());
     }
 
-    boolean checkIfExasolVersionHigherThan7_0_7() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        final int major = imageReference.getMajor();
-        final int minor = imageReference.getMinor();
-        final int fix = imageReference.getFixVersion();
-        return (major > 7) || ((major == 7) && ((minor > 0) || (fix > 6)));
-    }
-
     @Test
-    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -686,7 +675,6 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListNestedJoin() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
@@ -715,7 +703,6 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @EnabledIf("checkIfExasolVersionHigherThan7_0_7")
     void testSelectStarConvertedToColumnsListNestedJoinReversed() {
         final Table tableLeft = this.sourceSchema.createTable("TL", "L1", "VARCHAR(5)", "L2", "VARCHAR(5)");
         final Table tableRight = this.sourceSchema.createTable("TR", "R1", "VARCHAR(5)", "R2", "VARCHAR(5)", "R3",
