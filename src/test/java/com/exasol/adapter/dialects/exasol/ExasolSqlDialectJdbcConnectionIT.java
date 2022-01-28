@@ -17,7 +17,7 @@ import com.exasol.dbbuilder.dialects.Table;
  * the {@code IMPORT}.
  * </p>
  * <p>
- * These tests take the following specialties of a local connection into account:
+ * These tests take the following specialties of a JDBC connection into account:
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
@@ -52,7 +52,7 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
     @Test
     void testDefaultHashType() {
         typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
-                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)")
-                .expectResultSetType("CHAR").runAssert();
+                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)").expectResultSetType("CHAR")
+                .runAssert();
     }
 }

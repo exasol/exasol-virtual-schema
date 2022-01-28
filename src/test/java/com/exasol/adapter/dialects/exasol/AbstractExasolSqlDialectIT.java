@@ -46,8 +46,9 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
-    private static final String DEBUG_ADDRESS = null;
+
     private static final String COLUMN1_NAME = "C1";
+    private static final String DEBUG_ADDRESS = null;
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
@@ -172,7 +173,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     protected Table createSingleColumnTable(final String sourceType) {
         final String typeAsIdentifier = sourceType.replaceAll("[ ,]", "_").replaceAll("[()]", "");
-        return this.sourceSchema.createTable("SINGLE_COLUMN_TABLE_" + typeAsIdentifier, "C1", sourceType);
+        return this.sourceSchema.createTable("SINGLE_COLUMN_TABLE_" + typeAsIdentifier, COLUMN1_NAME, sourceType);
     }
 
     protected void assertVirtualTableContents(final Table table, final Matcher<ResultSet> matcher) {
@@ -180,7 +181,7 @@ abstract class AbstractExasolSqlDialectIT {
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
         } catch (final SQLException exception) {
-            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName());
+            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName(), exception);
         } finally {
             virtualSchema.drop();
         }
@@ -206,7 +207,7 @@ abstract class AbstractExasolSqlDialectIT {
         return propertiesWithDebugOption;
     }
 
-    private ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
+    protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
             throws SQLException {
         return selectAllFrom(getVirtualTableName(virtualSchema, table));
     }
@@ -239,6 +240,13 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("CHAR").row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
     }
 
+    /**
+     * Append {@code padTo} space characters {@code ""} to the given {@code text}
+     *
+     * @param text  the text to pad
+     * @param padTo the number of spaces to append
+     * @return the padded text
+     */
     protected String pad(final String text, final int padTo) {
         return text + " ".repeat(padTo - text.length());
     }
@@ -380,7 +388,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void testSelectingUnquotedMixedCaseTableThrowsException() {
-        final Table table = this.sourceSchema.createTable("MixedCaseTable", "C1", "BOOLEAN").insert(true);
+        final Table table = this.sourceSchema.createTable("MixedCaseTable", COLUMN1_NAME, "BOOLEAN").insert(true);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         final String virtualTableUnquotedName = virtualSchema.getFullyQualifiedName() + "." + table.getName();
         final SQLException exception = assertThrows(SQLException.class, () -> selectAllFrom(virtualTableUnquotedName));
@@ -509,9 +517,9 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private void createVirtualSchemaWithTablesForJoinTest() {
-        this.sourceSchema.createTable("TL", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+        this.sourceSchema.createTable("TL", COLUMN1_NAME, "VARCHAR(2)", "C2", "VARCHAR(2)") //
                 .insert("K1", "L1").insert(null, "L2").insert("K3", "L3");
-        this.sourceSchema.createTable("TR", "C1", "VARCHAR(2)", "C2", "VARCHAR(2)") //
+        this.sourceSchema.createTable("TR", COLUMN1_NAME, "VARCHAR(2)", "C2", "VARCHAR(2)") //
                 .insert("K1", "R1").insert("K2", "R2").insert(null, "R3");
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
     }
@@ -593,7 +601,7 @@ abstract class AbstractExasolSqlDialectIT {
                 "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)));
         assertThat(exception.getMessage(),
                 containsString("Attention! Using literals and constant expressions with datatype "
-                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce an incorrect results"));
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results"));
     }
 
     // SELECT * tests
