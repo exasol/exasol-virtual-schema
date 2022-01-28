@@ -601,7 +601,7 @@ abstract class AbstractExasolSqlDialectIT {
                 "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)));
         assertThat(exception.getMessage(),
                 containsString("Attention! Using literals and constant expressions with datatype "
-                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results"));
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results."));
     }
 
     // SELECT * tests
