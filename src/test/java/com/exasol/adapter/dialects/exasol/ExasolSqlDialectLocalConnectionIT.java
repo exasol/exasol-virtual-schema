@@ -86,7 +86,27 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Test
     void testDefaultHashType() {
         typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
-                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)")
-                .expectResultSetType("HASHTYPE").runAssert();
+                .expectDescribeType("HASHTYPE(16 BYTE)") //
+                .expectTypeOf("HASHTYPE(16 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
+    }
+
+    @Test
+    void testNonDefaultHashType() {
+        typeAssertionFor("HASHTYPE(4 BYTE)").withValue("550e8400") //
+                .expectDescribeType("HASHTYPE(4 BYTE)") //
+                .expectTypeOf("HASHTYPE(4 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
+    }
+
+    @Test
+    void testHashTypeWithBitSize() {
+        typeAssertionFor("HASHTYPE(16 BIT)").withValue("550e") //
+                .expectDescribeType("HASHTYPE(2 BYTE)") //
+                .expectTypeOf("HASHTYPE(2 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
     }
 }

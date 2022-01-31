@@ -48,7 +48,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
 
     private static final String COLUMN1_NAME = "C1";
-    private static final String DEBUG_ADDRESS = null;
+    private static final String DEBUG_ADDRESS = "10.0.2.15:3000";
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
@@ -750,6 +750,33 @@ abstract class AbstractExasolSqlDialectIT {
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_1", "M3_1", "M4_1") //
                         .row("ON", "R2_2", "R3_2", "ON", "L2_2", "ON", "M2_2", "M3_2", "M4_2") //
                         .matches());
+    }
+
+    @Test
+    void testDefaultHashType() {
+        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
+                .expectDescribeType("HASHTYPE(16 BYTE)") //
+                .expectTypeOf("HASHTYPE(16 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
+    }
+
+    @Test
+    void testNonDefaultHashType() {
+        typeAssertionFor("HASHTYPE(4 BYTE)").withValue("550e8400") //
+                .expectDescribeType("HASHTYPE(4 BYTE)") //
+                .expectTypeOf("HASHTYPE(4 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
+    }
+
+    @Test
+    void testHashTypeWithBitSize() {
+        typeAssertionFor("HASHTYPE(16 BIT)").withValue("550e") //
+                .expectDescribeType("HASHTYPE(2 BYTE)") //
+                .expectTypeOf("HASHTYPE(2 BYTE)") //
+                .expectResultSetType("HASHTYPE") //
+                .runAssert();
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {

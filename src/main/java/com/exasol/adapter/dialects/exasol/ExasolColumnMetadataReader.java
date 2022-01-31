@@ -1,6 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
 import java.sql.*;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +39,9 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
 
     @Override
     public DataType mapJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
-        final DataType resultType = getJdbcType(jdbcTypeDescription);
+        final DataType resultType = getDataTypeBasedOnJdbcType(jdbcTypeDescription) //
+                .or(() -> getDataTypeBasedOnTypeName(jdbcTypeDescription)) //
+                .orElseGet(() -> super.mapJdbcType(jdbcTypeDescription));
         LOGGER.fine(() -> "Mapped JDBC type " + jdbcTypeDescription.getTypeName() + " ("
                 + jdbcTypeDescription.getJdbcType() + ") with byte size " + jdbcTypeDescription.getByteSize()
                 + ", decimal scale " + jdbcTypeDescription.getDecimalScale() + ", precision/size "
@@ -46,22 +49,33 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         return resultType;
     }
 
-    private DataType getJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
+    private Optional<DataType> getDataTypeBasedOnJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
         case EXASOL_INTERVAL_DAY_TO_SECONDS:
-            return DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
-                    jdbcTypeDescription.getDecimalScale());
+            return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
+                    jdbcTypeDescription.getDecimalScale()));
         case EXASOL_INTERVAL_YEAR_TO_MONTHS:
-            return DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize());
+            return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_GEOMETRY:
-            return DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize());
+            return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_TIMESTAMP:
-            return DataType.createTimestamp(true);
+            return Optional.of(DataType.createTimestamp(true));
         case EXASOL_HASHTYPE:
-            return DataType.createHashtype(jdbcTypeDescription.getByteSize());
+            return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
         default:
-            return super.mapJdbcType(jdbcTypeDescription);
+            return Optional.empty();
         }
+    }
+
+    private Optional<DataType> getDataTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
+        if ("HASHTYPE".equals(jdbcTypeDescription.getTypeName())) {
+            if (jdbcTypeDescription.getByteSize() != 0) {
+                return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize() / 2));
+            } else if (jdbcTypeDescription.getPrecisionOrSize() != 0) {
+                return Optional.of(DataType.createHashtype(jdbcTypeDescription.getPrecisionOrSize() / 2));
+            }
+        }
+        return Optional.empty();
     }
 
     @Override
