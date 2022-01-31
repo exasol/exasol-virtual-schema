@@ -1,10 +1,6 @@
 # Exasol Virtual Schema 6.0.0, released 2022-01-18
 
-Code name: Support native Exasol data types (retracted)
-
-## Known issues
-
-This release has a known issue with `HASHTYPE` and `GEOMETRY` columns, see [issue #66](https://github.com/exasol/exasol-virtual-schema/issues/66). Please use version [5.0.5](https://github.com/exasol/exasol-virtual-schema/releases/tag/5.0.5) until this is fixed.
+Code name: Support native Exasol data types
 
 ## Summary
 
