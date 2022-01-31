@@ -53,6 +53,6 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
     void testDefaultHashType() {
         typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
                 .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)").expectResultSetType("CHAR")
-                .runAssert();
+                .expectValue("550e8400e29b11d4a716446655440000").runAssert();
     }
 }
