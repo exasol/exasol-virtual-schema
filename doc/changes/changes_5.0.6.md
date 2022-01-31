@@ -6,9 +6,12 @@ Code name: Revert changes from 6.0.0
 
 [Issue #66](https://github.com/exasol/exasol-virtual-schema/issues/66) reveals problems with [PR #62](https://github.com/exasol/exasol-virtual-schema/pull/62) that can't easily be addressed. That's why we reverted the code changes from 6.0.0 back to 5.0.5.
 
+Additionally we fixed the mapping of `HASHTYPE` columns. They are now correctly reported as `HASHTYPE` with the correct length.
+
 ## Bugfixes
 
 * #67: Reverted changes from 6.0.0
+* #69: Fixed mapping of `HASHTYPE` columns
 
 ## Features
 
