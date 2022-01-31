@@ -48,7 +48,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
 
     private static final String COLUMN1_NAME = "C1";
-    private static final String DEBUG_ADDRESS = "10.0.2.15:3000";
+    private static final String DEBUG_ADDRESS = null;
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
