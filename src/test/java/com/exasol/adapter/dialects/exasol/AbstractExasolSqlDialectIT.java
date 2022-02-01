@@ -790,20 +790,19 @@ abstract class AbstractExasolSqlDialectIT {
             assertAll( //
                     () -> assertTypeofColumn(virtualSchema, table, assertion.getExpectedTypeOf()),
                     () -> assertDescribeColumnType(virtualSchema, table, assertion.getExpectedDescribeType()),
-                    () -> assertResultSetType(virtualSchema, table, assertion.getExpectedResultSetType()));
+                    () -> assertResultSetType(virtualSchema, table, assertion.getExpectedResultSetType(),
+                            assertion.getExpectedValue()));
         } finally {
             virtualSchema.drop();
             table.drop();
         }
     }
 
-    private void assertResultSetType(final VirtualSchema virtualSchema, final Table table, final String expectedType)
-            throws SQLException {
+    private void assertResultSetType(final VirtualSchema virtualSchema, final Table table, final String expectedType,
+            final Object expectedValue) throws SQLException {
         try (final ResultSet result = query(
                 "SELECT " + COLUMN1_NAME + " FROM " + getVirtualTableName(virtualSchema, table))) {
-            assertTrue(result.next(), "SELECT query did not return any rows. Make sure to insert rows.");
-            final String columnType = result.getMetaData().getColumnTypeName(1);
-            assertThat("ResultSet metadata column type name", columnType, equalTo(expectedType));
+            assertThat(result, table(expectedType).row(expectedValue).matches());
         }
     }
 
@@ -825,9 +824,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
         try (final ResultSet result = query(
                 "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
-            assertTrue(result.next(), "DESCRIBE query did not return any rows");
-            final String actualType = result.getString("TYPE");
-            assertThat("TYPOEOF column", actualType, equalTo(expectedType));
+            assertThat(result, table("VARCHAR").row(expectedType).matches());
         }
     }
 

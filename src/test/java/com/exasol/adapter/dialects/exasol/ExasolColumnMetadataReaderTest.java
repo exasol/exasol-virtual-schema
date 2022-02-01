@@ -7,14 +7,13 @@ import java.sql.Types;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
-import com.exasol.adapter.metadata.DataType.ExaCharset;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
@@ -37,11 +36,6 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
-        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(
-                ExasolColumnMetadataReader.EXASOL_TIMESTAMP, 0, 0, 0, "TIMESTAMP");
-        assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription),
-                equalTo(DataType.createTimestamp(true)));
-
         assertTypeMapped(timestamp(), DataType.createTimestamp(true));
     }
 
@@ -244,5 +238,4 @@ class ExasolColumnMetadataReaderTest {
                     this.typeName);
         }
     }
-
 }

@@ -7,8 +7,7 @@ import org.junit.jupiter.api.Test;
 import com.exasol.dbbuilder.dialects.Table;
 
 /**
- * This class contains the common parts of the variants of the Exasol Virtual Schema that connect to a remote Exasol
- * instance or cluster.
+ * Base class for tests of a remote Exasol virtual schema, i.e. JDBC and EXAConnection.
  */
 abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExasolSqlDialectIT {
     @Test

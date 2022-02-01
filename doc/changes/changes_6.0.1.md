@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 5.0.6, released 2022-01-31
+# Exasol Virtual Schema 6.0.1, released 2022-01-31
 
 Code name: Fix data type mapping
 

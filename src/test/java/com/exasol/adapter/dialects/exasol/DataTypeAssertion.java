@@ -10,6 +10,7 @@ class DataTypeAssertion {
     private final String expectedTypeOf;
     private final String expectedDescribeType;
     private final String expectedResultSetType;
+    private final Object expectedValue;
 
     private DataTypeAssertion(final Builder builder) {
         this.columnType = builder.columnType;
@@ -17,6 +18,7 @@ class DataTypeAssertion {
         this.expectedTypeOf = builder.expectedTypeOf;
         this.expectedDescribeType = builder.expectedDescribeType;
         this.expectedResultSetType = builder.expectedResultSetType;
+        this.expectedValue = builder.expectedValue;
     }
 
     static Builder builder(final AbstractExasolSqlDialectIT test) {
@@ -43,12 +45,17 @@ class DataTypeAssertion {
         return this.expectedResultSetType;
     }
 
+    Object getExpectedValue() {
+        return this.expectedValue;
+    }
+
     static final class Builder {
         private String columnType;
         private Object value;
         private String expectedTypeOf;
         private String expectedDescribeType;
         private String expectedResultSetType;
+        private Object expectedValue;
         private final AbstractExasolSqlDialectIT test;
 
         private Builder(final AbstractExasolSqlDialectIT test) {
@@ -65,6 +72,7 @@ class DataTypeAssertion {
 
         Builder withValue(final Object value) {
             this.value = value;
+            this.expectedValue = value;
             return this;
         }
 
@@ -80,6 +88,11 @@ class DataTypeAssertion {
 
         Builder expectResultSetType(final String expectedResultSetType) {
             this.expectedResultSetType = expectedResultSetType;
+            return this;
+        }
+
+        Builder expectValue(final Object expectedValue) {
+            this.expectedValue = expectedValue;
             return this;
         }
 
