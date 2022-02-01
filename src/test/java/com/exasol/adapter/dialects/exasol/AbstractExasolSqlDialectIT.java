@@ -779,6 +779,56 @@ abstract class AbstractExasolSqlDialectIT {
                 .runAssert();
     }
 
+    @Test
+    void testDefaultGeometry() {
+        typeAssertionFor("GEOMETRY").withValue("POINT (2 5)") //
+                .expectDescribeType("GEOMETRY(3857)") //
+                .runAssert();
+    }
+
+    @Test
+    void testNonDefaultGeometry() {
+        typeAssertionFor("GEOMETRY(4321)").withValue("POINT (2 5)") //
+                .expectResultSetType("GEOMETRY") //
+                .runAssert();
+    }
+
+    @Test
+    void testDefaultIntervalYearToMonth() {
+        typeAssertionFor("INTERVAL YEAR TO MONTH").withValue("5-3") //
+                .expectTypeOf("INTERVAL YEAR(2) TO MONTH") //
+                .expectDescribeType("INTERVAL YEAR(2) TO MONTH") //
+                .expectResultSetType("INTERVAL YEAR TO MONTH") //
+                .expectValue("+05-03") //
+                .runAssert();
+    }
+
+    @Test
+    void testNonDefaultIntervalYearToMonth() {
+        typeAssertionFor("INTERVAL YEAR(5) TO MONTH").withValue("5-3") //
+                .expectResultSetType("INTERVAL YEAR TO MONTH") //
+                .expectValue("+00005-03") //
+                .runAssert();
+    }
+
+    @Test
+    void testDefaultIntervalDayToSecond() {
+        typeAssertionFor("INTERVAL DAY TO SECOND").withValue("2 12:50:10.123") //
+                .expectTypeOf("INTERVAL DAY(2) TO SECOND(3)") //
+                .expectDescribeType("INTERVAL DAY(2) TO SECOND(3)") //
+                .expectResultSetType("INTERVAL DAY TO SECOND") //
+                .expectValue("+02 12:50:10.123") //
+                .runAssert();
+    }
+
+    @Test
+    void testNonDefaultIntervalDayToSecond() {
+        typeAssertionFor("INTERVAL DAY(4) TO SECOND(6)").withValue("2 12:50:10.123") //
+                .expectResultSetType("INTERVAL DAY TO SECOND") //
+                .expectValue("+0002 12:50:10.123000") //
+                .runAssert();
+    }
+
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
         return DataTypeAssertion.builder(this).withColumnType(columnType);
     }
@@ -802,7 +852,7 @@ abstract class AbstractExasolSqlDialectIT {
             final Object expectedValue) throws SQLException {
         try (final ResultSet result = query(
                 "SELECT " + COLUMN1_NAME + " FROM " + getVirtualTableName(virtualSchema, table))) {
-            assertThat(result, table(expectedType).row(expectedValue).matches());
+            assertThat("ResultSet type and value", result, table(expectedType).row(expectedValue).matches());
         }
     }
 
@@ -824,7 +874,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
         try (final ResultSet result = query(
                 "SELECT TYPEOF(" + COLUMN1_NAME + ") AS TYPE FROM " + getVirtualTableName(virtualSchema, table))) {
-            assertThat(result, table("VARCHAR").row(expectedType).matches());
+            assertThat("TYPEOF result", result, table("VARCHAR").row(expectedType).matches());
         }
     }
 

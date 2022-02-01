@@ -16,6 +16,8 @@ import com.exasol.dbbuilder.dialects.Table;
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are present in the result set without modification</li>
+ * <li>{@code HASHTYPE} types are present in the result set without modification</li>
+ * <li>{@code GEOMETRY} types are present in the result set without modification</li>
  * <ul>
  */
 class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
