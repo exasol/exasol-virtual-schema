@@ -758,7 +758,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .expectDescribeType("HASHTYPE(16 BYTE)") //
                 .expectTypeOf("HASHTYPE(16 BYTE)") //
                 .expectResultSetType("HASHTYPE") //
-                .runAssert();
+                .expectValue("550e8400e29b11d4a716446655440000").runAssert();
     }
 
     @Test

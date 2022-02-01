@@ -115,6 +115,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
                 .expectDescribeType("HASHTYPE(16 BYTE)") //
                 .expectTypeOf("HASHTYPE(16 BYTE)") //
                 .expectResultSetType("VARCHAR") //
+                .expectValue("550e8400e29b11d4a716446655440000") //
                 .runAssert();
     }
 
