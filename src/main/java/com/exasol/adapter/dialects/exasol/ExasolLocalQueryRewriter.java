@@ -1,5 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
+import java.util.logging.Logger;
+
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
@@ -16,6 +18,8 @@ import com.exasol.adapter.sql.SqlStatement;
  * </p>
  */
 public class ExasolLocalQueryRewriter implements QueryRewriter {
+    private static final Logger LOGGER = Logger.getLogger(ExasolLocalQueryRewriter.class.getName());
+
     private final SqlDialect dialect;
 
     /**
@@ -33,6 +37,8 @@ public class ExasolLocalQueryRewriter implements QueryRewriter {
         final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
                 properties.getSchemaName(), false);
         final SqlGenerator sqlGeneratorVisitor = this.dialect.getSqlGenerator(context);
-        return sqlGeneratorVisitor.generateSqlFor(statement);
+        final String selectStatement = sqlGeneratorVisitor.generateSqlFor(statement);
+        LOGGER.finer(() -> "SELECT push-down statement:\n" + selectStatement);
+        return selectStatement;
     }
 }
