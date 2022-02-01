@@ -21,7 +21,6 @@ import com.exasol.dbbuilder.dialects.Table;
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <li>{@code HASHTYPE} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
  * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
  * <ul>
  */
@@ -49,37 +48,6 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
     @Test
     void testCastVarcharToChar() {
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").verify(pad("Hello.", 40));
-    }
-
-    @Override
-    @Test
-    void testDefaultHashType() {
-        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
-                .expectDescribeType("HASHTYPE(16 BYTE)") //
-                .expectTypeOf("HASHTYPE(16 BYTE)") //
-                .expectResultSetType("VARCHAR") //
-                .expectValue("550e8400e29b11d4a716446655440000") //
-                .runAssert();
-    }
-
-    @Override
-    @Test
-    void testNonDefaultHashType() {
-        typeAssertionFor("HASHTYPE(4 BYTE)").withValue("550e8400") //
-                .expectDescribeType("HASHTYPE(4 BYTE)") //
-                .expectTypeOf("HASHTYPE(4 BYTE)") //
-                .expectResultSetType("VARCHAR") //
-                .runAssert();
-    }
-
-    @Override
-    @Test
-    void testHashTypeWithBitSize() {
-        typeAssertionFor("HASHTYPE(16 BIT)").withValue("550e") //
-                .expectDescribeType("HASHTYPE(2 BYTE)") //
-                .expectTypeOf("HASHTYPE(2 BYTE)") //
-                .expectResultSetType("VARCHAR") //
-                .runAssert();
     }
 
     @Override
