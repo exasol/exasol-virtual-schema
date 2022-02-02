@@ -20,7 +20,8 @@ import com.exasol.dbbuilder.dialects.Table;
  * These tests take the following specialties of a JDBC connection into account:
  * </p>
  * <ul>
- * <li>{@code INTERVAL} types are converted to {@code VARCHAR}</li>
+ * <li>{@code INTERVAL} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
+ * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
  * <ul>
  */
 class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
@@ -49,10 +50,60 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").verify(pad("Hello.", 40));
     }
 
+    @Override
     @Test
-    void testDefaultHashType() {
-        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
-                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)").expectResultSetType("CHAR")
-                .expectValue("550e8400e29b11d4a716446655440000").runAssert();
+    void testDefaultGeometry() {
+        typeAssertionFor("GEOMETRY").withValue("POINT (2 5)") //
+                .expectDescribeType("GEOMETRY(3857)") //
+                .expectResultSetType("VARCHAR") //
+                .runAssert();
+    }
+
+    @Override
+    @Test
+    void testNonDefaultGeometry() {
+        typeAssertionFor("GEOMETRY(4321)").withValue("POINT (2 5)") //
+                .expectResultSetType("VARCHAR") //
+                .runAssert();
+    }
+
+    @Override
+    @Test
+    void testDefaultIntervalYearToMonth() {
+        typeAssertionFor("INTERVAL YEAR TO MONTH").withValue("5-3") //
+                .expectTypeOf("INTERVAL YEAR(2) TO MONTH") //
+                .expectDescribeType("INTERVAL YEAR(2) TO MONTH") //
+                .expectResultSetType("VARCHAR") //
+                .expectValue("+05-03") //
+                .runAssert();
+    }
+
+    @Override
+    @Test
+    void testNonDefaultIntervalYearToMonth() {
+        typeAssertionFor("INTERVAL YEAR(5) TO MONTH").withValue("5-3") //
+                .expectResultSetType("VARCHAR") //
+                .expectValue("+00005-03") //
+                .runAssert();
+    }
+
+    @Override
+    @Test
+    void testDefaultIntervalDayToSecond() {
+        typeAssertionFor("INTERVAL DAY TO SECOND").withValue("2 12:50:10.123") //
+                .expectTypeOf("INTERVAL DAY(2) TO SECOND(3)") //
+                .expectDescribeType("INTERVAL DAY(2) TO SECOND(3)") //
+                .expectResultSetType("VARCHAR") //
+                .expectValue("+02 12:50:10.123") //
+                .runAssert();
+    }
+
+    @Override
+    @Test
+    void testNonDefaultIntervalDayToSecond() {
+        typeAssertionFor("INTERVAL DAY(4) TO SECOND(6)").withValue("2 12:50:10.123") //
+                .expectResultSetType("VARCHAR") //
+                .expectValue("+0002 12:50:10.123000") //
+                .runAssert();
     }
 }

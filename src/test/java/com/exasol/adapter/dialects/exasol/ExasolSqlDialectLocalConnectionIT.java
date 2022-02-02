@@ -16,6 +16,8 @@ import com.exasol.dbbuilder.dialects.Table;
  * </p>
  * <ul>
  * <li>{@code INTERVAL} types are present in the result set without modification</li>
+ * <li>{@code HASHTYPE} types are present in the result set without modification</li>
+ * <li>{@code GEOMETRY} types are present in the result set without modification</li>
  * <ul>
  */
 class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
@@ -81,12 +83,5 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Test
     void testCastVarcharAsGeometry() {
         castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
-    }
-
-    @Test
-    void testDefaultHashType() {
-        typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
-                .expectDescribeType("CHAR(32) ASCII").expectTypeOf("HASHTYPE(16 BYTE)").expectResultSetType("HASHTYPE")
-                .expectValue("550e8400e29b11d4a716446655440000").runAssert();
     }
 }
