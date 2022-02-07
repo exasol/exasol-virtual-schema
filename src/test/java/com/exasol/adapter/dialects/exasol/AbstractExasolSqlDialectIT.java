@@ -829,6 +829,20 @@ abstract class AbstractExasolSqlDialectIT {
                 .runAssert();
     }
 
+    @Test
+    void testCurrentClusterFunction() throws SQLException {
+        final Table table = createSingleColumnTable("VARCHAR(20) UTF8").insert("_cluster");
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            final String sql = "select CURRENT_CLUSTER || " + COLUMN1_NAME + " from "
+                    + this.sourceSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
+            assertThat(query(sql), table("VARCHAR").row("MAIN_cluster").matches());
+        } finally {
+            table.drop();
+            virtualSchema.drop();
+        }
+    }
+
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
         return DataTypeAssertion.builder(this).withColumnType(columnType);
     }

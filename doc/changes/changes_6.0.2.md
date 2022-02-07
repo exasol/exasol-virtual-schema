@@ -1,8 +1,10 @@
-# Exasol Virtual Schema 6.0.2, released 2022-??-??
+# Exasol Virtual Schema 6.0.2, released 2022-02-07
 
-Code name:
+Code name: Fix push-down of `CURRENT_CLUSTER` function
 
-## Features
+## Summary
+
+This release fixes execution of the `CURRENT_CLUSTER` function with the next Exasol release. Exasol 8 will push down this function. This requires that the virtual schema omits the parenthesis in the function call.
 
 ## Bugfixes
 
