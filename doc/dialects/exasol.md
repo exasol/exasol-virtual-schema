@@ -17,7 +17,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-9.0.4-exasol-6.0.2.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-9.0.4-exasol-6.0.3.jar;
 /
 ```
 
@@ -93,7 +93,6 @@ You can alternatively use a regular JDBC connection for the `IMPORT`. Note that 
 ```sql
 CREATE VIRTUAL SCHEMA <virtual schema name> 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
-    WITH
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
 ```
@@ -121,10 +120,9 @@ And that `SELECT` can be directly executed by the core database, whereas the `IM
 ```sql
 CREATE VIRTUAL SCHEMA <virtual schema name> 
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
-    WITH
     CONNECTION_NAME = 'JDBC_CONNECTION'
-    SCHEMA_NAME     = '<schema name>';
-    IS_LOCAL        = 'true'
+    SCHEMA_NAME     = '<schema name>'
+    IS_LOCAL        = 'true';
 ```
 
 Note that you still need to provide a JDBC connection. This is used by the Virtual Schema adapter internally. It is not used for mass data transfer though. And that is where the performance gain comes from.
