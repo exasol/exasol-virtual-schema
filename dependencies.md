@@ -22,7 +22,7 @@
 | [Testcontainers :: JUnit Jupiter Extension][18] | [MIT][19]                         |
 | [Matcher for SQL Result Sets][20]               | [MIT][1]                          |
 | [SLF4J JDK14 Binding][22]                       | [MIT License][23]                 |
-| [Test Database Builder for Java][24]            | [MIT][1]                          |
+| [Test Database Builder for Java][24]            | [MIT License][25]                 |
 | [udf-debugging-java][26]                        | [MIT][1]                          |
 | [Maven Project Version Getter][28]              | [MIT][1]                          |
 
@@ -59,46 +59,47 @@
 [4]: https://github.com/exasol/error-reporting-java
 [51]: http://www.apache.org/licenses/LICENSE-2.0.txt
 [30]: https://maven.apache.org/surefire/maven-surefire-plugin/
-[60]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
 [3]: https://www.exasol.com/support/secure/attachment/155343/EXASOL_SDK-7.0.11.tar.gz
 [1]: https://opensource.org/licenses/MIT
 [12]: https://github.com/mockito/mockito
-[40]: https://maven.apache.org/surefire/maven-failsafe-plugin/
-[24]: https://github.com/exasol/test-db-builder-java
 [28]: https://github.com/exasol/maven-project-version-getter
 [52]: http://www.mojohaus.org/versions-maven-plugin/
 [9]: http://opensource.org/licenses/BSD-3-Clause
 [36]: https://maven.apache.org/plugins/maven-compiler-plugin/
-[19]: http://opensource.org/licenses/MIT
 [70]: https://maven.apache.org/plugins/maven-resources-plugin/
-[0]: https://github.com/exasol/virtual-schema-common-jdbc
+[25]: https://github.com/exasol/test-db-builder-java/blob/main/LICENSE
 [68]: https://maven.apache.org/plugins/maven-clean-plugin/
 [15]: https://www.eclipse.org/legal/epl-2.0/
 [58]: https://maven.apache.org/plugins/maven-deploy-plugin/
-[61]: http://www.eclipse.org/legal/epl-v10.html
-[16]: https://github.com/exasol/exasol-testcontainers
 [32]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
 [13]: https://github.com/mockito/mockito/blob/main/LICENSE
 [20]: https://github.com/exasol/hamcrest-resultset-matcher
-[62]: https://maven.apache.org/plugins/maven-dependency-plugin/
 [66]: http://zlika.github.io/reproducible-build-maven-plugin
-[74]: https://maven.apache.org/plugins/maven-site-plugin/
 [23]: http://www.opensource.org/licenses/mit-license.php
+[72]: https://maven.apache.org/plugins/maven-install-plugin/
+[10]: https://junit.org/junit5/
+[44]: https://maven.apache.org/plugins/maven-source-plugin/
+[8]: http://hamcrest.org/JavaHamcrest/
+[22]: http://www.slf4j.org
+[56]: https://github.com/exasol/artifact-reference-checker-maven-plugin
+[42]: https://maven.apache.org/plugins/maven-jar-plugin/
+[24]: https://github.com/exasol/test-db-builder-java/
+[60]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
+[40]: https://maven.apache.org/surefire/maven-failsafe-plugin/
+[19]: http://opensource.org/licenses/MIT
+[0]: https://github.com/exasol/virtual-schema-common-jdbc
+[61]: http://www.eclipse.org/legal/epl-v10.html
+[16]: https://github.com/exasol/exasol-testcontainers
+[62]: https://maven.apache.org/plugins/maven-dependency-plugin/
+[74]: https://maven.apache.org/plugins/maven-site-plugin/
 [31]: https://www.apache.org/licenses/LICENSE-2.0.txt
 [54]: https://maven.apache.org/enforcer/maven-enforcer-plugin/
 [2]: http://www.exasol.com
 [11]: https://www.eclipse.org/legal/epl-v20.html
-[72]: https://maven.apache.org/plugins/maven-install-plugin/
-[10]: https://junit.org/junit5/
 [50]: https://sonatype.github.io/ossindex-maven/maven-plugin/
 [48]: https://maven.apache.org/plugins/maven-gpg-plugin/
 [18]: https://testcontainers.org
 [26]: https://github.com/exasol/udf-debugging-java
-[44]: https://maven.apache.org/plugins/maven-source-plugin/
-[8]: http://hamcrest.org/JavaHamcrest/
-[22]: http://www.slf4j.org
 [46]: https://maven.apache.org/plugins/maven-javadoc-plugin/
-[56]: https://github.com/exasol/artifact-reference-checker-maven-plugin
 [64]: https://github.com/exasol/error-code-crawler-maven-plugin
-[42]: https://maven.apache.org/plugins/maven-jar-plugin/
 [38]: https://maven.apache.org/plugins/maven-assembly-plugin/
