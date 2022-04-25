@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 6.0.4, released 2022-??-??
+# Exasol Virtual Schema 6.0.4, released 2022-04-25
 
 Code name: Upgrade dependencies
 
