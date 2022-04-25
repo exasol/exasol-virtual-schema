@@ -29,7 +29,6 @@ import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundExceptio
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import com.exasol.adapter.dialects.exasol.fingerprint.FingerprintExtractor;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
@@ -127,7 +126,7 @@ abstract class AbstractExasolSqlDialectIT {
     private String getJdbcUrl() {
         final int port = EXASOL.getDefaultInternalDatabasePort();
         if (exasolVersionSupportsFingerprintInAddress()) {
-            final String fingerprint = FingerprintExtractor.extractFingerprint(EXASOL.getJdbcUrl()).orElseThrow();
+            final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
             return "jdbc:exa:localhost/" + fingerprint + ":" + port;
         }
         return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
