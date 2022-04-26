@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import com.exasol.mavenprojectversiongetter.MavenProjectVersionGetter;
 
 public final class IntegrationTestConfiguration {
-    private static final String DEFAULT_DOCKER_DB_REFERENCE = "7.1.6";
+    private static final String DEFAULT_DOCKER_DB_REFERENCE = "7.1.9";
     public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-9.0.4-exasol-"
             + MavenProjectVersionGetter.getCurrentProjectVersion() + ".jar";
     public static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);

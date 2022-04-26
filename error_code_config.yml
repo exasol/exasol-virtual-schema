@@ -2,3 +2,4 @@ error-tags:
   VS-EXA:
     packages:
       - com.exasol.adapter.dialects.exasol
+    highest-index: 5
