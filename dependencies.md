@@ -5,26 +5,26 @@
 
 | Dependency                      | License                |
 | ------------------------------- | ---------------------- |
-| [Virtual Schema Common JDBC][0] | [MIT][1]               |
+| [Virtual Schema Common JDBC][0] | [MIT License][1]       |
 | [EXASolution JDBC Driver][2]    | [EXAClient License][3] |
-| [error-reporting-java][4]       | [MIT][1]               |
+| [error-reporting-java][4]       | [MIT][5]               |
 
 ## Test Dependencies
 
 | Dependency                                      | License                           |
 | ----------------------------------------------- | --------------------------------- |
-| [Virtual Schema Common JDBC][0]                 | [MIT][1]                          |
+| [Virtual Schema Common JDBC][0]                 | [MIT License][1]                  |
 | [Hamcrest][8]                                   | [BSD License 3][9]                |
 | [JUnit Jupiter (Aggregator)][10]                | [Eclipse Public License v2.0][11] |
 | [mockito-junit-jupiter][12]                     | [The MIT License][13]             |
 | [JaCoCo :: Agent][14]                           | [Eclipse Public License 2.0][15]  |
-| [Test containers for Exasol on Docker][16]      | [MIT][1]                          |
+| [Test containers for Exasol on Docker][16]      | [MIT][5]                          |
 | [Testcontainers :: JUnit Jupiter Extension][18] | [MIT][19]                         |
-| [Matcher for SQL Result Sets][20]               | [MIT][1]                          |
+| [Matcher for SQL Result Sets][20]               | [MIT][5]                          |
 | [SLF4J JDK14 Binding][22]                       | [MIT License][23]                 |
 | [Test Database Builder for Java][24]            | [MIT License][25]                 |
-| [udf-debugging-java][26]                        | [MIT][1]                          |
-| [Maven Project Version Getter][28]              | [MIT][1]                          |
+| [udf-debugging-java][26]                        | [MIT][5]                          |
+| [Maven Project Version Getter][28]              | [MIT][5]                          |
 
 ## Plugin Dependencies
 
@@ -41,7 +41,7 @@
 | [Versions Maven Plugin][46]                             | [Apache License, Version 2.0][35] |
 | [Apache Maven Assembly Plugin][48]                      | [Apache License, Version 2.0][35] |
 | [Apache Maven JAR Plugin][50]                           | [Apache License, Version 2.0][35] |
-| [Artifact reference checker and unifier][52]            | [MIT][1]                          |
+| [Artifact reference checker and unifier][52]            | [MIT][5]                          |
 | [Apache Maven Deploy Plugin][54]                        | [Apache License, Version 2.0][35] |
 | [Apache Maven GPG Plugin][56]                           | [Apache License, Version 2.0][35] |
 | [Apache Maven Source Plugin][58]                        | [Apache License, Version 2.0][35] |
@@ -50,7 +50,7 @@
 | [Apache Maven Dependency Plugin][64]                    | [Apache License, Version 2.0][35] |
 | [Maven Failsafe Plugin][66]                             | [Apache License, Version 2.0][35] |
 | [JaCoCo :: Maven Plugin][68]                            | [Eclipse Public License 2.0][15]  |
-| [error-code-crawler-maven-plugin][70]                   | [MIT][1]                          |
+| [error-code-crawler-maven-plugin][70]                   | [MIT][5]                          |
 | [Apache Maven Clean Plugin][72]                         | [Apache License, Version 2.0][35] |
 | [Apache Maven Resources Plugin][74]                     | [Apache License, Version 2.0][35] |
 | [Apache Maven Install Plugin][76]                       | [Apache License, Version 2.0][35] |
@@ -61,8 +61,9 @@
 [39]: http://www.apache.org/licenses/LICENSE-2.0.txt
 [44]: https://maven.apache.org/surefire/maven-surefire-plugin/
 [3]: https://www.exasol.com/support/secure/attachment/155343/EXASOL_SDK-7.0.11.tar.gz
-[1]: https://opensource.org/licenses/MIT
+[5]: https://opensource.org/licenses/MIT
 [12]: https://github.com/mockito/mockito
+[38]: https://www.mojohaus.org/flatten-maven-plugin/
 [28]: https://github.com/exasol/maven-project-version-getter
 [32]: https://github.com/exasol/project-keeper/
 [46]: http://www.mojohaus.org/versions-maven-plugin/
@@ -80,9 +81,10 @@
 [42]: http://zlika.github.io/reproducible-build-maven-plugin
 [23]: http://www.opensource.org/licenses/mit-license.php
 [30]: http://sonarsource.github.io/sonar-scanner-maven/
+[26]: https://github.com/exasol/udf-debugging-java/
 [76]: https://maven.apache.org/plugins/maven-install-plugin/
 [10]: https://junit.org/junit5/
-[38]: https://www.mojohaus.org/flatten-maven-plugin/flatten-maven-plugin
+[0]: https://github.com/exasol/virtual-schema-common-jdbc/
 [58]: https://maven.apache.org/plugins/maven-source-plugin/
 [8]: http://hamcrest.org/JavaHamcrest/
 [22]: http://www.slf4j.org
@@ -92,7 +94,6 @@
 [62]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
 [66]: https://maven.apache.org/surefire/maven-failsafe-plugin/
 [19]: http://opensource.org/licenses/MIT
-[0]: https://github.com/exasol/virtual-schema-common-jdbc
 [63]: http://www.eclipse.org/legal/epl-v10.html
 [16]: https://github.com/exasol/exasol-testcontainers
 [33]: https://github.com/exasol/project-keeper/blob/main/LICENSE
@@ -102,10 +103,10 @@
 [36]: https://maven.apache.org/enforcer/maven-enforcer-plugin/
 [2]: http://www.exasol.com
 [11]: https://www.eclipse.org/legal/epl-v20.html
+[1]: https://github.com/exasol/virtual-schema-common-jdbc/blob/main/LICENSE
 [40]: https://sonatype.github.io/ossindex-maven/maven-plugin/
 [56]: https://maven.apache.org/plugins/maven-gpg-plugin/
 [18]: https://testcontainers.org
-[26]: https://github.com/exasol/udf-debugging-java
 [60]: https://maven.apache.org/plugins/maven-javadoc-plugin/
 [70]: https://github.com/exasol/error-code-crawler-maven-plugin
 [48]: https://maven.apache.org/plugins/maven-assembly-plugin/
