@@ -8,12 +8,13 @@ on:
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        docker_db_version: [ 7.0.18, 7.1.9 ]
-    env:
-      DEFAULT_DB_VERSION: "7.1.9"
+    build:
+      strategy:
+        fail-fast: false
+        matrix:
+          docker_db_version: [ 7.0.19, 7.1.11 ]
+      env:
+        DEFAULT_DB_VERSION: "7.1.11"
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -41,7 +42,7 @@ jobs:
         run: |
           mvn --batch-mode clean verify \
               -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
-              -DtrimStackTrace=false \
+              -DtrimStackTrace=false
               -Dcom.exasol.dockerdb.image=${{ matrix.docker_db_version }}
       - name: Publish Test Report
         uses: scacap/action-surefire-report@v1
