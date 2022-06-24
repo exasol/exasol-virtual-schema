@@ -113,7 +113,7 @@
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
             <version>0.6.3</version>
-            <scope>test</scope>mvn
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
