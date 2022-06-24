@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.exasol</groupId>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>6.0.4</version>
+    <version>6.0.3</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
@@ -543,7 +543,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>6.0.4</version>
+        <version>6.0.3</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
