@@ -147,7 +147,7 @@ The following Exasol Server Versions support TLS connections via JDBC:
 * 7.0.10 and later 7.0.x versions
 * All versions from 7.1.x on
 
-Older versions (6.2.0 &hellip; 6.2.14 and 7.0.0 &hellip; 7.0.9) automatically fall back to legacy encryption. These versions are outdated anyway. If you still have one of them running, you should still disable TLS support explicitly. This is a visual reminder that TLS won't work with those versions.
+Older versions (6.2.0 &hellip; 6.2.14 and 7.0.0 &hellip; 7.0.9) automatically fall back to legacy encryption. These versions are outdated anyway. If you still have one of them running, you should still disable TLS support explicitly by specifying parameter `legacyencryption=1` in the JDBC URL (see details about [supported driver properties](https://docs.exasol.com/db/latest/connect_exasol/drivers/jdbc.htm#SupportedDriverProperties)). This is a visual reminder that TLS won't work with those versions.
 
 If you are interested, you can find even more detailed information in our [roadmap ticket "TLS for all Exasol Drivers"](https://www.exasol.com/support/browse/EXASOL-2936).
 
