@@ -8,13 +8,12 @@ on:
 
 jobs:
   build:
-    build:
-      strategy:
-        fail-fast: false
-        matrix:
-          docker_db_version: [ 7.0.19, 7.1.11 ]
-      env:
-        DEFAULT_DB_VERSION: "7.1.11"
+    strategy:
+      fail-fast: false
+      matrix:
+        docker_db_version: [ 7.0.19, 7.1.11 ]
+    env:
+      DEFAULT_DB_VERSION: "7.1.11"
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
