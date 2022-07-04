@@ -33,7 +33,7 @@ We also fixed the following vulnerabilities by updating other dependencies:
 * Updated `com.exasol:exasol-testcontainers:6.0.0` to `6.1.2`
 * Added `com.exasol:maven-project-version-getter:1.1.0`
 * Updated `com.exasol:test-db-builder-java:3.2.2` to `3.3.3`
-* Updated `com.exasol:udf-debugging-java:0.5.0` to `0.6.3`
+* Updated `com.exasol:udf-debugging-java:0.5.0` to `0.6.4`
 * Updated `org.jacoco:org.jacoco.agent:0.8.7` to `0.8.8`
 * Updated `org.mockito:mockito-junit-jupiter:4.3.1` to `4.6.1`
 * Updated `org.slf4j:slf4j-jdk14:1.7.35` to `1.7.36`
