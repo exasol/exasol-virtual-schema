@@ -183,6 +183,10 @@
                         <option>java.sql</option>
                         <option>--add-reads</option>
                         <option>java.xml.bind=java.sql</option>
+                        <option>--add-reads</option>
+                        <option>org.glassfish.jakarta.json=java.sql</option>
+                        <option>--add-reads</option>
+                        <option>org.glassfish.jakarta.json=java.util.logging</option>
                     </additionalOptions>
                     <failOnWarnings>false</failOnWarnings>
                 </configuration>
