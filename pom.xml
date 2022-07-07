@@ -126,6 +126,14 @@
             <version>1.1.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- While we don't use this directly, we still need it as a dependency to satisfy transitive dependencies
+            that break the error code crawler -->
+            <groupId>com.exasol</groupId>
+            <artifactId>exasol-test-setup-abstraction-java</artifactId>
+            <version>0.3.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -201,6 +209,18 @@
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <useModulePath>false</useModulePath>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.ossindex.maven</groupId>
+                <artifactId>ossindex-maven-plugin</artifactId>
+                <configuration>
+                    <excludeVulnerabilityIds>
+                        <!-- This is a vulnerability in the transitive netty test dependency introduced by the
+                        AWS SDK and in turn by exasol-test-setup-abstraction-java. AWS notes that they handle
+                        netty in a way where this cannot be exploited. -->
+                        <exclude>sonatype-2020-0026</exclude>
+                    </excludeVulnerabilityIds>
                 </configuration>
             </plugin>
         </plugins>
