@@ -119,7 +119,6 @@ abstract class AbstractExasolSqlDialectIT {
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
         final String jdbcUrl = getJdbcUrl();
-        LOGGER.fine(() -> "Creating connection to '" + jdbcUrl + "' for user '" + user.getName() + "'");
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 

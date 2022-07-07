@@ -28,6 +28,7 @@ We also fixed the following vulnerabilities by updating other dependencies:
 
 * Updated `com.exasol:exasol-jdbc:7.1.4` to `7.1.11`
 * Updated `com.exasol:virtual-schema-common-jdbc:9.0.4` to `9.0.5`
+* Added `org.glassfish:jakarta.json:2.0.1`
 
 ### Test Dependency Updates
 
