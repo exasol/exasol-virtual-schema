@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 6.0.3, released 2022-02-??
+# Exasol Virtual Schema 6.0.3, released 2022-07-08
 
 Code name: Improved TLS documentation
 
