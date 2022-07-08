@@ -218,7 +218,8 @@
                     <excludeVulnerabilityIds>
                         <!-- This is a vulnerability in the transitive netty test dependency introduced by the
                         AWS SDK and in turn by exasol-test-setup-abstraction-java. AWS notes that they handle
-                        netty in a way where this cannot be exploited. -->
+                        netty in a way where this cannot be exploited.
+                        See https://github.com/aws/aws-sdk-java-v2/issues/3263#issuecomment-1163600532 -->
                         <exclude>sonatype-2020-0026</exclude>
                     </excludeVulnerabilityIds>
                 </configuration>

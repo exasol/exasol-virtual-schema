@@ -19,7 +19,7 @@ We also fixed the following vulnerabilities by updating other dependencies:
 
 ## Bugfixes
 
-* #74: Fixed security issue in dependency
+* #74: Fixed security issues in dependencies
 * #64: Fixed typos in user guide
 
 ## Dependency Updates
