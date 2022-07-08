@@ -17,7 +17,6 @@ import java.math.BigDecimal;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Logger;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
@@ -44,10 +43,7 @@ import com.github.dockerjava.api.model.ContainerNetwork;
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
-    private static final Logger LOGGER = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
-
     private static final String COLUMN1_NAME = "C1";
-    private static final String DEBUG_ADDRESS = null;
 
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
@@ -71,8 +67,8 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static ExasolObjectFactory setUpObjectFactory() {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(), EXASOL.getDefaultBucket(),
-                connection);
+        final UdfTestSetup udfTestSetup = new UdfTestSetup(Objects.requireNonNull(getTestHostIpFromInsideExasol()),
+                EXASOL.getDefaultBucket(), connection);
         return new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
     }
@@ -119,7 +115,6 @@ abstract class AbstractExasolSqlDialectIT {
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
         final String jdbcUrl = getJdbcUrl();
-        LOGGER.fine(() -> "Creating connection to '" + jdbcUrl + "' for user '" + user.getName() + "'");
         return objectFactory.createConnectionDefinition("JDBC_CONNECTION", jdbcUrl, user.getName(), user.getPassword());
     }
 
@@ -196,14 +191,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private Map<String, String> getVirtualSchemaProperties() {
-        final Map<String, String> properties = getConnectionSpecificVirtualSchemaProperties();
-        if ((DEBUG_ADDRESS == null) || DEBUG_ADDRESS.isBlank()) {
-            return properties;
-        }
-        final Map<String, String> propertiesWithDebugOption = new HashMap<>(properties);
-        propertiesWithDebugOption.put("DEBUG_ADDRESS", DEBUG_ADDRESS);
-        propertiesWithDebugOption.put("LOG_LEVEL", "ALL");
-        return propertiesWithDebugOption;
+        return getConnectionSpecificVirtualSchemaProperties();
     }
 
     protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
@@ -390,8 +378,7 @@ abstract class AbstractExasolSqlDialectIT {
         final Table table = this.sourceSchema.createTable("MixedCaseTable", COLUMN1_NAME, "BOOLEAN").insert(true);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         final String virtualTableUnquotedName = virtualSchema.getFullyQualifiedName() + "." + table.getName();
-        final SQLException exception = assertThrows(SQLException.class, () -> selectAllFrom(virtualTableUnquotedName));
-        assertThat(exception.getMessage(), matchesPattern(".*object.*not found.*"));
+        assertQueryFailsWithErrorMatching("SELECT * FROM " + virtualTableUnquotedName, ".*object.*not found.*");
         virtualSchema.drop();
     }
 
@@ -567,20 +554,33 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     void createVirtualSchemaWithNonexistentConnectionThrowsException() {
-        final String sql = "CREATE VIRTUAL SCHEMA VIRTUAL_SCHEMA_NONEXISTENT_CONNECTION\n" //
+        assertQueryFailsWithErrorContaining("CREATE VIRTUAL SCHEMA VIRTUAL_SCHEMA_NONEXISTENT_CONNECTION\n" //
                 + "USING " + adapterScript.getFullyQualifiedName() + " WITH\n" //
                 + "CONNECTION_NAME = 'NONEXISTENT_CONNECTION'\n" //
-                + "SCHEMA_NAME = '" + this.sourceSchema.getFullyQualifiedName() + "' ";
-        final SQLException exception = assertThrows(SQLException.class, () -> query(sql));
-        assertThat(exception.getMessage(),
-                containsString("Could not access the connection information of connection 'NONEXISTENT_CONNECTION'"));
+                + "SCHEMA_NAME = '" + this.sourceSchema.getFullyQualifiedName() + "' ", //
+                "Could not access the connection information of connection 'NONEXISTENT_CONNECTION'");
+    }
+
+    private void assertQueryFailsWithErrorContaining(final String sql, final String expectedErrorMessage) {
+        final SQLException exception = assertThrows(SQLException.class, () -> runQueryExpectedToFail(sql));
+        assertThat(exception.getMessage(), containsString(expectedErrorMessage));
+    }
+    private void assertQueryFailsWithErrorMatching(final String sql, final String expectedErrorMessage) {
+        final SQLException exception = assertThrows(SQLException.class, () -> runQueryExpectedToFail(sql));
+        assertThat(exception.getMessage(), matchesPattern(expectedErrorMessage));
+    }
+
+    // While the query run here is expected to fail, we still wrap it so that should it accidentally succeed, the
+    // result set is correctly closed.
+    private void runQueryExpectedToFail(String sql) throws SQLException {
+        ResultSet irrelevant = query(sql);
+        irrelevant.close();
     }
 
     @Test
     void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
-        final Map<String, String> properties = new HashMap<>();
-        properties.putAll(getConnectionSpecificVirtualSchemaProperties());
+        final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
         properties.put("IGNORE_ERRORS", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
         this.virtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
                 .sourceSchema(this.sourceSchema) //
@@ -596,11 +596,10 @@ abstract class AbstractExasolSqlDialectIT {
     void testCreateVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final SQLException exception = assertThrows(SQLException.class, () -> query(
-                "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)));
-        assertThat(exception.getMessage(),
-                containsString("Attention! Using literals and constant expressions with datatype "
-                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results."));
+        assertQueryFailsWithErrorContaining(
+                "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table), //
+                "Attention! Using literals and constant expressions with datatype " //
+                 + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.");
     }
 
     // SELECT * tests
