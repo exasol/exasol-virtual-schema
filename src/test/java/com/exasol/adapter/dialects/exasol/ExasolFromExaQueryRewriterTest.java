@@ -10,7 +10,7 @@ import static org.mockito.Mockito.when;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,10 +23,13 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriterTestBase;
 import com.exasol.adapter.jdbc.ConnectionFactory;
+import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
 
 @ExtendWith(MockitoExtension.class)
 class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
+    private static final List<DataType> EMPTY_SELECT_LIST_DATA_TYPES = Collections.emptyList();
+
     @BeforeEach
     void beforeEach() {
         this.statement = TestSqlStatementFactory.createSelectOneFromDual();
@@ -42,7 +45,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
         final SqlDialect dialect = dialectFactory.createSqlDialect(connectionFactoryMock, properties);
         final ExasolMetadataReader metadataReader = new ExasolMetadataReader(connectionMock, properties);
         final QueryRewriter queryRewriter = new ExasolJdbcQueryRewriter(dialect, metadataReader, connectionFactoryMock);
-        assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
+        assertThat(queryRewriter.rewrite(this.statement, EMPTY_SELECT_LIST_DATA_TYPES, EXA_METADATA, properties),
                 equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM JDBC AT " + CONNECTION_NAME
                         + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
@@ -52,7 +55,8 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
         final AdapterProperties properties = new AdapterProperties(Map.of(IS_LOCAL_PROPERTY, "true"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolLocalQueryRewriter(dialect);
-        assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties), equalTo("SELECT 1 FROM \"DUAL\""));
+        assertThat(queryRewriter.rewrite(this.statement, EMPTY_SELECT_LIST_DATA_TYPES, EXA_METADATA, properties),
+                equalTo("SELECT 1 FROM \"DUAL\""));
     }
 
     @Test
@@ -62,7 +66,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
                 EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect, null);
-        assertThat(queryRewriter.rewrite(this.statement, EXA_METADATA, properties),
+        assertThat(queryRewriter.rewrite(this.statement, EMPTY_SELECT_LIST_DATA_TYPES, EXA_METADATA, properties),
                 equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\"" + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
 }
