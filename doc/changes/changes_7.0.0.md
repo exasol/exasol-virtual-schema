@@ -21,7 +21,7 @@ Starting with major version 8 Exasol database uses the capabilities reported by 
 ### Test Dependency Updates
 
 * Added `com.exasol:exasol-test-setup-abstraction-java:0.3.2`
-* Updated `com.exasol:exasol-testcontainers:6.0.0` to `6.1.2`
+* Updated `com.exasol:exasol-testcontainers:6.0.0` to `6.2.0`
 * Added `com.exasol:maven-project-version-getter:1.1.0`
 * Updated `com.exasol:test-db-builder-java:3.2.2` to `3.3.3`
 * Updated `com.exasol:udf-debugging-java:0.5.0` to `0.6.4`
