@@ -94,6 +94,9 @@ abstract class AbstractExasolSqlDialectIT {
 
     protected static boolean exasolVersionSupportsFingerprintInAddress() {
         final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        if (imageReference.getMajor() >= 8) {
+            return true;
+        }
         return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
     }
 
@@ -565,6 +568,7 @@ abstract class AbstractExasolSqlDialectIT {
         final SQLException exception = assertThrows(SQLException.class, () -> runQueryExpectedToFail(sql));
         assertThat(exception.getMessage(), containsString(expectedErrorMessage));
     }
+
     private void assertQueryFailsWithErrorMatching(final String sql, final String expectedErrorMessage) {
         final SQLException exception = assertThrows(SQLException.class, () -> runQueryExpectedToFail(sql));
         assertThat(exception.getMessage(), matchesPattern(expectedErrorMessage));
@@ -572,8 +576,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     // While the query run here is expected to fail, we still wrap it so that should it accidentally succeed, the
     // result set is correctly closed.
-    private void runQueryExpectedToFail(String sql) throws SQLException {
-        ResultSet irrelevant = query(sql);
+    private void runQueryExpectedToFail(final String sql) throws SQLException {
+        final ResultSet irrelevant = query(sql);
         irrelevant.close();
     }
 
@@ -599,7 +603,7 @@ abstract class AbstractExasolSqlDialectIT {
         assertQueryFailsWithErrorContaining(
                 "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table), //
                 "Attention! Using literals and constant expressions with datatype " //
-                 + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.");
+                        + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.");
     }
 
     // SELECT * tests

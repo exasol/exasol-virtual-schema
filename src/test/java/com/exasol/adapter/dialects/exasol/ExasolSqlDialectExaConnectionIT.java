@@ -44,11 +44,10 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     }
 
     private String getTargetAddress() {
-        if (exasolVersionSupportsFingerprintInAddress()) {
-            final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
-            return "127.0.0.1/" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
-        }
-        return "127.0.0.1:" + EXASOL.getDefaultInternalDatabasePort();
+        final String fingerprint = exasolVersionSupportsFingerprintInAddress()
+                ? "/" + EXASOL.getTlsCertificateFingerprint().orElseThrow()
+                : "";
+        return "127.0.0.1" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
     }
 
     @Override

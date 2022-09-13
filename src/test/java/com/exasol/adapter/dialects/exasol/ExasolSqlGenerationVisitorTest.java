@@ -55,17 +55,4 @@ class ExasolSqlGenerationVisitorTest {
             Locale.setDefault(defaultLocale);
         }
     }
-
-    @Test
-    void testVisitSqlLiteralDoubleGermanLocale() {
-        final Locale defaultLocale = Locale.getDefault();
-        try {
-            Locale.setDefault(Locale.GERMANY);
-            final ExasolSqlGenerationVisitor exasolSqlGenerationVisitor = new ExasolSqlGenerationVisitor(
-                    this.exasolSqlDialect, null);
-            assertThat(exasolSqlGenerationVisitor.visit(new SqlLiteralDouble(1.23)), equalTo("CAST(1,23E0 AS DOUBLE)"));
-        } finally {
-            Locale.setDefault(defaultLocale);
-        }
-    }
 }
