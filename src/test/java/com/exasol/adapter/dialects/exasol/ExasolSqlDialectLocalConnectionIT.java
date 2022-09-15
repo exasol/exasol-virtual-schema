@@ -2,7 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,6 +25,11 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Override
     protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
         return Map.of("IS_LOCAL", "true");
+    }
+
+    @Override
+    protected Set<String> expectVarcharFor() {
+        return isMajorVersionOrHigher(8) ? Collections.emptySet() : Set.of("INTERVAL", "HASHTYPE");
     }
 
     @Test
@@ -70,18 +75,5 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
     @Test
     void testCastVarcharAsIntervalYearToMonth() {
         castFrom("VARCHAR(30)").to("INTERVAL YEAR (5) TO MONTH").input("+00004-06").verify("+00004-06");
-    }
-
-    @Override
-    @Test
-    void testGeometryMapping() {
-        final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        assertVirtualTableContents(table, table("GEOMETRY").row("POINT (2 3)").matches());
-    }
-
-    @Override
-    @Test
-    void testCastVarcharAsGeometry() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").verify("POINT (2 5)");
     }
 }

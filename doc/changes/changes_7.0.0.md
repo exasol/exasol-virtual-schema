@@ -15,7 +15,7 @@ Starting with major version 8 Exasol database uses the capabilities reported by 
 ### Compile Dependency Updates
 
 * Updated `com.exasol:exasol-jdbc:7.1.4` to `7.1.11`
-* Updated `com.exasol:virtual-schema-common-jdbc:9.0.4` to `10.0.0`
+* Updated `com.exasol:virtual-schema-common-jdbc:9.0.4` to `10.0.1`
 * Added `org.glassfish:jakarta.json:2.0.1`
 
 ### Test Dependency Updates
@@ -25,7 +25,7 @@ Starting with major version 8 Exasol database uses the capabilities reported by 
 * Added `com.exasol:maven-project-version-getter:1.1.0`
 * Updated `com.exasol:test-db-builder-java:3.2.2` to `3.3.3`
 * Updated `com.exasol:udf-debugging-java:0.5.0` to `0.6.4`
-* Updated `com.exasol:virtual-schema-common-jdbc:9.0.4` to `10.0.0`
+* Updated `com.exasol:virtual-schema-common-jdbc:9.0.4` to `10.0.1`
 * Updated `org.jacoco:org.jacoco.agent:0.8.7` to `0.8.8`
 * Updated `org.mockito:mockito-junit-jupiter:4.3.1` to `4.6.1`
 * Updated `org.slf4j:slf4j-jdk14:1.7.35` to `1.7.36`

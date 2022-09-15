@@ -169,12 +169,12 @@ class ExasolColumnMetadataReaderTest {
     }
 
     private static JdbcTypeBuilder intervalDayToSecond(final int precision, final int fraction) {
-        return jdbcType("INTERVAL DAY TO SECOND").jdbcType(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECONDS)
+        return jdbcType("INTERVAL DAY TO SECOND").jdbcType(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECOND)
                 .precisionOrSize(precision).decimalScale(fraction);
     }
 
     private static JdbcTypeBuilder intervalYearToMonth(final int precision) {
-        return jdbcType("INTERVAL YEAR TO MONTH").jdbcType(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTHS)
+        return jdbcType("INTERVAL YEAR TO MONTH").jdbcType(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH)
                 .precisionOrSize(precision);
     }
 

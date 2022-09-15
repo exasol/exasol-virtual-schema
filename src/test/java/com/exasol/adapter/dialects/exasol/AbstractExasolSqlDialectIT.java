@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -38,7 +39,6 @@ import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
 import com.exasol.udfdebugging.UdfTestSetup;
-import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
@@ -56,6 +56,7 @@ abstract class AbstractExasolSqlDialectIT {
     protected User user;
     protected VirtualSchema virtualSchema;
     private ConnectionDefinition jdbcConnection;
+    private final Set<String> expectVarcharFor = expectVarcharFor();
 
     @BeforeAll
     static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
@@ -67,18 +68,10 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static ExasolObjectFactory setUpObjectFactory() {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(Objects.requireNonNull(getTestHostIpFromInsideExasol()),
+        final UdfTestSetup udfTestSetup = new UdfTestSetup(Objects.requireNonNull(EXASOL.getHostIp()),
                 EXASOL.getDefaultBucket(), connection);
         return new ExasolObjectFactory(connection,
                 ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
-    }
-
-    private static String getTestHostIpFromInsideExasol() {
-        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
-        if (networks.isEmpty()) {
-            return null;
-        }
-        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
@@ -155,13 +148,6 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    /**
-     * Provide the Virtual Schema properties that switch between different connection variants.
-     *
-     * @return raw properties
-     */
-    protected abstract Map<String, String> getConnectionSpecificVirtualSchemaProperties();
-
     @Test
     void testVarcharMappingUtf8() {
         final Table table = createSingleColumnTable("VARCHAR(20) UTF8").insert("Hello world!").insert("Grüße!");
@@ -224,10 +210,15 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("VARCHAR").row("Hello").row("world").matches());
     }
 
+    void verifyCharMappingUtf8(final String expectedColumnType) {
+        final Table table = createSingleColumnTable("CHAR(20) UTF8").insert("Howdy.").insert("Grüzi.");
+        assertVirtualTableContents(table,
+                table(expectedColumnType).row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
+    }
+
     @Test
     void testCharMappingUtf8() {
-        final Table table = createSingleColumnTable("CHAR(20) UTF8").insert("Howdy.").insert("Grüzi.");
-        assertVirtualTableContents(table, table("CHAR").row(pad("Howdy.", 20)).row(pad("Grüzi.", 20)).matches());
+        verifyCharMappingUtf8("CHAR");
     }
 
     /**
@@ -328,11 +319,16 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("TIMESTAMP").row(timestamp).matches());
     }
 
+    // void verifyGeometryMapping(final String expectedDataType) {
+    // final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
+    // assertVirtualTableContents(table, table(expectedDataType).row("POINT (2 3)").matches());
+    // }
+
     @Test
     void testGeometryMapping() {
+        // Note that the JDBC driver reports the result as VARCHAR for Exasol database with major version < 8
         final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-        // Note that the JDBC driver reports the result as VARCHAR
-        assertVirtualTableContents(table, table("VARCHAR").row("POINT (2 3)").matches());
+        assertVirtualTableContents(table, table(expectDataType("GEOMETRY")).row("POINT (2 3)").matches());
     }
 
     @Test
@@ -444,7 +440,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testCastVarcharasDecimal() {
+    void testCastVarcharAsDecimal() {
         castFrom("VARCHAR(6)").to("DECIMAL(5,1)").input("1234.5").verify(BigDecimal.valueOf(1234.5));
     }
 
@@ -453,9 +449,14 @@ abstract class AbstractExasolSqlDialectIT {
         castFrom("VARCHAR(6)").to("DOUBLE PRECISION").input("1234.5").verify(1234.5);
     }
 
+    // void verifyCastVarcharAsGeometry(final String expectedDataType) {
+    // castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept(expectedDataType).verify("POINT (2 5)");
+    // }
+
     @Test
     void testCastVarcharAsGeometry() {
-        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept("VARCHAR").verify("POINT (2 5)");
+        castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept(expectDataType("GEOMETRY"))
+                .verify("POINT (2 5)");
     }
 
     @Test
@@ -624,6 +625,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     private void createVirtualSchemaWithoutSelectListProjectionCapability() {
         final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
+        // TODO reset to empty map!
+        properties.putAll(Map.of("DEBUG_ADDRESS", "172.17.0.1:3000", "LOG_LEVEL", "ALL"));
         properties.put("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION");
         this.virtualSchema = objectFactory
                 .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
@@ -759,8 +762,9 @@ abstract class AbstractExasolSqlDialectIT {
         typeAssertionFor("HASHTYPE").withValue("550e8400-e29b-11d4-a716-446655440000")
                 .expectDescribeType("HASHTYPE(16 BYTE)") //
                 .expectTypeOf("HASHTYPE(16 BYTE)") //
-                .expectResultSetType("HASHTYPE") //
-                .expectValue("550e8400e29b11d4a716446655440000").runAssert();
+                .expectResultSetType(expectDataType("HASHTYPE")) //
+                .expectValue("550e8400e29b11d4a716446655440000") //
+                .runAssert();
     }
 
     @Test
@@ -768,7 +772,7 @@ abstract class AbstractExasolSqlDialectIT {
         typeAssertionFor("HASHTYPE(4 BYTE)").withValue("550e8400") //
                 .expectDescribeType("HASHTYPE(4 BYTE)") //
                 .expectTypeOf("HASHTYPE(4 BYTE)") //
-                .expectResultSetType("HASHTYPE") //
+                .expectResultSetType(expectDataType("HASHTYPE")) //
                 .runAssert();
     }
 
@@ -777,21 +781,25 @@ abstract class AbstractExasolSqlDialectIT {
         typeAssertionFor("HASHTYPE(16 BIT)").withValue("550e") //
                 .expectDescribeType("HASHTYPE(2 BYTE)") //
                 .expectTypeOf("HASHTYPE(2 BYTE)") //
-                .expectResultSetType("HASHTYPE") //
+                .expectResultSetType(expectDataType("HASHTYPE")) //
                 .runAssert();
     }
 
     @Test
     void testDefaultGeometry() {
         typeAssertionFor("GEOMETRY").withValue("POINT (2 5)") //
-                .expectDescribeType("GEOMETRY(3857)") //
+                .expectTypeOf("GEOMETRY") //
+                .expectDescribeType("GEOMETRY(3857)") // according to documentation the default srid is 0
+                .expectResultSetType(expectDataType("GEOMETRY")) //
                 .runAssert();
     }
 
     @Test
     void testNonDefaultGeometry() {
         typeAssertionFor("GEOMETRY(4321)").withValue("POINT (2 5)") //
-                .expectResultSetType("GEOMETRY") //
+                .expectTypeOf("GEOMETRY(4321)") //
+                .expectDescribeType("GEOMETRY(4321)") //
+                .expectResultSetType(expectDataType("GEOMETRY")) //
                 .runAssert();
     }
 
@@ -800,33 +808,40 @@ abstract class AbstractExasolSqlDialectIT {
         typeAssertionFor("INTERVAL YEAR TO MONTH").withValue("5-3") //
                 .expectTypeOf("INTERVAL YEAR(2) TO MONTH") //
                 .expectDescribeType("INTERVAL YEAR(2) TO MONTH") //
-                .expectResultSetType("INTERVAL YEAR TO MONTH") //
+                .expectResultSetType(expectDataType("INTERVAL YEAR TO MONTH")) //
                 .expectValue("+05-03") //
                 .runAssert();
     }
 
     @Test
     void testNonDefaultIntervalYearToMonth() {
-        typeAssertionFor("INTERVAL YEAR(5) TO MONTH").withValue("5-3") //
-                .expectResultSetType("INTERVAL YEAR TO MONTH") //
-                .expectValue("+00005-03") //
+        typeAssertionFor("INTERVAL YEAR(4) TO MONTH") // 4 digits for year
+                .withValue("5-3") // sample interval of 5 years and 3 months
+                .expectTypeOf("INTERVAL YEAR(4) TO MONTH") //
+                .expectDescribeType("INTERVAL YEAR(4) TO MONTH") //
+                .expectResultSetType(expectDataType("INTERVAL YEAR TO MONTH")) //
+                .expectValue("+0005-03") // 4 digits for year
                 .runAssert();
     }
 
     @Test
     void testDefaultIntervalDayToSecond() {
         typeAssertionFor("INTERVAL DAY TO SECOND").withValue("2 12:50:10.123") //
+                // day: 2 digits, seconds: 3 digits after decimal point
                 .expectTypeOf("INTERVAL DAY(2) TO SECOND(3)") //
                 .expectDescribeType("INTERVAL DAY(2) TO SECOND(3)") //
-                .expectResultSetType("INTERVAL DAY TO SECOND") //
+                .expectResultSetType(expectDataType("INTERVAL DAY TO SECOND")) //
                 .expectValue("+02 12:50:10.123") //
                 .runAssert();
     }
 
     @Test
     void testNonDefaultIntervalDayToSecond() {
+        // day: 4 digits, seconds: 6 digits after decimal point
         typeAssertionFor("INTERVAL DAY(4) TO SECOND(6)").withValue("2 12:50:10.123") //
-                .expectResultSetType("INTERVAL DAY TO SECOND") //
+                .expectTypeOf("INTERVAL DAY(4) TO SECOND(6)") //
+                .expectDescribeType("INTERVAL DAY(4) TO SECOND(6)") //
+                .expectResultSetType(expectDataType("INTERVAL DAY TO SECOND")) //
                 .expectValue("+0002 12:50:10.123000") //
                 .runAssert();
     }
@@ -843,6 +858,16 @@ abstract class AbstractExasolSqlDialectIT {
             table.drop();
             virtualSchema.drop();
         }
+    }
+
+    void requireMajorVersion(final int required) {
+        assumeTrue(isMajorVersionOrHigher(required), "Required fix for this test is only available with Exasol version "
+                + required + " or later, " + EXASOL.getDockerImageReference() + " is not supported.");
+    }
+
+    boolean isMajorVersionOrHigher(final int majorVersion) {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        return version.hasMajor() && (version.getMajor() >= majorVersion);
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
@@ -898,6 +923,22 @@ abstract class AbstractExasolSqlDialectIT {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
         return ((version.getMajor() == 7) && (version.getMinor() >= 1)) || (version.getMajor() > 7);
     }
+
+    protected String expectDataType(final String original) {
+        return this.expectVarcharFor.contains(original) ? "VARCHAR" : original;
+    }
+
+    /**
+     * Provide the Virtual Schema properties that switch between different connection variants.
+     *
+     * @return raw properties
+     */
+    protected abstract Map<String, String> getConnectionSpecificVirtualSchemaProperties();
+
+    /**
+     * @return Set of strings with data type names to expect VARCHAR for in tests
+     */
+    protected abstract Set<String> expectVarcharFor();
 
     /**
      * The CastAssertionBuilder is a convenience class that helps formulating cast assertions in a more readable way.
