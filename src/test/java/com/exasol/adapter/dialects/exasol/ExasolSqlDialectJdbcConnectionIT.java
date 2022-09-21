@@ -27,7 +27,7 @@ class ExasolSqlDialectJdbcConnectionIT extends AbstractRemoteExasolVirtualSchema
     @Override
     protected Set<String> expectVarcharFor() {
         return isMajorVersionOrHigher(8) //
-                ? Collections.emptySet()
-                : Set.of("GEOMETRY", "INTERVAL", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND", "HASHTYPE");
+                ? Collections.emptySet() //
+                : Set.of("GEOMETRY", "INTERVAL", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND");
     }
 }
