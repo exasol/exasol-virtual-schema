@@ -3,7 +3,7 @@ package com.exasol.adapter.dialects.exasol;
 import java.nio.file.Path;
 
 public final class IntegrationTestConfiguration {
-    private static final String DEFAULT_DOCKER_DB_REFERENCE = "8.0.4"; // "8.0.4"; // "7.1.11";
+    private static final String DEFAULT_DOCKER_DB_REFERENCE = "7.1.11";
     /**
      * Do not use MavenProjectVersionGetter here to enable reference checker to check if reference points to latest
      * version.

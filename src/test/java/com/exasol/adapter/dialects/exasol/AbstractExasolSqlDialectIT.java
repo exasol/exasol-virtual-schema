@@ -61,10 +61,13 @@ abstract class AbstractExasolSqlDialectIT {
     @BeforeAll
     static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
             FileNotFoundException {
-        connection = EXASOL.createConnection("");
         objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
+    }
+
+    static void increaseLogLevel() throws NoDriverFoundException, SQLException {
+        EXASOL.createConnection("").prepareStatement("CONTROL SET TRACE LEVEL DEBUG").execute();
     }
 
     private static ExasolObjectFactory setUpObjectFactory() {
