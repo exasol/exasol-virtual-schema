@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.0.0, released 2022-09-21
+# Exasol Virtual Schema 7.0.0, released 2022-09-22
 
 Code name: Read Expected Datatypes From Request
 
