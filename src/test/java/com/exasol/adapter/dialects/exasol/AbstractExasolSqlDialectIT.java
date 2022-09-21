@@ -620,8 +620,6 @@ abstract class AbstractExasolSqlDialectIT {
 
     private void createVirtualSchemaWithoutSelectListProjectionCapability() {
         final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
-        // TODO reset to empty map!
-        properties.putAll(Map.of("DEBUG_ADDRESS", "172.17.0.1:3000", "LOG_LEVEL", "ALL"));
         properties.put("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION");
         this.virtualSchema = objectFactory
                 .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
