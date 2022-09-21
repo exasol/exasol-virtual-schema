@@ -4,7 +4,7 @@ Code name: Read Expected Datatypes From Request
 
 ## Summary
 
-Starting with major version 8 Exasol database uses the capabilities reported by each virtual schema to provide select list data types for each push down request. Based on this information the JDBC virtual schemas no longer need to infer the data types of the result set by inspecting its values. Instead the JDBC virtual schemas can now use the information provided by the database. 
+Starting with major version 8 Exasol database uses the capabilities reported by each virtual schema to provide select list data types for each push down request. Based on this information the JDBC virtual schemas no longer need to infer the data types of the result set by inspecting its values. Instead the JDBC virtual schemas can now use the information provided by the database.
 
 ## Bug Fixes
 
@@ -39,15 +39,18 @@ Starting with major version 8 Exasol database uses the capabilities reported by 
 * Updated `org.apache.maven.plugins:maven-clean-plugin:3.1.0` to `2.5`
 * Updated `org.apache.maven.plugins:maven-compiler-plugin:3.9.0` to `3.10.1`
 * Updated `org.apache.maven.plugins:maven-dependency-plugin:3.2.0` to `3.3.0`
+* Updated `org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1` to `2.7`
 * Updated `org.apache.maven.plugins:maven-enforcer-plugin:3.0.0` to `3.1.0`
 * Updated `org.apache.maven.plugins:maven-failsafe-plugin:3.0.0-M3` to `3.0.0-M5`
+* Removed `org.apache.maven.plugins:maven-gpg-plugin:3.0.1`
 * Updated `org.apache.maven.plugins:maven-install-plugin:3.0.0-M1` to `2.4`
-* Updated `org.apache.maven.plugins:maven-javadoc-plugin:3.3.1` to `3.4.0`
+* Removed `org.apache.maven.plugins:maven-javadoc-plugin:3.3.1`
 * Updated `org.apache.maven.plugins:maven-resources-plugin:3.2.0` to `2.6`
 * Updated `org.apache.maven.plugins:maven-site-plugin:3.10.0` to `3.3`
+* Removed `org.apache.maven.plugins:maven-source-plugin:3.2.1`
 * Updated `org.apache.maven.plugins:maven-surefire-plugin:3.0.0-M3` to `3.0.0-M5`
 * Added `org.codehaus.mojo:flatten-maven-plugin:1.2.7`
 * Updated `org.codehaus.mojo:versions-maven-plugin:2.9.0` to `2.10.0`
 * Updated `org.jacoco:jacoco-maven-plugin:0.8.7` to `0.8.8`
 * Added `org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184`
-* Updated `org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8` to `1.6.13`
+* Removed `org.sonatype.plugins:nexus-staging-maven-plugin:1.6.8`

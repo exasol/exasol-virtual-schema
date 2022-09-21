@@ -189,23 +189,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <additionalOptions>
-                        <option>--add-modules</option>
-                        <option>java.sql</option>
-                        <option>--add-reads</option>
-                        <option>java.xml.bind=java.sql</option>
-                        <option>--add-reads</option>
-                        <option>org.glassfish.jakarta.json=java.sql</option>
-                        <option>--add-reads</option>
-                        <option>org.glassfish.jakarta.json=java.util.logging</option>
-                    </additionalOptions>
-                    <failOnWarnings>false</failOnWarnings>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
                     <useModulePath>false</useModulePath>
