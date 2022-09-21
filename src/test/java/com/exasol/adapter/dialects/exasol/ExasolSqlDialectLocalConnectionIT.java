@@ -29,7 +29,7 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
 
     @Override
     protected Set<String> expectVarcharFor() {
-        return isMajorVersionOrHigher(8) ? Collections.emptySet() : Set.of("INTERVAL", "HASHTYPE");
+        return isMajorVersionOrHigher(8) ? Collections.emptySet() : Set.of("INTERVAL");
     }
 
     @Test
