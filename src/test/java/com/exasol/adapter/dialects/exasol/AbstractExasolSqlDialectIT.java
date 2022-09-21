@@ -323,11 +323,6 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("TIMESTAMP").row(timestamp).matches());
     }
 
-    // void verifyGeometryMapping(final String expectedDataType) {
-    // final Table table = createSingleColumnTable("GEOMETRY").insert("POINT (2 3)");
-    // assertVirtualTableContents(table, table(expectedDataType).row("POINT (2 3)").matches());
-    // }
-
     @Test
     void testGeometryMapping() {
         // Note that the JDBC driver reports the result as VARCHAR for Exasol database with major version < 8
@@ -452,10 +447,6 @@ abstract class AbstractExasolSqlDialectIT {
     void testCastVarcharAsDouble() {
         castFrom("VARCHAR(6)").to("DOUBLE PRECISION").input("1234.5").verify(1234.5);
     }
-
-    // void verifyCastVarcharAsGeometry(final String expectedDataType) {
-    // castFrom("VARCHAR(20)").to("GEOMETRY(5)").input("POINT(2 5)").accept(expectedDataType).verify("POINT (2 5)");
-    // }
 
     @Test
     void testCastVarcharAsGeometry() {
