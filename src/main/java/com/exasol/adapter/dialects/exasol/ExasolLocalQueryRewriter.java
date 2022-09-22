@@ -1,5 +1,6 @@
 package com.exasol.adapter.dialects.exasol;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 import com.exasol.ExaMetadata;
@@ -7,6 +8,7 @@ import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
+import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.SqlStatement;
 
 /**
@@ -32,8 +34,8 @@ public class ExasolLocalQueryRewriter implements QueryRewriter {
     }
 
     @Override
-    public String rewrite(final SqlStatement statement, final ExaMetadata exaMetadata,
-            final AdapterProperties properties) throws AdapterException {
+    public String rewrite(final SqlStatement statement, final List<DataType> selectListDataTypes,
+            final ExaMetadata exaMetadata, final AdapterProperties properties) throws AdapterException {
         final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
                 properties.getSchemaName(), false);
         final SqlGenerator sqlGeneratorVisitor = this.dialect.getSqlGenerator(context);

@@ -16,14 +16,17 @@ import com.exasol.errorreporting.ExaError;
  * This class implements Exasol-specific reading of column metadata.
  */
 public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
-    static final int EXASOL_INTERVAL_DAY_TO_SECONDS = -104;
-    static final int EXASOL_INTERVAL_YEAR_TO_MONTHS = -103;
+    static final int EXASOL_INTERVAL_DAY_TO_SECOND = -104;
+    static final int EXASOL_INTERVAL_YEAR_TO_MONTH = -103;
     static final int EXASOL_GEOMETRY = 123;
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
     private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
-    static final String INTERVAL_DAY_TO_SECOND_PATTERN = "INTERVAL DAY\\((\\d+)\\) TO SECOND\\((\\d+)\\)";
-    static final String SRID_PATTERN = "\\((\\d+)\\)";
+
+    private static final String DIGITS_IN_PARENTHESES = "\\((\\d+)\\)";
+    private static final Pattern INTERVAL_DAY_TO_SECOND_PATTERN = Pattern.compile( //
+            "INTERVAL DAY" + DIGITS_IN_PARENTHESES + " TO SECOND" + DIGITS_IN_PARENTHESES);
+    private static final Pattern SRID_PATTERN = Pattern.compile(DIGITS_IN_PARENTHESES);
 
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
@@ -51,10 +54,10 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
 
     private Optional<DataType> getDataTypeBasedOnJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECONDS:
+        case EXASOL_INTERVAL_DAY_TO_SECOND:
             return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
                     jdbcTypeDescription.getDecimalScale()));
-        case EXASOL_INTERVAL_YEAR_TO_MONTHS:
+        case EXASOL_INTERVAL_YEAR_TO_MONTH:
             return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_GEOMETRY:
             return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
@@ -82,9 +85,9 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     public JDBCTypeDescription readJdbcTypeDescription(final ResultSet remoteColumn) throws SQLException {
         final JDBCTypeDescription typeDescription = super.readJdbcTypeDescription(remoteColumn);
         switch (typeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECONDS:
+        case EXASOL_INTERVAL_DAY_TO_SECOND:
             return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
-        case EXASOL_INTERVAL_YEAR_TO_MONTHS:
+        case EXASOL_INTERVAL_YEAR_TO_MONTH:
             return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
         case EXASOL_GEOMETRY:
             return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
@@ -109,8 +112,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      *         {@link #DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER}
      */
     protected int extractSrid(final String typeDescriptionString) {
-        final Pattern pattern = Pattern.compile(SRID_PATTERN);
-        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
         if (matcher.find()) {
             final String srid = matcher.group(1);
             return Integer.parseInt(srid);
@@ -138,8 +140,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private JDBCTypeDescription extractIntervalDayToSecondPrecision(final ResultSet remoteColumn,
             final JDBCTypeDescription typeDescription) throws SQLException {
         final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
-        final Pattern pattern = Pattern.compile(INTERVAL_DAY_TO_SECOND_PATTERN);
-        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        final Matcher matcher = INTERVAL_DAY_TO_SECOND_PATTERN.matcher(typeDescriptionString);
         if (matcher.matches()) {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), Integer.parseInt(matcher.group(2)),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
