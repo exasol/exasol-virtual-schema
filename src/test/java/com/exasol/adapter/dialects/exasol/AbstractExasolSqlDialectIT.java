@@ -782,7 +782,7 @@ abstract class AbstractExasolSqlDialectIT {
     void testDefaultGeometry() {
         typeAssertionFor("GEOMETRY").withValue("POINT (2 5)") //
                 .expectTypeOf("GEOMETRY") //
-                .expectDescribeType("GEOMETRY(0)") //
+                .expectDescribeType("GEOMETRY") //
                 .expectResultSetType(expectDataType("GEOMETRY")) //
                 .runAssert();
     }
