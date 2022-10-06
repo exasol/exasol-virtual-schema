@@ -4,11 +4,11 @@ Code name: GEOMETRY Default SRID
 
 ## Summary
 
-Set default SRID to 0 for data type `GEOMETRY`.
+Set default SRID to 0 for data type `GEOMETRY` and changed error code tag from "VS-EXA" to "VSEXA".
 
 ## Features
 
-* #56: Set default SRID to 0 for data type `GEOMETRY`.
+* #83: Set default SRID to 0 for data type `GEOMETRY`.
 * #82: Changed error code tag from "VS-EXA" to "VSEXA".
 
 ## Dependency Updates
