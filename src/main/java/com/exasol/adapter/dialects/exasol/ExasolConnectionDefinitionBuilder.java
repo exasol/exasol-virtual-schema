@@ -30,7 +30,7 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
         if (properties.containsKey(EXASOL_CONNECTION_PROPERTY) && properties.hasConnectionName()) {
             return "AT \"" + getExasolConnectionName(properties) + "\"";
         } else {
-            throw new IllegalArgumentException(ExaError.messageBuilder("E-VS-EXA-1") //
+            throw new IllegalArgumentException(ExaError.messageBuilder("E-VSEXA-1") //
                     .message("Incomplete remote connection information") //
                     .mitigation("Please specify a named EXA connection {{exasol_connection_property}}"
                             + " for the ExaLoader and a named JDBC connection with {{connection_name_property}}"

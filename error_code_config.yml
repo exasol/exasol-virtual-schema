@@ -1,5 +1,5 @@
 error-tags:
-  VS-EXA:
+  VSEXA:
     packages:
       - com.exasol.adapter.dialects.exasol
     highest-index: 5

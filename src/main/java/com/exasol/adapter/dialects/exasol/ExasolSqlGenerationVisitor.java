@@ -34,7 +34,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
             LOGGER.info("IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "' property is enabled.");
             return super.visit(literal);
         } else {
-            throw new UnsupportedOperationException(ExaError.messageBuilder("E-VS-EXA-5") //
+            throw new UnsupportedOperationException(ExaError.messageBuilder("E-VSEXA-5") //
                     .message("Attention! Using literals and constant expressions with datatype "
                             + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.")
                     .mitigation("We recommend using 'TIMESTAMP' instead. If you are willing to take the risk and "
