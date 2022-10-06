@@ -21,7 +21,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_GEOMETRY = 123;
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
-    private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
+    private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 0; // 3857;
 
     private static final String DIGITS_IN_PARENTHESES = "\\((\\d+)\\)";
     private static final Pattern INTERVAL_DAY_TO_SECOND_PATTERN = Pattern.compile( //

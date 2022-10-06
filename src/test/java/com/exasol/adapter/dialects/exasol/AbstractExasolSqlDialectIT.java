@@ -782,7 +782,7 @@ abstract class AbstractExasolSqlDialectIT {
     void testDefaultGeometry() {
         typeAssertionFor("GEOMETRY").withValue("POINT (2 5)") //
                 .expectTypeOf("GEOMETRY") //
-                .expectDescribeType("GEOMETRY(3857)") // according to documentation the default srid is 0
+                .expectDescribeType("GEOMETRY(0)") //
                 .expectResultSetType(expectDataType("GEOMETRY")) //
                 .runAssert();
     }
