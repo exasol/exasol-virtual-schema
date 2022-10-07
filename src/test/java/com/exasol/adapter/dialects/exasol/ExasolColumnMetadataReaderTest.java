@@ -149,8 +149,8 @@ class ExasolColumnMetadataReaderTest {
     }
 
     @ParameterizedTest
-    @CsvSource({ "GEOMETRY, 3857", //
-            "GEOMETRY(), 3857", //
+    @CsvSource({ "GEOMETRY, 0", //
+            "GEOMETRY(), 0", //
             "GEOMETRY(2222), 2222" })
     void testExtractSrid(final String input, final int expected) {
         assertThat(this.exasolColumnMetadataReader.extractSrid(input), equalTo(expected));

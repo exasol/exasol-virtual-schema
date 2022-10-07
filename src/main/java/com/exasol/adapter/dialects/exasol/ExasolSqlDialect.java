@@ -61,7 +61,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
         try {
             return new ExasolMetadataReader(this.connectionFactory.getConnection(), this.properties);
         } catch (final SQLException exception) {
-            throw new RemoteMetadataReaderException(ExaError.messageBuilder("E-VS-EXA-4") //
+            throw new RemoteMetadataReaderException(ExaError.messageBuilder("E-VSEXA-4") //
                     .message("Unable to create Exasol remote metadata reader.").toString(), exception);
         }
     }

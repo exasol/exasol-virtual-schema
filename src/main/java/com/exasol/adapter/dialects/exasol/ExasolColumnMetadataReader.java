@@ -21,7 +21,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_GEOMETRY = 123;
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
-    private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 3857;
+    private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 0;
 
     private static final String DIGITS_IN_PARENTHESES = "\\((\\d+)\\)";
     private static final Pattern INTERVAL_DAY_TO_SECOND_PATTERN = Pattern.compile( //
@@ -145,7 +145,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), Integer.parseInt(matcher.group(2)),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
         } else {
-            throw new IllegalStateException(ExaError.messageBuilder("E-VS-EXA-2") //
+            throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-2") //
                     .message("Failed to extract INTERVAL DAY TO SECOND precision").toString());
         }
     }
@@ -159,7 +159,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
         } else {
-            throw new IllegalStateException(ExaError.messageBuilder("E-VS-EXA-3") //
+            throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-3") //
                     .message("Failed to extract INTERVAL YEAR TO MONTH precision").toString());
         }
     }
