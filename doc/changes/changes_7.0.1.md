@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.0.1, released 2022-??-??
+# Exasol Virtual Schema 7.0.1, released 2022-10-07
 
 Code name: GEOMETRY Default SRID
 
