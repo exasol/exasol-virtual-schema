@@ -110,14 +110,6 @@
             <version>1.2.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <!-- While we don't use this directly, we still need it as a dependency to satisfy transitive dependencies
-            that break the error code crawler -->
-            <groupId>com.exasol</groupId>
-            <artifactId>exasol-test-setup-abstraction-java</artifactId>
-            <version>1.1.1</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
