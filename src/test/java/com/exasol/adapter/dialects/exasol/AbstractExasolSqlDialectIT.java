@@ -842,11 +842,14 @@ abstract class AbstractExasolSqlDialectIT {
 
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
-        final long comparableImageVersion = (version.hasMajor() ? version.getMajor() * 1000000L : 0)
-                + (version.hasMinor() ? version.getMinor() * 1000L : 0)
-                + (version.hasFix() ? version.getFixVersion() : 0);
-        final long comparableRequiredVersion = majorVersion * 1000000L + minorVersion * 1000L + fixVersion;
+        final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor()  : 0),
+                (version.hasMinor() ? version.getMinor()  : 0) , (version.hasFix() ? version.getFixVersion() : 0));
+        final long comparableRequiredVersion = calculatedComparableVersion(majorVersion, minorVersion, fixVersion);
         return comparableImageVersion >= comparableRequiredVersion;
+    }
+
+    private static long calculatedComparableVersion(final int majorVersion, final int minorVersion, final int fixVersion) {
+        return majorVersion * 1000000L + minorVersion * 1000L + fixVersion;
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
