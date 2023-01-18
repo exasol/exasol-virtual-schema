@@ -37,7 +37,6 @@ import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
-import com.exasol.udfdebugging.UdfTestSetup;
 
 @Tag("integration")
 @Testcontainers
@@ -61,16 +60,9 @@ abstract class AbstractExasolSqlDialectIT {
     static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
             FileNotFoundException {
         connection = EXASOL.createConnection("");
-        objectFactory = setUpObjectFactory();
+        objectFactory = new ExasolObjectFactory(connection);
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
-    }
-
-    private static ExasolObjectFactory setUpObjectFactory() {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(Objects.requireNonNull(EXASOL.getHostIp()),
-                EXASOL.getDefaultBucket(), connection);
-        return new ExasolObjectFactory(connection,
-                ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)

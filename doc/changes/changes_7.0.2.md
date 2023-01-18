@@ -6,6 +6,8 @@ Code name: Deployment on Central Repository
 
 Exasol's [RLS](https://gihub.com/exasol/row-level-security) implementation depends on the Exasol Virtual Schema. To build it, the JAR file of the VS needs to be on the Central Repository (aka. "Maven Central").
 
+We removed some debugging dependencies to reduce the complexity of the project.
+
 ## Features
 
 * #86: Configured deployment on Central Repository
