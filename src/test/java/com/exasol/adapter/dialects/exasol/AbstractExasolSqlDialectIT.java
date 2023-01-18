@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -65,10 +64,6 @@ abstract class AbstractExasolSqlDialectIT {
         objectFactory = setUpObjectFactory();
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
-    }
-
-    static void increaseExasolDbLogLevel() throws NoDriverFoundException, SQLException {
-        connection.prepareStatement("CONTROL SET TRACE LEVEL DEBUG").execute();
     }
 
     private static ExasolObjectFactory setUpObjectFactory() {
@@ -853,14 +848,13 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    void requireMajorVersion(final int required) {
-        assumeTrue(isMajorVersionOrHigher(required), "Required fix for this test is only available with Exasol version "
-                + required + " or later, " + EXASOL.getDockerImageReference() + " is not supported.");
-    }
-
-    boolean isMajorVersionOrHigher(final int majorVersion) {
+    boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
-        return version.hasMajor() && (version.getMajor() >= majorVersion);
+        final long comparableImageVersion = (version.hasMajor() ? version.getMajor() * 1000000L : 0)
+                + (version.hasMinor() ? version.getMinor() * 1000L : 0)
+                + (version.hasFix() ? version.getFixVersion() : 0);
+        final long comparableRequiredVersion = majorVersion * 1000000L + minorVersion * 1000L + fixVersion;
+        return comparableImageVersion >= comparableRequiredVersion;
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
