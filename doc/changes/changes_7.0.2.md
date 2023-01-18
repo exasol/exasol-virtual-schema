@@ -27,7 +27,7 @@ We removed some debugging dependencies to reduce the complexity of the project.
 * Updated `com.exasol:hamcrest-resultset-matcher:1.5.1` to `1.5.2`
 * Updated `com.exasol:maven-project-version-getter:1.1.0` to `1.2.0`
 * Updated `com.exasol:test-db-builder-java:3.3.3` to `3.4.1`
-* Updated `com.exasol:udf-debugging-java:0.6.4` to `0.6.6`
+* Removed `com.exasol:udf-debugging-java:0.6.4`
 * Updated `com.exasol:virtual-schema-common-jdbc:10.0.1` to `10.1.0`
 * Updated `org.junit.jupiter:junit-jupiter:5.8.2` to `5.9.2`
 * Updated `org.mockito:mockito-junit-jupiter:4.6.1` to `5.0.0`
