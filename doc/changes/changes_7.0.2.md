@@ -8,7 +8,7 @@ Exasol's [RLS](https://gihub.com/exasol/row-level-security) implementation depen
 
 We removed some debugging dependencies to reduce the complexity of the project.
 
-## Features
+## Refactoring
 
 * #86: Configured deployment on Central Repository
 
