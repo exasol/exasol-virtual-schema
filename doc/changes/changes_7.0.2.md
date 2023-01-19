@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.0.2, released 2023-01-18
+# Exasol Virtual Schema 7.0.2, released 2023-01-19
 
 Code name: Deployment on Central Repository
 
