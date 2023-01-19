@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -38,7 +37,6 @@ import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
-import com.exasol.udfdebugging.UdfTestSetup;
 
 @Tag("integration")
 @Testcontainers
@@ -62,20 +60,9 @@ abstract class AbstractExasolSqlDialectIT {
     static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
             FileNotFoundException {
         connection = EXASOL.createConnection("");
-        objectFactory = setUpObjectFactory();
+        objectFactory = new ExasolObjectFactory(connection);
         adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
         adapterScript = installVirtualSchemaAdapter(adapterSchema);
-    }
-
-    static void increaseExasolDbLogLevel() throws NoDriverFoundException, SQLException {
-        connection.prepareStatement("CONTROL SET TRACE LEVEL DEBUG").execute();
-    }
-
-    private static ExasolObjectFactory setUpObjectFactory() {
-        final UdfTestSetup udfTestSetup = new UdfTestSetup(Objects.requireNonNull(EXASOL.getHostIp()),
-                EXASOL.getDefaultBucket(), connection);
-        return new ExasolObjectFactory(connection,
-                ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
@@ -853,14 +840,16 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    void requireMajorVersion(final int required) {
-        assumeTrue(isMajorVersionOrHigher(required), "Required fix for this test is only available with Exasol version "
-                + required + " or later, " + EXASOL.getDockerImageReference() + " is not supported.");
+    boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
+        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
+        final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor()  : 0),
+                (version.hasMinor() ? version.getMinor()  : 0) , (version.hasFix() ? version.getFixVersion() : 0));
+        final long comparableRequiredVersion = calculatedComparableVersion(majorVersion, minorVersion, fixVersion);
+        return comparableImageVersion >= comparableRequiredVersion;
     }
 
-    boolean isMajorVersionOrHigher(final int majorVersion) {
-        final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
-        return version.hasMajor() && (version.getMajor() >= majorVersion);
+    private static long calculatedComparableVersion(final int majorVersion, final int minorVersion, final int fixVersion) {
+        return majorVersion * 1000000L + minorVersion * 1000L + fixVersion;
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
