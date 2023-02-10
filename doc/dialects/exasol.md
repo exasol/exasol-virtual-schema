@@ -177,4 +177,4 @@ The Exasol SQL dialect supports all capabilities that are supported by the virtu
    * If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
    * We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
 * When using an EXA connection, the outermost order of the imported result rows is not guaranteed. This is not a bug, but a deliberate speed optimization in the ExaLoader (the part that runs the `IMPORT`) caused by parallel import.
-  If you need ordering, please wrap your query into an extra `SELECT * FROM (<virtual-schema-query) ORDER BY <criteria> [, ...]` which will then be executed on the target Exasol database instead of the source.
+  If you need ordering, please wrap your query into an extra `SELECT * FROM (<virtual-schema-query>) ORDER BY <criteria> [, ...]` which will then be executed on the target Exasol database instead of the source.
