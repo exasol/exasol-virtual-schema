@@ -28,7 +28,7 @@ public class ExasolMetadataReader extends AbstractRemoteMetadataReader {
 
     @Override
     protected TableMetadataReader createTableMetadataReader() {
-        return new BaseTableMetadataReader(this.connection, this.columnMetadataReader, this.properties,
+        return new ExasolTableMetadataReader(this.connection, this.columnMetadataReader, this.properties,
                 this.identifierConverter);
     }
 

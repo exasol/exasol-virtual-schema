@@ -1,6 +1,9 @@
 package com.exasol.adapter.dialects.exasol;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +12,7 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.IdentifierConverter;
 import com.exasol.adapter.jdbc.BaseColumnMetadataReader;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
+import com.exasol.adapter.metadata.ColumnMetadata;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.errorreporting.ExaError;
 
@@ -162,5 +166,38 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-3") //
                     .message("Failed to extract INTERVAL YEAR TO MONTH precision").toString());
         }
+    }
+
+    /**
+     * Special implementation of BaseColumnMetadataReader::mapColumns using a single column ResultSet for all tables.
+     *
+     * @param tableName         name of the table to map columns for
+     * @param columnDefinitions result of java.sql.DatabaseMetaData::getColumns(), sorted as defined there. The iterator
+     *                          must point to a row with the correct TABLE_SCHEM value!
+     * @return List of mapped column information; possibly empty
+     * @throws SQLException If reading from the ResultSets faijls for some reason
+     */
+    public List<ColumnMetadata> mapColumns(String tableName, ResultSet columnDefinitions) throws SQLException {
+        // by contract, columnDefinitions iterator points to a valid row.
+        // skip ahead until we hit the required table name (merge-sort)
+        while (tableName.compareTo(columnDefinitions.getString("TABLE_NAME")) > 0) {
+            // TODO: make sure we do not skip some schemas here!
+
+            if (!columnDefinitions.next()) {
+                // end of the rope; no more columns
+                return Collections.emptyList();
+            }
+        }
+
+        final List<ColumnMetadata> columns = new ArrayList<>();
+        while (tableName.compareTo(columnDefinitions.getString("TABLE_NAME")) == 0) {
+            mapOrSkipColumn(columnDefinitions, columns);
+            if (!columnDefinitions.next()) {
+                break;
+            }
+        }
+
+        // end of column list or new table
+        return columns;
     }
 }

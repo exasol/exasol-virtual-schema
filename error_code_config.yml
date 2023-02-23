@@ -2,4 +2,4 @@ error-tags:
   VSEXA:
     packages:
       - com.exasol.adapter.dialects.exasol
-    highest-index: 5
+    highest-index: 8
