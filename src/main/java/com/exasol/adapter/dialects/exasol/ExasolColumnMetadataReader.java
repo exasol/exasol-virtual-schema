@@ -44,6 +44,17 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         super(connection, properties, identifierConverter);
     }
 
+    private static String readSchemaName(final ResultSet columns) throws SQLException {
+        // no identifier conversion
+        return columns.getString("TABLE_SCHEM");
+    }
+
+    private static String readTableName(final ResultSet columns) throws SQLException {
+        // no identifier conversion
+        return columns.getString("TABLE_NAME");
+    }
+
+
     @Override
     public DataType mapJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         final DataType resultType = getDataTypeBasedOnJdbcType(jdbcTypeDescription) //
@@ -128,9 +139,9 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
-            final String schema = remoteColumn.getString("TABLE_SCHEM");
-            final String table = remoteColumn.getString("TABLE_NAME");
-            final String column = remoteColumn.getString("COLUMN_NAME");
+            final String schema = readSchemaName(remoteColumn);
+            final String table = readTableName(remoteColumn);
+            final String column = readColumnName(remoteColumn);
             preparedStatement.setString(1, schema);
             preparedStatement.setString(2, table);
             preparedStatement.setString(3, column);
@@ -175,29 +186,50 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * @param columnDefinitions result of java.sql.DatabaseMetaData::getColumns(), sorted as defined there. The iterator
      *                          must point to a row with the correct TABLE_SCHEM value!
      * @return List of mapped column information; possibly empty
-     * @throws SQLException If reading from the ResultSets faijls for some reason
+     * @throws SQLException If reading from the ResultSets fails for some reason
      */
-    public List<ColumnMetadata> mapColumns(String tableName, ResultSet columnDefinitions) throws SQLException {
-        // by contract, columnDefinitions iterator points to a valid row.
+    public List<ColumnMetadata> mapCxxolumns(String tableName, ResultSet columnDefinitions) throws SQLException {
+        // by contract, columnDefinitions iterator points to a valid row in the correct schema
+        final String schemaName = readSchemaName(columnDefinitions);
         // skip ahead until we hit the required table name (merge-sort)
-        while (tableName.compareTo(columnDefinitions.getString("TABLE_NAME")) > 0) {
-            // TODO: make sure we do not skip some schemas here!
-
-            if (!columnDefinitions.next()) {
+        while (tableName.compareTo(readTableName(columnDefinitions)) > 0) {
+            if (!columnDefinitions.next() || !schemaName.equals(readSchemaName(columnDefinitions))) {
                 // end of the rope; no more columns
                 return Collections.emptyList();
             }
         }
 
         final List<ColumnMetadata> columns = new ArrayList<>();
-        while (tableName.compareTo(columnDefinitions.getString("TABLE_NAME")) == 0) {
+        while (tableName.equals(readTableName(columnDefinitions)) && schemaName.equals(readSchemaName(columnDefinitions))) {
             mapOrSkipColumn(columnDefinitions, columns);
             if (!columnDefinitions.next()) {
                 break;
             }
         }
 
-        // end of column list or new table
+        // end of column list for new table
+        return columns;
+    }
+
+    /**
+     * Read columns for the table at current ResultSet cursor position (forward scan only)
+     * @param remoteColumns column result set, sorted by schema, table, column position
+     * @return List of mapped columns, may be empty
+     * @throws SQLException if reading metadata fails
+     */
+    public List<ColumnMetadata> mapCurrentTableColumns(ResultSet remoteColumns) throws SQLException {
+        final String schemaName = readSchemaName(remoteColumns);
+        final String tableName = readTableName(remoteColumns);
+
+        final List<ColumnMetadata> columns = new ArrayList<>();
+        while (tableName.equals(readTableName(remoteColumns)) && schemaName.equals(readSchemaName(remoteColumns))) {
+            mapOrSkipColumn(remoteColumns, columns);
+            if (!remoteColumns.next()) {
+                break;
+            }
+        }
+
+        // end of column list for new table
         return columns;
     }
 }
