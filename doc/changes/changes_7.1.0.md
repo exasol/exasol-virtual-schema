@@ -4,7 +4,7 @@ Code name: Mandatory Property SCHEMA_NAME
 
 ## Summary
 
-This release updates VSEXA to take virtual schema property `SCHEMA_NAME` as mandatory in order to fix a bug that has been reported when SCHEMA_NAME property is not set.
+This release updates VSEXA to take virtual schema property `SCHEMA_NAME` as mandatory in order to fix a bug when the property is not set.
 
 ## Bugfixes
 
