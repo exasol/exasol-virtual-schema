@@ -36,6 +36,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
         super(connectionFactory, properties, Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY,
                 EXASOL_CONNECTION_PROPERTY, IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY));
         this.dialectPropertyValidators = PropertyValidator.chain() //
+                .add(SchemaNameProperty.validator(NAME)) //
                 .add(BooleanProperty.validator(EXASOL_IMPORT_PROPERTY)) //
                 .add(BooleanProperty.validator(IS_LOCAL_PROPERTY));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,

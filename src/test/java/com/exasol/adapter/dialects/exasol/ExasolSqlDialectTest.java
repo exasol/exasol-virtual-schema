@@ -173,28 +173,25 @@ class ExasolSqlDialectTest {
 
     @Test
     void checkValidBoolOptionsWithExaConnection() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "TrUe");
-        this.rawProperties.put(EXASOL_CONNECTION_PROPERTY, "MY_EXA_CONNECTION");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(EXASOL_IMPORT_PROPERTY, "TrUe") //
+                .with(EXASOL_CONNECTION_PROPERTY, "MY_EXA_CONNECTION") //
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkValidBoolOptionsWithExaConnectionExplicitlyDisabled() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "FalSe");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_IMPORT_PROPERTY, "FalSe").build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void testInconsistentExasolProperties() {
-        setMandatoryProperties();
-        this.rawProperties.put(EXASOL_CONNECTION_PROPERTY, "localhost:5555");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_CONNECTION_PROPERTY, "localhost:5555")
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
@@ -204,9 +201,9 @@ class ExasolSqlDialectTest {
 
     @Test
     void testInvalidExasolProperties() {
-        setMandatoryProperties();
-        this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "True");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(EXASOL_IMPORT_PROPERTY, "True") //
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
@@ -216,27 +213,27 @@ class ExasolSqlDialectTest {
 
     @Test
     void testValidateCatalogProperty() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(CATALOG_NAME_PROPERTY, "MY_CATALOG");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(CATALOG_NAME_PROPERTY, "MY_CATALOG") //
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void testValidateSchemaProperty() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(SCHEMA_NAME_PROPERTY, "MY_SCHEMA");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(SCHEMA_NAME_PROPERTY, "MY_SCHEMA") //
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkInvalidIsLocalProperty() {
-        setMandatoryProperties();
-        this.rawProperties.put(IS_LOCAL_PROPERTY, "asdasd");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(IS_LOCAL_PROPERTY, "asdasd") //
+                .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
@@ -246,32 +243,69 @@ class ExasolSqlDialectTest {
 
     @Test
     void checkValidIsLocalProperty1() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(IS_LOCAL_PROPERTY, "TrUe");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "TrUe").build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkValidIsLocalProperty() throws PropertyValidationException {
-        setMandatoryProperties();
-        this.rawProperties.put(IS_LOCAL_PROPERTY, "FalSe");
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
+        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "FalSe").build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
-    private void setMandatoryProperties() {
-        this.rawProperties.put(AdapterProperties.CONNECTION_NAME_PROPERTY, "MY_CONN");
+    @Test
+    void testIsTimestampWithLocalTimeZoneEnabled() {
+        final AdapterProperties adapterProperties = mandatory() //
+                .with(IGNORE_ERRORS_PROPERTY, EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH) //
+                .build();
+        final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        assertThat(exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled(), equalTo(true));
     }
 
     @Test
-    void testIsTimestampWithLocalTimeZoneEnabled() {
-        setMandatoryProperties();
-        this.rawProperties.put(IGNORE_ERRORS_PROPERTY, EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
-        final AdapterProperties adapterProperties = new AdapterProperties(this.rawProperties);
-        final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(null, adapterProperties);
-        assertThat(exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled(), equalTo(true));
+    void testMissing() throws PropertyValidationException {
+        final AdapterProperties adapterProperties = mandatory() //
+                .remove(AdapterProperties.SCHEMA_NAME_PROPERTY) //
+                .build();
+        final ExasolSqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final Exception exception = assertThrows(PropertyValidationException.class,
+                () -> sqlDialect.validateProperties());
+        assertThat(exception.getMessage(),
+                equalTo("E-VSEXA-6: EXASOL virtual schema dialect requires to specify a schema name."
+                        + " Please specify a schema name using property 'SCHEMA_NAME'."));
+    }
+
+    AdapterProperties mandatoryWith(final String key, final String value) {
+        return mandatory().with(key, value).build();
+    }
+
+    AdapterPropertiesBuilder mandatory() {
+        return adapterPropertiesBuilder() //
+                .with(AdapterProperties.CONNECTION_NAME_PROPERTY, "MY_CONN") //
+                .with(AdapterProperties.SCHEMA_NAME_PROPERTY, "MY_SCHEMA");
+    }
+
+    AdapterPropertiesBuilder adapterPropertiesBuilder() {
+        return new AdapterPropertiesBuilder();
+    }
+
+    static class AdapterPropertiesBuilder {
+        private final Map<String, String> raw = new HashMap<>();
+
+        AdapterPropertiesBuilder with(final String key, final String value) {
+            this.raw.put(key, value);
+            return this;
+        }
+
+        AdapterPropertiesBuilder remove(final String key) {
+            this.raw.remove(key);
+            return this;
+        }
+
+        AdapterProperties build() {
+            return new AdapterProperties(this.raw);
+        }
     }
 }
