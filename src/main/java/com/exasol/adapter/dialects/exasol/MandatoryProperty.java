@@ -34,9 +34,9 @@ public class MandatoryProperty implements PropertyValidator {
     public void validate(final AdapterProperties properties) throws PropertyValidationException {
         if (!properties.hasSchemaName()) {
             throw new PropertyValidationException(ExaError.messageBuilder("E-VSEXA-6")
-                    .message("{{dialect|uq}} virtual schema dialect requires to specify a {{element|uq}}.",
+                    .message("{{dialect|uq}} virtual schema dialect requires to specify a {{element1|uq}}.",
                             this.dialect, this.element) //
-                    .mitigation("Please specify a {{element|uq}} using property {{property}}.", //
+                    .mitigation("Please specify a {{element2|uq}} using property {{property}}.", //
                             this.element, this.property) //
                     .toString());
         }
