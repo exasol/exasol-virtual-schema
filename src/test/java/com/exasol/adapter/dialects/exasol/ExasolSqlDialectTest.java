@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
-import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,9 +33,12 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotes;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotesJsonConverter;
 import com.exasol.adapter.capabilities.*;
-import com.exasol.adapter.dialects.*;
+import com.exasol.adapter.dialects.SqlDialect;
+import com.exasol.adapter.dialects.SqlGenerator;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.metadata.*;
+import com.exasol.adapter.properties.PropertyValidationException;
 import com.exasol.adapter.sql.*;
 import com.exasol.sql.SqlNormalizer;
 
@@ -238,9 +240,8 @@ class ExasolSqlDialectTest {
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
-        assertThat(exception.getMessage(), containsString(
-                "The value 'asdasd' for the property 'IS_LOCAL' is invalid. It has to be either 'true' or 'false' (case "
-                        + "insensitive)"));
+        assertThat(exception.getMessage(), containsString("The value 'asdasd' for property 'IS_LOCAL' is invalid."
+                + " It has to be either 'true' or 'false' (case insensitive)"));
     }
 
     @Test
