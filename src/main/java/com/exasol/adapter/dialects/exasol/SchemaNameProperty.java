@@ -3,6 +3,9 @@ package com.exasol.adapter.dialects.exasol;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.properties.PropertyValidator;
 
+/**
+ * Validator for property {@link AdapterProperties#SCHEMA_NAME_PROPERTY}
+ */
 public class SchemaNameProperty {
     /**
      * @param dialect name of the current dialect
