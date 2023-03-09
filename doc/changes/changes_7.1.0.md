@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.1.0, released 2023-??-??
+# Exasol Virtual Schema 7.1.0, released 2023-03-10
 
 Code name: Mandatory Property SCHEMA_NAME
 
