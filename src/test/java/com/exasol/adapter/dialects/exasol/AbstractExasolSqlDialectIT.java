@@ -840,16 +840,27 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
+    @Test
+    void testWildcards() throws SQLException {
+        final String nameWithWildcard = "A_A";
+        this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
+        this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+                table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
+    }
+
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
-        final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor()  : 0),
-                (version.hasMinor() ? version.getMinor()  : 0) , (version.hasFix() ? version.getFixVersion() : 0));
+        final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor() : 0),
+                (version.hasMinor() ? version.getMinor() : 0), (version.hasFix() ? version.getFixVersion() : 0));
         final long comparableRequiredVersion = calculatedComparableVersion(majorVersion, minorVersion, fixVersion);
         return comparableImageVersion >= comparableRequiredVersion;
     }
 
-    private static long calculatedComparableVersion(final int majorVersion, final int minorVersion, final int fixVersion) {
-        return majorVersion * 1000000L + minorVersion * 1000L + fixVersion;
+    private static long calculatedComparableVersion(final int majorVersion, final int minorVersion,
+            final int fixVersion) {
+        return (majorVersion * 1000000L) + (minorVersion * 1000L) + fixVersion;
     }
 
     protected com.exasol.adapter.dialects.exasol.DataTypeAssertion.Builder typeAssertionFor(final String columnType) {
