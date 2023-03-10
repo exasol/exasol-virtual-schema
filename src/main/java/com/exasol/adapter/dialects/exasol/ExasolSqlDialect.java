@@ -15,7 +15,8 @@ import com.exasol.adapter.capabilities.*;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.*;
-import com.exasol.adapter.properties.*;
+import com.exasol.adapter.properties.BooleanProperty;
+import com.exasol.adapter.properties.ImportProperty;
 import com.exasol.errorreporting.ExaError;
 
 /**
@@ -25,7 +26,6 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     static final String EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH = "TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE";
     static final String NAME = "EXASOL";
     private static final Capabilities CAPABILITIES = createCapabilityList();
-    private final ValidatorChain dialectPropertyValidators;
 
     /**
      * Create a new instance of the {@link ExasolSqlDialect}.
