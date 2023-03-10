@@ -4,11 +4,13 @@ Code name:
 
 ## Summary
 
-This release adds a test for escaping wildcard when retrieving table metadata from JDBC driver.
+This release adds a test for escaping wildcard when retrieving table metadata from JDBC driver and removes local classes in favor of those provided by version 10.4.0 of VSCJDBC.
+
 
 ## Documentation
 
 * #94: Added test for Add test for escaping wildcard when retrieving table metadata from JDBC driver.
+* #95: Removed duplicated classes
 
 ## Dependency Updates
 
