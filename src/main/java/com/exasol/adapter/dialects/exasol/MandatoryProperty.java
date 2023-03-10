@@ -10,6 +10,7 @@ import com.exasol.errorreporting.ExaError;
  */
 public class MandatoryProperty implements PropertyValidator {
     /**
+     * Create a new validator.
      *
      * @param dialect  name of the current virtual schema dialect to be included in error message
      * @param element  label for the missing property value
