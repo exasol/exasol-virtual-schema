@@ -15,8 +15,7 @@ import com.exasol.adapter.capabilities.*;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.*;
-import com.exasol.adapter.properties.BooleanProperty;
-import com.exasol.adapter.properties.PropertyValidationException;
+import com.exasol.adapter.properties.*;
 import com.exasol.errorreporting.ExaError;
 
 /**
@@ -39,7 +38,8 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
                         IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
                 List.of(SchemaNameProperty.validator(NAME), //
                         BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
-                        BooleanProperty.validator(IS_LOCAL_PROPERTY)));
+                        BooleanProperty.validator(IS_LOCAL_PROPERTY), //
+                        ImportProperty.validator(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY)));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,
                 CURRENT_USER, CURRENT_CLUSTER));
     }
@@ -141,12 +141,6 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     public String getStringLiteral(final String value) {
         return super.quoteLiteralStringWithSingleQuote(value);
-    }
-
-    @Override
-    public void validateProperties() throws PropertyValidationException {
-        super.validateProperties();
-        checkImportPropertyConsistency(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY);
     }
 
     @Override

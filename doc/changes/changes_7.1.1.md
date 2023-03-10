@@ -15,13 +15,13 @@ This release adds a test for escaping wildcard when retrieving table metadata fr
 ### Compile Dependency Updates
 
 * Updated `com.exasol:error-reporting-java:1.0.0` to `1.0.1`
-* Updated `com.exasol:virtual-schema-common-jdbc:10.1.0` to `10.3.0`
+* Updated `com.exasol:virtual-schema-common-jdbc:10.1.0` to `10.4.0`
 
 ### Test Dependency Updates
 
 * Updated `com.exasol:exasol-testcontainers:6.5.0` to `6.5.1`
 * Updated `com.exasol:test-db-builder-java:3.4.1` to `3.4.2`
-* Updated `com.exasol:virtual-schema-common-jdbc:10.1.0` to `10.3.0`
+* Updated `com.exasol:virtual-schema-common-jdbc:10.1.0` to `10.4.0`
 * Updated `org.mockito:mockito-junit-jupiter:5.0.0` to `5.1.1`
 
 ### Plugin Dependency Updates
