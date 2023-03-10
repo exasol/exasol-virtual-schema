@@ -25,6 +25,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     static final String EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH = "TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE";
     static final String NAME = "EXASOL";
     private static final Capabilities CAPABILITIES = createCapabilityList();
+    private final ValidatorChain dialectPropertyValidators;
 
     /**
      * Create a new instance of the {@link ExasolSqlDialect}.

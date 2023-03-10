@@ -8,7 +8,7 @@ This release updates VSEXA to take virtual schema property `SCHEMA_NAME` as mand
 
 ## Bugfixes
 
-* #92: Broken handling of tables when SCHEMA_NAME property is not set
+* #92: Fixed broken handling of tables when `SCHEMA_NAME` property is not set
 
 ## Dependency Updates
 
