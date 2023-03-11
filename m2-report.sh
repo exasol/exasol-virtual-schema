@@ -142,6 +142,7 @@ echo -e "Content of file dependencies.md:\n"
 grep -i "maven.clean.plugin" dependencies.md | sed -e "s/  */ /g"
 echo ""
 
+# in ci-build.yml: /home/runner/.m2/repository
 echo "- location of local maven repository (= cache):" $(local-m2-repo)
 
 V=$(effective-pom | version-of maven-clean-plugin)
@@ -155,3 +156,5 @@ $(mvn-effective-url $PLUGIN)
 PARENT=$(parent-pom $PLUGIN)
 echo "- location of pom for <parent> in local repository:" $PARENT
 echo "- URL of parent:" $(mvn-project-url $(echo $PARENT | cygwin-path))
+
+mvn com.exasol:project-keeper-maven-plugin:verify -projects .
