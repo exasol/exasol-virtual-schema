@@ -7,6 +7,7 @@ import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_
 import static com.exasol.adapter.sql.ScalarFunction.*;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Set;
 
 import com.exasol.adapter.AdapterProperties;
@@ -14,6 +15,8 @@ import com.exasol.adapter.capabilities.*;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.*;
+import com.exasol.adapter.properties.BooleanProperty;
+import com.exasol.adapter.properties.ImportProperty;
 import com.exasol.errorreporting.ExaError;
 
 /**
@@ -31,8 +34,13 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
      * @param properties        adapter properties
      */
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
-        super(connectionFactory, properties, Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY,
-                EXASOL_CONNECTION_PROPERTY, IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY));
+        super(connectionFactory, properties,
+                Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
+                        IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
+                List.of(SchemaNameProperty.validator(NAME), //
+                        BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
+                        BooleanProperty.validator(IS_LOCAL_PROPERTY), //
+                        ImportProperty.validator(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY)));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,
                 CURRENT_USER, CURRENT_CLUSTER));
     }
@@ -134,14 +142,6 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     public String getStringLiteral(final String value) {
         return super.quoteLiteralStringWithSingleQuote(value);
-    }
-
-    @Override
-    public void validateProperties() throws PropertyValidationException {
-        super.validateProperties();
-        checkImportPropertyConsistency(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY);
-        validateBooleanProperty(EXASOL_IMPORT_PROPERTY);
-        validateBooleanProperty(IS_LOCAL_PROPERTY);
     }
 
     @Override

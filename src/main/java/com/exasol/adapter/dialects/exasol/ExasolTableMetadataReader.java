@@ -4,8 +4,10 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.IdentifierConverter;
 import com.exasol.adapter.jdbc.BaseTableMetadataReader;
 import com.exasol.adapter.jdbc.ColumnMetadataReader;
+import com.exasol.adapter.jdbc.Wildcards;
 import com.exasol.adapter.metadata.ColumnMetadata;
 import com.exasol.adapter.metadata.TableMetadata;
+import com.exasol.adapter.properties.TableCountLimit;
 import com.exasol.errorreporting.ExaError;
 import com.exasol.jdbc.EXAResultSet;
 
@@ -67,7 +69,7 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
         long filteredTableCount = filteredTables.size();
 
         if (numberOfTables == 0) {
-            LOGGER.warning(() -> ExaError.messageBuilder("W-VSEXA-6")
+            LOGGER.warning(() -> ExaError.messageBuilder("W-VSEXA-9")
                     .message("Table scan did not find any tables. This can mean that either" //
                             + " a) the source does not contain tables (yet)," + " b) the table type is not supported" //
                             + " c) the user does not have access permissions.")
@@ -101,7 +103,7 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
         SortedMap<String, SortedMap<String, String>> sortedSchemas = sortTablesResult(remoteTables, filteredTables);
         if (sortedSchemas.isEmpty()) {
             // by check W-VSEXA-5, the unfiltered table list was not empty.
-            LOGGER.warning(() -> ExaError.messageBuilder("W-VSEXA-6")
+            LOGGER.warning(() -> ExaError.messageBuilder("W-VSEXA-10")
                     .message("Table scan did not find any of the listed tables. This can mean that either" //
                             + " a) the table type is not supported" //
                             + " b) the names do not match up" //
@@ -115,11 +117,15 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
 
         // TODO - maybe exchange the SchemaNameFilter with the schema name from the SortedMap if there is only one
         //        entry. However, non-qualified Virtual Schemas are broken anyway...
-        ResultSet columnList = this.connection.getMetaData().getColumns(getCatalogNameFilter(), getSchemaNameFilter(),
+
+        ResultSet columnList = this.connection.getMetaData().getColumns(
+                getCatalogNameFilter(),
+                Wildcards.escape(getSchemaNameFilter()), // no null-check as the parameter is mandatory
                 ANY_TABLE, ANY_COLUMN);
         if (!columnList.next()) {
             LOGGER.warning(() -> ExaError.messageBuilder("W-VSEXA-7").message(
                     "Column scan did not find any columns for schema {{schema_name}}. This should only happen when the schema contains only views that have not been initialized yet.")
+                    .parameter("schema_name", getSchemaNameFilter())
                     .mitigation("Please check the remote system.").toString());
             return Collections.emptyList();
         }
@@ -160,9 +166,11 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
         }
 
         List<TableMetadata> mappedTables = new ArrayList<>();
+        TableCountLimit tableCountLimit = TableCountLimit.from(this.properties);
+
         for (Map.Entry<String, String> tableEntry : tableMap.entrySet()) {
             mappedTables.addAll(mapOneTable(columnList, tableEntry.getKey(), tableEntry.getValue()));
-            validateMappedTablesListSize(mappedTables);
+            tableCountLimit.validateNumberOfTables(mappedTables.size());
         }
         return mappedTables;
     }
@@ -185,7 +193,8 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
             return Collections.emptyList();
         }
 
-        TableMetadata mappedTable = new TableMetadata(adjustIdentifierCase(tableName), DEFAULT_TABLE_ADAPTER_NOTES,
+        TableMetadata mappedTable = new TableMetadata(adjustIdentifierCase(tableName), //
+                "", // == protected BaseTableMetadataReader.DEFAULT_TABLE_ADAPTER_NOTES,
                 columns, tableComment);
         LOGGER.finer(() -> "Read table metadata: " + mappedTable.describe());
         return List.of(mappedTable);

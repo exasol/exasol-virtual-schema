@@ -16,7 +16,7 @@ jobs:
       DEFAULT_DB_VERSION: "7.1.17"
     runs-on: ubuntu-latest
     concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
+      group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.docker_db_version }}
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v3
