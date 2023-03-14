@@ -188,7 +188,6 @@
                         <option>--add-reads</option>
                         <option>jakarta.json=java.sql</option>
                     </additionalOptions>
-                    <failOnWarnings>false</failOnWarnings>
                 </configuration>
             </plugin>
         </plugins>
