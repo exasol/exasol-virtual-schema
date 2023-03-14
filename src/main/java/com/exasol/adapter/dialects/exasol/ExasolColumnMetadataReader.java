@@ -180,38 +180,6 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     }
 
     /**
-     * Special implementation of BaseColumnMetadataReader::mapColumns using a single column ResultSet for all tables.
-     *
-     * @param tableName         name of the table to map columns for
-     * @param columnDefinitions result of java.sql.DatabaseMetaData::getColumns(), sorted as defined there. The iterator
-     *                          must point to a row with the correct TABLE_SCHEM value!
-     * @return List of mapped column information; possibly empty
-     * @throws SQLException If reading from the ResultSets fails for some reason
-     */
-    public List<ColumnMetadata> mapCxxolumns(String tableName, ResultSet columnDefinitions) throws SQLException {
-        // by contract, columnDefinitions iterator points to a valid row in the correct schema
-        final String schemaName = readSchemaName(columnDefinitions);
-        // skip ahead until we hit the required table name (merge-sort)
-        while (tableName.compareTo(readTableName(columnDefinitions)) > 0) {
-            if (!columnDefinitions.next() || !schemaName.equals(readSchemaName(columnDefinitions))) {
-                // end of the rope; no more columns
-                return Collections.emptyList();
-            }
-        }
-
-        final List<ColumnMetadata> columns = new ArrayList<>();
-        while (tableName.equals(readTableName(columnDefinitions)) && schemaName.equals(readSchemaName(columnDefinitions))) {
-            mapOrSkipColumn(columnDefinitions, columns);
-            if (!columnDefinitions.next()) {
-                break;
-            }
-        }
-
-        // end of column list for new table
-        return columns;
-    }
-
-    /**
      * Read columns for the table at current ResultSet cursor position (forward scan only)
      * @param remoteColumns column result set, sorted by schema, table, column position
      * @return List of mapped columns, may be empty
