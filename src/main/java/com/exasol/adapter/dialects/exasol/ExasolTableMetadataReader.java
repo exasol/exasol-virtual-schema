@@ -42,17 +42,16 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
      * @param properties           user-defined adapter properties
      * @param identifierConverter  converter between source and Exasol identifiers
      */
-    public ExasolTableMetadataReader(Connection connection, ColumnMetadataReader columnMetadataReader,
+    public ExasolTableMetadataReader(Connection connection, ExasolColumnMetadataReader columnMetadataReader,
             AdapterProperties properties, IdentifierConverter identifierConverter) {
         super(connection, columnMetadataReader, properties, identifierConverter);
-        assert (columnMetadataReader instanceof ExasolColumnMetadataReader);
     }
 
     // arbitrary border to switch between default iterative and "all in" column scan
-    static final double filter_ratio_threshold = 0.1;
+    static final double FILTER_RATIO_THRESHOLD = 0.1;
 
     private ExasolColumnMetadataReader getColumnReader() {
-        // type asserted in constructor
+        // type asserted by constructor
         return (ExasolColumnMetadataReader) this.columnMetadataReader;
     }
 
@@ -79,7 +78,7 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
             return Collections.emptyList();
         }
 
-        if (filteredTableCount > 0 && filteredTableCount < filter_ratio_threshold * numberOfTables) {
+        if (filteredTableCount > 0 && filteredTableCount < FILTER_RATIO_THRESHOLD * numberOfTables) {
             // strong filter, use default jdbc implementation
             return super.mapTables(remoteTables, filteredTables);
         }
@@ -188,7 +187,7 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
             break;
         }
         final List<ColumnMetadata> columns = getColumnReader().mapCurrentTableColumns(columnList);
-        if (columns.size() == 0) {
+        if (columns.isEmpty()) {
             logSkippingTableWithEmptyColumns(tableName);
             return Collections.emptyList();
         }
@@ -274,7 +273,7 @@ public class ExasolTableMetadataReader extends BaseTableMetadataReader {
             final String tableName = readTableName(remoteTables);
             if (isTableSupported(filteredTables, tableName)) {
                 SortedMap<String, String> sortedTables = sortedSchemas.computeIfAbsent(schemaName,
-                        (String) -> new TreeMap<>());
+                        (String unused) -> new TreeMap<>());
                 final String comment = Optional.ofNullable(readComment(remoteTables)).orElse("");
                 sortedTables.put(tableName, comment);
             }

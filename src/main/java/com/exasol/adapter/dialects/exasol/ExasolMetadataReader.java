@@ -22,13 +22,13 @@ public class ExasolMetadataReader extends AbstractRemoteMetadataReader {
     }
 
     @Override
-    protected ColumnMetadataReader createColumnMetadataReader() {
+    protected ExasolColumnMetadataReader createColumnMetadataReader() {
         return new ExasolColumnMetadataReader(this.connection, this.properties, getIdentifierConverter());
     }
 
     @Override
     protected TableMetadataReader createTableMetadataReader() {
-        return new ExasolTableMetadataReader(this.connection, this.columnMetadataReader, this.properties,
+        return new ExasolTableMetadataReader(this.connection, (ExasolColumnMetadataReader)this.columnMetadataReader, this.properties,
                 this.identifierConverter);
     }
 

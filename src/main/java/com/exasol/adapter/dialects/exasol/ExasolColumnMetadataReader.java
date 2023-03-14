@@ -2,7 +2,6 @@ package com.exasol.adapter.dialects.exasol;
 
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
