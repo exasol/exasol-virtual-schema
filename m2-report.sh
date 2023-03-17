@@ -145,10 +145,13 @@ echo ""
 # in ci-build.yml: /home/runner/.m2/repository
 echo "- location of local maven repository (= cache):" $(local-m2-repo)
 
-V=$(effective-pom | version-of maven-clean-plugin)
-echo "- plugin version from effective pom: $V"
+GROUP=org.apache.maven.plugins
+ARTIFACT=maven-clean-plugin
+echo "- focussing on plugin $ARTIFACT"
 
-PLUGIN=org.apache.maven.plugins:maven-clean-plugin:$V
+VERSION=$(effective-pom | version-of $ARTIFACT)
+echo "- plugin version from effective pom: $VERSION"
+PLUGIN=$GROUP:$ARTIFACT:$VERSION
 
 echo "- plugin URL from plugin's effective POM:" \
 $(mvn-effective-url $PLUGIN)
