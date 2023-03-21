@@ -43,7 +43,7 @@ jobs:
       - name: Run tests and build with Maven
         run: |
           bash -e m2-report.sh
-          mvnw --batch-mode clean verify \
+          ./mvnw --batch-mode clean verify \
               -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
               -DtrimStackTrace=false \
               -Dcom.exasol.dockerdb.image=${{ matrix.docker_db_version }}
@@ -55,7 +55,7 @@ jobs:
       - name: Sonar analysis
         if: ${{ env.SONAR_TOKEN != null }}
         run: |
-          mvnw --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          ./mvnw --batch-mode org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
               -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn \
               -DtrimStackTrace=false \
               -Dsonar.organization=exasol \
