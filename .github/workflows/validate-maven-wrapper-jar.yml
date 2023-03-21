@@ -1,0 +1,11 @@
+name: Validate maven wrapper 
+
+on: [push, pull_request]
+
+jobs:
+  validation:
+    name: "Validation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: loosebazooka/maven-wrapper-validation-action@<tbd>
