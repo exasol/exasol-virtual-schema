@@ -30,7 +30,8 @@ jobs:
           cache: 'maven'
       - name: "Validate integrity of maven-wrapper.jar"
         uses: loosebazooka/maven-wrapper-validation-action@main
-        wrapper-path: .mvn/wrapper/maven-wrapper.jar
+        env:
+          WRAPPER_PATH: .mvn/wrapper/maven-wrapper.jar
       - name: Cache SonarCloud packages
         uses: actions/cache@v3
         with:
