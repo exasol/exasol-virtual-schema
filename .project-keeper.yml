@@ -8,5 +8,6 @@ sources:
       - maven_central
 linkReplacements:
 excludes:
+  - "W-PK-CORE-153: Project-keeper version 2.9.4 is outdated. Please update project-keeper to latest version 2.9.5."
   - "E-PK-CORE-18: Outdated content: '.github/workflows/ci-build.yml'"
 #  - regex: "(?s)E-PK-CORE-53: The dependencies.md file has outdated content.*"

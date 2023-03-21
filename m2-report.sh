@@ -143,6 +143,8 @@ grep -i "maven.clean.plugin" dependencies.md | sed -e "s/  */ /g"
 echo ""
 
 # in ci-build.yml: /home/runner/.m2/repository
+mvn --version
+mvn dependency:list-repositories | grep -v "^\\["
 echo "- location of local maven repository (= cache):" $(local-m2-repo)
 
 GROUP=org.apache.maven.plugins
