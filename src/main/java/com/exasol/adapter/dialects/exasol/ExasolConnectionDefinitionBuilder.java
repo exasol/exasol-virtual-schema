@@ -19,7 +19,7 @@ public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionB
     @Override
     public String buildConnectionDefinition(final AdapterProperties properties,
             final ExaConnectionInformation exaConnectionInformation) {
-        if (properties.containsKey(ExasolProperties.EXASOL_IMPORT_PROPERTY)) {
+        if (properties.isEnabled(ExasolProperties.EXASOL_IMPORT_PROPERTY)) {
             return buildImportFromExaConnectionDefinition(properties);
         } else {
             return super.buildConnectionDefinition(properties, exaConnectionInformation);
