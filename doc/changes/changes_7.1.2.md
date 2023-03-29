@@ -1,6 +1,6 @@
 # Exasol Virtual Schema 7.1.2, released 2023-??-??
 
-Code name: Minor Fixes
+Code name: Minor Fixes on top of 7.1.1
 
 This release fixes some minor problems.
 
