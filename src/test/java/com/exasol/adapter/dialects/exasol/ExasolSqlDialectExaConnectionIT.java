@@ -4,6 +4,7 @@ import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECT
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,6 +14,7 @@ import java.util.Set;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
+import com.exasol.adapter.properties.PropertyValidationException;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
 
@@ -87,6 +89,16 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
                         anything(), //
                         anything() //
                 ).matches());
+    }
+
+    @Test
+    void testAlterVirtualSchemaTriggersPropertyValidation() throws SQLException {
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        final String name = this.virtualSchema.getFullyQualifiedName();
+        final SQLException exception = assertThrows(SQLException.class,
+                () -> query("alter virtual schema {0} set EXA_CONNECTION = Null", name));
+        final String expected = PropertyValidationException.class.getName() + ": E-VSCJDBC-17";
+        assertThat(exception.getMessage(), containsString(expected));
     }
 
     private ResultSet explainVirtual(final String sql) throws SQLException {

@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 
@@ -185,6 +186,10 @@ abstract class AbstractExasolSqlDialectIT {
 
     private String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
+    }
+
+    protected ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
+        return query(MessageFormat.format(sqlFormatString, args));
     }
 
     protected ResultSet query(final String sql) throws SQLException {
