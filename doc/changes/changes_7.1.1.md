@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.1.1, released 2023-??-??
+# Exasol Virtual Schema 7.1.1, released 2023-03-29
 
 Code name: Minor Fixes on Top of Version 7.1.0
 
