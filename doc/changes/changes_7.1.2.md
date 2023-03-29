@@ -8,7 +8,7 @@ This release fixes some minor problems.
 
 ## Bugfixes
 
-* #89: Fixed Inconsistent semantics of adapter property `IMPORT_FROM_EXA`
+* #89: Fixed inconsistent semantics of adapter property `IMPORT_FROM_EXA`
 
 ## Dependency Updates
 
