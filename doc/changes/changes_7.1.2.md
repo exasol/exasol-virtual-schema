@@ -4,7 +4,7 @@ Code name: Documentation Update
 
 ## Summary
 
-This release updates the documentation for Exasol dialect virtual schema regarding known limitations.
+This release updates the documentation for the Exasol Virtual Schema dialect regarding known limitations.
 
 ## Features
 
