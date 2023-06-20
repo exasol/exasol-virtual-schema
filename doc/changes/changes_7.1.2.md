@@ -15,6 +15,7 @@ This release updates the documentation for Exasol dialect virtual schema regardi
 ### Compile Dependency Updates
 
 * Updated `com.exasol:exasol-jdbc:7.1.19` to `7.1.20`
+* Removed `org.glassfish:jakarta.json:2.0.1`
 
 ### Test Dependency Updates
 
