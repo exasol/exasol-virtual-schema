@@ -11,3 +11,8 @@ See also ticket [VSCOMJAVA #273](https://github.com/exasol/virtual-schema-common
 ## Refactoring
 
 * #85: Replaced adapter property `IS_LOCAL` from virtual-schema-common-java by a constant in VSEXA.
+## Dependency Updates
+
+### Plugin Dependency Updates
+
+* Updated `com.exasol:project-keeper-maven-plugin:2.9.7` to `2.9.8`
