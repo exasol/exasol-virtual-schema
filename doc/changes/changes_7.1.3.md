@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.1.3, released 2023-07-06
+# Exasol Virtual Schema 7.1.3, released 2023-07-07
 
 Code name: Refactoring
 
