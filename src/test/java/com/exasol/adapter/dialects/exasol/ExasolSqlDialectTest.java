@@ -2,8 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
 import static com.exasol.reflect.ReflectionUtils.getMethodReturnViaReflection;
 import static org.hamcrest.CoreMatchers.containsString;
@@ -154,7 +153,7 @@ class ExasolSqlDialectTest {
 
     @Test
     void testCreateLocalQueryRewriter() {
-        this.rawProperties.put(IS_LOCAL_PROPERTY, "true");
+        this.rawProperties.put(EXASOL_IS_LOCAL_PROPERTY, "true");
         final AdapterProperties properties = new AdapterProperties(this.rawProperties);
         final SqlDialect dialect = new ExasolSqlDialect(this.connectionFactoryMock, properties);
         assertThat(getMethodReturnViaReflection(dialect, "createQueryRewriter"),
@@ -232,7 +231,7 @@ class ExasolSqlDialectTest {
     @Test
     void checkInvalidIsLocalProperty() {
         final AdapterProperties adapterProperties = mandatory() //
-                .with(IS_LOCAL_PROPERTY, "asdasd") //
+                .with(EXASOL_IS_LOCAL_PROPERTY, "asdasd") //
                 .build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
@@ -243,14 +242,14 @@ class ExasolSqlDialectTest {
 
     @Test
     void checkValidIsLocalProperty1() throws PropertyValidationException {
-        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "TrUe").build();
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_IS_LOCAL_PROPERTY, "TrUe").build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkValidIsLocalProperty() throws PropertyValidationException {
-        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "FalSe").build();
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_IS_LOCAL_PROPERTY, "FalSe").build();
         final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
         sqlDialect.validateProperties();
     }

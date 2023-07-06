@@ -2,8 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
 import static com.exasol.adapter.sql.ScalarFunction.*;
 
 import java.sql.SQLException;
@@ -36,10 +35,10 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
         super(connectionFactory, properties,
                 Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
-                        IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
+                        EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
                 List.of(SchemaNameProperty.validator(NAME), //
                         BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
-                        BooleanProperty.validator(IS_LOCAL_PROPERTY), //
+                        BooleanProperty.validator(EXASOL_IS_LOCAL_PROPERTY), //
                         ImportProperty.validator(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY)));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,
                 CURRENT_USER, CURRENT_CLUSTER));
@@ -91,7 +90,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
      */
     @Override
     protected QueryRewriter createQueryRewriter() {
-        if (this.properties.isLocalSource()) {
+        if (this.properties.isEnabled(EXASOL_IS_LOCAL_PROPERTY)) {
             return new ExasolLocalQueryRewriter(this);
         } else if (isImportFromExa(this.properties)) {
             return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader());
