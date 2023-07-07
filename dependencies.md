@@ -42,11 +42,11 @@
 | [Apache Maven JAR Plugin][41]                           | [Apache License, Version 2.0][29]              |
 | [Artifact reference checker and unifier][42]            | [MIT][43]                                      |
 | [Apache Maven Deploy Plugin][44]                        | [Apache-2.0][29]                               |
-| [Apache Maven GPG Plugin][45]                           | [Apache License, Version 2.0][29]              |
+| [Apache Maven GPG Plugin][45]                           | [Apache-2.0][29]                               |
 | [Apache Maven Source Plugin][46]                        | [Apache License, Version 2.0][29]              |
 | [Apache Maven Javadoc Plugin][47]                       | [Apache License, Version 2.0][29]              |
 | [Nexus Staging Maven Plugin][48]                        | [Eclipse Public License][49]                   |
-| [Apache Maven Dependency Plugin][50]                    | [Apache License, Version 2.0][29]              |
+| [Apache Maven Dependency Plugin][50]                    | [Apache-2.0][29]                               |
 | [Maven Failsafe Plugin][51]                             | [Apache-2.0][29]                               |
 | [JaCoCo :: Maven Plugin][52]                            | [Eclipse Public License 2.0][25]               |
 | [error-code-crawler-maven-plugin][53]                   | [MIT License][54]                              |
@@ -92,7 +92,7 @@
 [33]: http://www.apache.org/licenses/LICENSE-2.0.txt
 [34]: https://maven.apache.org/surefire/maven-surefire-plugin/
 [35]: https://www.mojohaus.org/versions/versions-maven-plugin/
-[36]: https://github.com/basepom/duplicate-finder-maven-plugin
+[36]: https://basepom.github.io/duplicate-finder-maven-plugin
 [37]: http://www.apache.org/licenses/LICENSE-2.0.html
 [38]: https://github.com/exasol/project-keeper/
 [39]: https://github.com/exasol/project-keeper/blob/main/LICENSE
