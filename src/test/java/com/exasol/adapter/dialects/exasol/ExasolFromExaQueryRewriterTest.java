@@ -1,9 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.CONNECTION_NAME_PROPERTY;
-import static com.exasol.adapter.AdapterProperties.IS_LOCAL_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
@@ -69,7 +67,7 @@ class ExasolFromExaQueryRewriterTest extends AbstractQueryRewriterTestBase {
 
     @Test
     void rewriteLocal() throws AdapterException, SQLException {
-        final AdapterProperties properties = new AdapterProperties(Map.of(IS_LOCAL_PROPERTY, "true"));
+        final AdapterProperties properties = new AdapterProperties(Map.of(EXASOL_IS_LOCAL_PROPERTY, "true"));
         final SqlDialect dialect = new ExasolSqlDialect(null, properties);
         final QueryRewriter queryRewriter = new ExasolLocalQueryRewriter(dialect);
         assertThat(queryRewriter.rewrite(this.statement, EMPTY_SELECT_LIST_DATA_TYPES, EXA_METADATA, properties),
