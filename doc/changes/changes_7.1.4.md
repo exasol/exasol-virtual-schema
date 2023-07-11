@@ -20,9 +20,14 @@ Please that you can still safely use `GROUP BY <column-number>` in your original
 
 ## Dependency Updates
 
+### Compile Dependency Updates
+
+* Updated `com.exasol:virtual-schema-common-jdbc:11.0.0` to `11.0.1`
+
 ### Test Dependency Updates
 
 * Updated `com.exasol:exasol-testcontainers:6.6.0` to `6.6.1`
+* Updated `com.exasol:virtual-schema-common-jdbc:11.0.0` to `11.0.1`
 
 ### Plugin Dependency Updates
 
