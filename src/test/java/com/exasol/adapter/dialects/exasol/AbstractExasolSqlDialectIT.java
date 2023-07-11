@@ -161,7 +161,21 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private Map<String, String> getVirtualSchemaProperties() {
-        return getConnectionSpecificVirtualSchemaProperties();
+        final Map<String, String> properties = new HashMap<>();
+        properties.putAll(getConnectionSpecificVirtualSchemaProperties());
+        properties.putAll(debugProperties());
+        return properties;
+    }
+
+    private Map<String, String> debugProperties() {
+        final String debugHost = System.getProperty("com.exasol.log.host", null);
+        if (debugHost == null) {
+            return Collections.emptyMap();
+        }
+        final String debugPort = System.getProperty("com.exasol.log.port", "3000");
+        final String logLevel = System.getProperty("com.exasol.log.level", "ALL");
+        final String address = debugHost + ":" + debugPort;
+        return Map.of("DEBUG_ADDRESS", address, "LOG_LEVEL", logLevel);
     }
 
     protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
