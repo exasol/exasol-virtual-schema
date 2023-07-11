@@ -844,6 +844,42 @@ abstract class AbstractExasolSqlDialectIT {
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
     }
 
+    @Test
+    @DisplayName("Verify that DISTINCT with integer literal works")
+    void testDistinctWithIntegerLiteral() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT DISTINCT c1, 0 AS attr from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName()),
+                    table("BIGINT", "SMALLINT") //
+                            .row(1L, (short) 0).row(2L, (short) 0).row(3L, (short) 0) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
+    @DisplayName("Verify that GROUP BY with a column number reference works")
+    void testGroupByWithColumnNumberWorks() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT c1, count(c1) as count from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName() + " group by 1"),
+                    table("BIGINT", "BIGINT") //
+                            .row(1L, 2L).row(2L, 1L).row(3L, 1L) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
         final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor() : 0),
