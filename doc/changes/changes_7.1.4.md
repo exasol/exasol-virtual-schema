@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.1.4, released 2023-07-11
+# Exasol Virtual Schema 7.1.4, released 2023-07-12
 
 Code name: Fix Issue With Integer Constants in `GROUP BY`
 
