@@ -77,14 +77,6 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
-    protected static boolean exasolVersionSupportsFingerprintInAddress() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        if (imageReference.getMajor() >= 8) {
-            return true;
-        }
-        return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
-    }
-
     @AfterAll
     static void afterAll() throws SQLException {
         dropAll(adapterScript, adapterSchema);
@@ -108,11 +100,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     private String getJdbcUrl() {
         final int port = EXASOL.getDefaultInternalDatabasePort();
-        if (exasolVersionSupportsFingerprintInAddress()) {
-            final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
-            return "jdbc:exa:localhost/" + fingerprint + ":" + port;
-        }
-        return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
+        final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
+        return "jdbc:exa:localhost/" + fingerprint + ":" + port;
     }
 
     @AfterEach

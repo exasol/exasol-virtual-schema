@@ -47,10 +47,8 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     }
 
     private String getTargetAddress() {
-        final String fingerprint = exasolVersionSupportsFingerprintInAddress()
-                ? "/" + EXASOL.getTlsCertificateFingerprint().orElseThrow()
-                : "";
-        return "127.0.0.1" + fingerprint + ":" + EXASOL.getDefaultInternalDatabasePort();
+        return "127.0.0.1" + "/" + EXASOL.getTlsCertificateFingerprint().orElseThrow() + ":"
+                + EXASOL.getDefaultInternalDatabasePort();
     }
 
     @Override
