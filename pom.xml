@@ -2,23 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>7.1.3</version>
+    <version>7.1.4</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
-        <vscjdbc.version>11.0.0</vscjdbc.version>
+        <vscjdbc.version>11.0.1</vscjdbc.version>
     </properties>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>com.exasol</groupId>
@@ -66,7 +56,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>6.6.0</version>
+            <version>6.6.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -116,13 +106,8 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
                 <configuration>
-                    <descriptors>
-                        <descriptor>src/assembly/all-dependencies.xml</descriptor>
-                    </descriptors>
                     <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${project.version}</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
                 </configuration>
                 <executions>
                     <execution>
@@ -160,19 +145,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.sonatype.ossindex.maven</groupId>
-                <artifactId>ossindex-maven-plugin</artifactId>
-                <configuration>
-                    <excludeVulnerabilityIds>
-                        <!-- This is a vulnerability in the transitive netty test dependency introduced by the
-                        AWS SDK and in turn by exasol-test-setup-abstraction-java. AWS notes that they handle
-                        netty in a way where this cannot be exploited.
-                        See https://github.com/aws/aws-sdk-java-v2/issues/3263#issuecomment-1163600532 -->
-                        <exclude>sonatype-2020-0026</exclude>
-                    </excludeVulnerabilityIds>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.4.1</version>
@@ -190,7 +162,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>7.1.3</version>
+        <version>7.1.4</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>

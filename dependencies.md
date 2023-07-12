@@ -38,7 +38,7 @@
 | [Versions Maven Plugin][35]                             | [Apache License, Version 2.0][29]              |
 | [duplicate-finder-maven-plugin Maven Mojo][36]          | [Apache License 2.0][37]                       |
 | [Project keeper maven plugin][38]                       | [The MIT License][39]                          |
-| [Apache Maven Assembly Plugin][40]                      | [Apache License, Version 2.0][29]              |
+| [Apache Maven Assembly Plugin][40]                      | [Apache-2.0][29]                               |
 | [Apache Maven JAR Plugin][41]                           | [Apache License, Version 2.0][29]              |
 | [Artifact reference checker and unifier][42]            | [MIT][43]                                      |
 | [Apache Maven Deploy Plugin][44]                        | [Apache-2.0][29]                               |

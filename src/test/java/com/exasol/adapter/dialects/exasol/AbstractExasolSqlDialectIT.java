@@ -77,14 +77,6 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
-    protected static boolean exasolVersionSupportsFingerprintInAddress() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        if (imageReference.getMajor() >= 8) {
-            return true;
-        }
-        return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
-    }
-
     @AfterAll
     static void afterAll() throws SQLException {
         dropAll(adapterScript, adapterSchema);
@@ -108,11 +100,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     private String getJdbcUrl() {
         final int port = EXASOL.getDefaultInternalDatabasePort();
-        if (exasolVersionSupportsFingerprintInAddress()) {
-            final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
-            return "jdbc:exa:localhost/" + fingerprint + ":" + port;
-        }
-        return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
+        final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
+        return "jdbc:exa:localhost/" + fingerprint + ":" + port;
     }
 
     @AfterEach
@@ -171,6 +160,13 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
+    /**
+     * Get properties for the virtual schema. Note: if you want to enable debug output, you can set <a href=
+     * "https://github.com/exasol/test-db-builder-java/blob/main/doc/user_guide/user_guide.md#debug-output">system
+     * properties defined by test-db-builder-java</a>.
+     * 
+     * @return properties for the virtual schema
+     */
     private Map<String, String> getVirtualSchemaProperties() {
         return getConnectionSpecificVirtualSchemaProperties();
     }
@@ -853,6 +849,42 @@ abstract class AbstractExasolSqlDialectIT {
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
+    }
+
+    @Test
+    @DisplayName("Verify DISTINCT with integer literal")
+    void testDistinctWithIntegerLiteral() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT DISTINCT c1, 0 AS attr from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName()),
+                    table("BIGINT", "SMALLINT") //
+                            .row(1L, (short) 0).row(2L, (short) 0).row(3L, (short) 0) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
+    @DisplayName("Verify GROUP BY with column number reference")
+    void testGroupByWithColumnNumber() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT c1, count(c1) as count from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName() + " group by 1"),
+                    table("BIGINT", "BIGINT") //
+                            .row(1L, 2L).row(2L, 1L).row(3L, 1L) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
     }
 
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {

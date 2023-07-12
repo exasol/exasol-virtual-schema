@@ -45,6 +45,7 @@ Find all the documentation in the [Virtual Schemas project][vs-doc].
 ## Information for Developers
 
 * [Virtual Schema API Documentation][vs-api]
+* [Developer Guide](./doc/developer_guide.md)
 
 <!-- @formatter:off -->
 [virtual-schemas-user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
