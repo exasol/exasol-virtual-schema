@@ -859,7 +859,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @DisplayName("Verify that DISTINCT with integer literal works")
+    @DisplayName("Verify DISTINCT with integer literal")
     void testDistinctWithIntegerLiteral() throws SQLException {
         final Table table = createSingleColumnTable("INT") //
                 .insert(1).insert(1).insert(2).insert(3);
@@ -877,8 +877,8 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @DisplayName("Verify that GROUP BY with a column number reference works")
-    void testGroupByWithColumnNumberWorks() throws SQLException {
+    @DisplayName("Verify GROUP BY with column number reference")
+    void testGroupByWithColumnNumber() throws SQLException {
         final Table table = createSingleColumnTable("INT") //
                 .insert(1).insert(1).insert(2).insert(3);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
