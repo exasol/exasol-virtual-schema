@@ -160,22 +160,15 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
+    /**
+     * Get properties for the virtual schema. Note: if you want to enable debug output, you can set <a href=
+     * "https://github.com/exasol/test-db-builder-java/blob/main/doc/user_guide/user_guide.md#debug-output">system
+     * properties defined by test-db-builder-java</a>.
+     * 
+     * @return properties for the virtual schema
+     */
     private Map<String, String> getVirtualSchemaProperties() {
-        final Map<String, String> properties = new HashMap<>();
-        properties.putAll(getConnectionSpecificVirtualSchemaProperties());
-        properties.putAll(debugProperties());
-        return properties;
-    }
-
-    private Map<String, String> debugProperties() {
-        final String debugHost = System.getProperty("com.exasol.log.host", null);
-        if (debugHost == null) {
-            return Collections.emptyMap();
-        }
-        final String debugPort = System.getProperty("com.exasol.log.port", "3000");
-        final String logLevel = System.getProperty("com.exasol.log.level", "ALL");
-        final String address = debugHost + ":" + debugPort;
-        return Map.of("DEBUG_ADDRESS", address, "LOG_LEVEL", logLevel);
+        return getConnectionSpecificVirtualSchemaProperties();
     }
 
     protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
