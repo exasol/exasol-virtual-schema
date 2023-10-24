@@ -4,13 +4,7 @@ Code name: Dependency Upgrade
 
 ## Summary
 
-This release updates integration tests to use the latest version 8.23.0 of Exasol database Docker Container.
-
-Additionally the release fixes vulnerability CVE-2023-42503 in transitive test dependency to `org.apache.commons:commons-compress` via `exasol-testcontainers` by updating dependencies.
-
-## Refactoring
-
-*#105: Updated tests to use latest version 8.23.0 of Exasol database Docker Container
+This release fixes vulnerability CVE-2023-42503 in transitive test dependency to `org.apache.commons:commons-compress` via `exasol-testcontainers` by updating dependencies.
 
 ## Security
 
