@@ -11,10 +11,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        docker_db_version: ["7.1.21"]
+        docker_db_version: ["7.1.23", "8.23.0"]
     env:
-      DEFAULT_DB_VERSION: "7.1.21"
-    runs-on: ubuntu-latest
+      DEFAULT_DB_VERSION: "8.23.0"
+    runs-on: ubuntu-20.04 # UDFs fail with "VM error: Internal error: VM crashed" on ubuntu-latest
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}-${{ matrix.docker_db_version }}
     steps:

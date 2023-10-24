@@ -16,11 +16,11 @@
 | [Virtual Schema Common JDBC][0]                 | [MIT License][1]                 |
 | [Hamcrest][6]                                   | [BSD License 3][7]               |
 | [JUnit Jupiter (Aggregator)][8]                 | [Eclipse Public License v2.0][9] |
-| [mockito-junit-jupiter][10]                     | [The MIT License][11]            |
+| [mockito-junit-jupiter][10]                     | [MIT][11]                        |
 | [Test containers for Exasol on Docker][12]      | [MIT License][13]                |
 | [Testcontainers :: JUnit Jupiter Extension][14] | [MIT][15]                        |
 | [Matcher for SQL Result Sets][16]               | [MIT License][17]                |
-| [SLF4J JDK14 Binding][18]                       | [MIT License][19]                |
+| [SLF4J JDK14 Provider][18]                      | [MIT License][19]                |
 | [Test Database Builder for Java][20]            | [MIT License][21]                |
 | [Maven Project Version Getter][22]              | [MIT License][23]                |
 | [JaCoCo :: Agent][24]                           | [Eclipse Public License 2.0][25] |
@@ -70,7 +70,7 @@
 [11]: https://github.com/mockito/mockito/blob/main/LICENSE
 [12]: https://github.com/exasol/exasol-testcontainers/
 [13]: https://github.com/exasol/exasol-testcontainers/blob/main/LICENSE
-[14]: https://testcontainers.org
+[14]: https://java.testcontainers.org
 [15]: http://opensource.org/licenses/MIT
 [16]: https://github.com/exasol/hamcrest-resultset-matcher/
 [17]: https://github.com/exasol/hamcrest-resultset-matcher/blob/main/LICENSE
