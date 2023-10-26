@@ -22,6 +22,7 @@ This release fixes vulnerability CVE-2023-42503 in transitive test dependency to
 * Updated `com.exasol:hamcrest-resultset-matcher:1.6.0` to `1.6.1`
 * Updated `com.exasol:test-db-builder-java:3.4.2` to `3.5.1`
 * Updated `com.exasol:virtual-schema-common-jdbc:11.0.1` to `11.0.2`
+* Updated `org.jacoco:org.jacoco.agent:0.8.10` to `0.8.11`
 * Updated `org.junit.jupiter:junit-jupiter:5.9.3` to `5.10.0`
 * Updated `org.mockito:mockito-junit-jupiter:5.4.0` to `5.6.0`
 * Updated `org.slf4j:slf4j-jdk14:2.0.7` to `2.0.9`
@@ -29,5 +30,9 @@ This release fixes vulnerability CVE-2023-42503 in transitive test dependency to
 
 ### Plugin Dependency Updates
 
-* Updated `com.exasol:project-keeper-maven-plugin:2.9.9` to `2.9.12`
-* Updated `org.apache.maven.plugins:maven-enforcer-plugin:3.3.0` to `3.4.0`
+* Updated `com.exasol:error-code-crawler-maven-plugin:1.3.0` to `1.3.1`
+* Updated `com.exasol:project-keeper-maven-plugin:2.9.9` to `2.9.14`
+* Updated `org.apache.maven.plugins:maven-enforcer-plugin:3.3.0` to `3.4.1`
+* Updated `org.codehaus.mojo:versions-maven-plugin:2.16.0` to `2.16.1`
+* Updated `org.jacoco:jacoco-maven-plugin:0.8.10` to `0.8.11`
+* Updated `org.sonarsource.scanner.maven:sonar-maven-plugin:3.9.1.2184` to `3.10.0.2594`
