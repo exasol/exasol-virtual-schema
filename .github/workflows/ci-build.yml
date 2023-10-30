@@ -15,9 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        docker_db_version: ["7.1.23"]
-    env:
-      DEFAULT_DB_VERSION: "7.1.23"
+        docker_db_version: ["7.1.24", "8.23.0"]
     steps:
       - name: Checkout the repository
         uses: actions/checkout@v4
