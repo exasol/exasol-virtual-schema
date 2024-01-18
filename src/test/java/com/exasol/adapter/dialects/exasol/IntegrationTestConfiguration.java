@@ -3,12 +3,12 @@ package com.exasol.adapter.dialects.exasol;
 import java.nio.file.Path;
 
 public final class IntegrationTestConfiguration {
-    private static final String DEFAULT_DOCKER_DB_REFERENCE = "7.1.24";
+    private static final String DEFAULT_DOCKER_DB_REFERENCE = "8.24.0";
     /**
      * Do not use MavenProjectVersionGetter here to enable reference checker to check if reference points to the latest
      * version.
      */
-    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-11.0.2-exasol-7.1.6.jar";
+    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-12.0.0-exasol-8.0.0.jar";
     public static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
 
     private IntegrationTestConfiguration() {
