@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -841,14 +842,44 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
+    static void assumeExasol8OrHigher() {
+        assumeTrue(isExasol8OrHigher(), "is Exasol version 8 or higher");
+    }
+
+    static void assumeExasol7OrLower() {
+        assumeTrue(isExasol7OrLower(), "is Exasol version 7 or lower");
+    }
+
+    static boolean isExasol8OrHigher() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() >= 8);
+    }
+
+    static boolean isExasol7OrLower() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() <= 7);
+    }
+
     @Test
     void testWildcards() throws SQLException {
+        assumeExasol7OrLower();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
         this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
+    }
+
+    @Test
+    void testWildcardsExasolV8() throws SQLException {
+        assumeExasol8OrHigher();
+        final String nameWithWildcard = "A_A";
+        this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
+        this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+                table().row("A", "VARCHAR(20) UTF8", null, null, null, null).matches());
     }
 
     @Test
