@@ -5,11 +5,9 @@ import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.PA
 import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION;
 import static com.exasol.dbbuilder.dialects.exasol.ExasolObjectPrivilege.SELECT;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.matchesPattern;
+import static org.junit.Assert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -39,6 +37,8 @@ import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
+import com.exasol.udfdebugging.UdfTestSetup;
+import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
@@ -58,13 +58,33 @@ abstract class AbstractExasolSqlDialectIT {
     private ConnectionDefinition jdbcConnection;
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
+    AbstractExasolSqlDialectIT() {
+        try {
+            connection = EXASOL.createConnection("");
+            final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(),
+                    EXASOL.getDefaultBucket(), connection);
+            objectFactory = new ExasolObjectFactory(connection,
+                    ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
+            adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
+            adapterScript = installVirtualSchemaAdapter(adapterSchema);
+
+        } catch (final SQLException | BucketAccessException | TimeoutException | FileNotFoundException exception) {
+            throw new IllegalStateException("Failed to created test setup.", exception);
+        }
+    }
+
     @BeforeAll
     static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
             FileNotFoundException {
-        connection = EXASOL.createConnection("");
-        objectFactory = new ExasolObjectFactory(connection);
-        adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
-        adapterScript = installVirtualSchemaAdapter(adapterSchema);
+
+    }
+
+    private String getTestHostIpFromInsideExasol() {
+        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+        if (networks.size() == 0) {
+            return null;
+        }
+        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)

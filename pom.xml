@@ -8,6 +8,7 @@
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
         <vscjdbc.version>12.0.0</vscjdbc.version>
+        <org.testcontainers.version>1.19.0</org.testcontainers.version>
     </properties>
     <dependencies>
         <dependency>
@@ -87,6 +88,12 @@
             <groupId>com.exasol</groupId>
             <artifactId>maven-project-version-getter</artifactId>
             <version>1.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.exasol</groupId>
+            <artifactId>udf-debugging-java</artifactId>
+            <version>0.6.11</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
