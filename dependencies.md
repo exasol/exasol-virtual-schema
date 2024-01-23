@@ -46,7 +46,7 @@
 | [Apache Maven Deploy Plugin][46]                        | [Apache-2.0][31]                  |
 | [Apache Maven GPG Plugin][47]                           | [Apache-2.0][31]                  |
 | [Apache Maven Source Plugin][48]                        | [Apache License, Version 2.0][31] |
-| [Apache Maven Javadoc Plugin][49]                       | [Apache License, Version 2.0][31] |
+| [Apache Maven Javadoc Plugin][49]                       | [Apache-2.0][31]                  |
 | [Nexus Staging Maven Plugin][50]                        | [Eclipse Public License][51]      |
 | [Apache Maven Dependency Plugin][52]                    | [Apache-2.0][31]                  |
 | [Maven Failsafe Plugin][53]                             | [Apache-2.0][31]                  |
