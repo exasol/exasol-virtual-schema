@@ -58,7 +58,9 @@ abstract class AbstractExasolSqlDialectIT {
     private ConnectionDefinition jdbcConnection;
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
-    AbstractExasolSqlDialectIT() {
+    @BeforeAll
+    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
+            FileNotFoundException {
         try {
             connection = EXASOL.createConnection("");
             final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(),
@@ -73,13 +75,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    @BeforeAll
-    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
-            FileNotFoundException {
-
-    }
-
-    private String getTestHostIpFromInsideExasol() {
+    private static String getTestHostIpFromInsideExasol() {
         final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
         if (networks.size() == 0) {
             return null;
