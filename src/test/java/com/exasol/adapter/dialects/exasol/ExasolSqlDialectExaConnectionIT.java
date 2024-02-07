@@ -17,6 +17,7 @@ import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundExceptio
 import com.exasol.adapter.properties.PropertyValidationException;
 import com.exasol.dbbuilder.dialects.Table;
 import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
+import com.exasol.dbbuilder.dialects.exasol.VirtualSchema;
 
 /**
  * This class exercises a set of tests defined in the base class on a local Exasol, using {@code IMPORT} via a EXA
@@ -120,5 +121,21 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     @Test
     void testCastVarcharToChar() {
         castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
+    }
+
+    @Test
+    void joinHashtype() throws java.sql.SQLException {
+        final Table virtualTable = sourceSchema.createTableBuilder("VIRTUAL").column("VHASH", "HASHTYPE(16 BYTE)")
+                .build();
+        final Table realTable = objectFactory.createSchema("OTHER").createTableBuilder("REAL")
+                .column("RHASH", "HASHTYPE(16 BYTE)").build();
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            final String sql = "select * from " + virtualSchema.getFullyQualifiedName() + "." + virtualTable.getName()
+                    + " INNER JOIN " + realTable.getFullyQualifiedName() + " ON VHASH = RHASH";
+            assertThat(query(sql), table("HASHTYPE", "HASHTYPE").matches());
+        } finally {
+            virtualSchema.drop();
+        }
     }
 }
