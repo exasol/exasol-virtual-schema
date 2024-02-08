@@ -1,12 +1,16 @@
 # Exasol Virtual Schema 7.1.7, released 2024-??-??
 
-Code name:
+Code name: Fix data types for `IMPORT FROM EXA`
 
 ## Summary
 
-## Features
+This release fixes the data types reported for virtual schemas using `IMPORT FROM EXA`. The Exasol specific types `GEOMETRY`, `INTERVAL YEAR TO MONTH`, `INTERVAL DAY TO SECOND` and `HASHTYPE` were mapped to `VARCHAR` before. The virtual schema now returns these types correctly.
 
-* ISSUE_NUMBER: description
+This also fixes a bug when joining a table in a virtual schema with a normal table using a `HASHTYPE` column. This failed before in Exasol 7.1 with error message `Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!`. In Exasol 8 the error message was `Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed).Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.`.
+
+## Bugfixes
+
+* #119: Fixed data types for `IMPORT FROM EXA`
 
 ## Dependency Updates
 
