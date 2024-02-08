@@ -102,23 +102,4 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     private ResultSet explainVirtual(final String sql) throws SQLException {
         return query("EXPLAIN VIRTUAL " + sql);
     }
-
-    @Override
-    @Test
-    void testCharMappingAscii() {
-        final Table table = createSingleColumnTable("CHAR(20) ASCII").insert("sun").insert("rain");
-        assertVirtualTableContents(table, table("VARCHAR").row(pad("sun", 20)).row(pad("rain", 20)).matches());
-    }
-
-    @Override
-    @Test
-    void testCharMappingUtf8() {
-        verifyCharMappingUtf8("VARCHAR");
-    }
-
-    @Override
-    @Test
-    void testCastVarcharToChar() {
-        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
-    }
 }
