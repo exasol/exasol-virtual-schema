@@ -5,7 +5,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.rewriting.*;
+import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
+import com.exasol.adapter.dialects.rewriting.SqlGenerationHelper;
 import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.metadata.DataType;
 
@@ -18,13 +19,6 @@ class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
     private static final Logger LOGGER = Logger.getLogger(ExasolFromExaQueryRewriter.class.getName());
     private final ConnectionFactory connectionFactory;
 
-    /**
-     * Construct a new instance of {@link ImportIntoTemporaryTableQueryRewriter}.
-     *
-     * @param dialect              dialect
-     * @param remoteMetadataReader remote metadata reader
-     * @param connectionFactory    factory for the JDBC connection to remote data source
-     */
     ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
         super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());

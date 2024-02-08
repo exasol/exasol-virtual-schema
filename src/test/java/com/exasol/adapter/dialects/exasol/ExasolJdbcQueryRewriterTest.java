@@ -27,8 +27,8 @@ import com.exasol.adapter.sql.TestSqlStatementFactory;
 
 @ExtendWith(MockitoExtension.class)
 class ExasolJdbcQueryRewriterTest {
-
     private static final String CONNECTION_NAME = "JDBC_conn";
+
     @Mock
     private RemoteMetadataReader metadataReaderMock;
     @Mock
