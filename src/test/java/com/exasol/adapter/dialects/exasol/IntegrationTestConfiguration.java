@@ -8,7 +8,7 @@ public final class IntegrationTestConfiguration {
      * Do not use MavenProjectVersionGetter here to enable reference checker to check if reference points to the latest
      * version.
      */
-    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-11.0.2-exasol-7.1.6.jar";
+    public static final String VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION = "virtual-schema-dist-11.0.2-exasol-7.1.7.jar";
     public static final Path PATH_TO_VIRTUAL_SCHEMAS_JAR = Path.of("target", VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION);
 
     private IntegrationTestConfiguration() {
