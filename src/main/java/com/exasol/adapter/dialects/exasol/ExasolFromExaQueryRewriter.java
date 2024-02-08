@@ -10,7 +10,8 @@ import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.metadata.DataType;
 
 /**
- * Exasol-specific query rewriter for {@code IMPORT FROM EXA}.
+ * Exasol-specific query rewriter for {@code IMPORT FROM EXA}. It is similar to {@link ExasolJdbcQueryRewriter} but uses
+ * {@code IMPORT INTO (...) FROM EXA}.
  */
 public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
 
@@ -27,20 +28,7 @@ public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
      */
     public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
-        this(dialect, remoteMetadataReader, connectionFactory, new ExasolConnectionDefinitionBuilder());
-    }
-
-    /**
-     * Construct a new instance of {@link ImportIntoTemporaryTableQueryRewriter}.
-     *
-     * @param dialect                     dialect
-     * @param remoteMetadataReader        remote metadata reader
-     * @param connectionFactory           factory for the JDBC connection to remote data source
-     * @param connectionDefinitionBuilder custom connection definition builder
-     */
-    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
-            final ConnectionFactory connectionFactory, final ConnectionDefinitionBuilder connectionDefinitionBuilder) {
-        super(dialect, remoteMetadataReader, connectionDefinitionBuilder);
+        super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
         this.connectionFactory = connectionFactory;
     }
 
@@ -48,15 +36,13 @@ public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
     protected String generateImportStatement(final String connectionDefinition,
             final List<DataType> selectListDataTypes, final String pushdownQuery) throws SQLException {
         return generateImportStatement(SqlGenerationHelper.createColumnsDescriptionFromDataTypes(selectListDataTypes),
-                connectionDefinition, //
-                pushdownQuery);
+                connectionDefinition, pushdownQuery);
     }
 
     @Override
     protected String generateImportStatement(final String connectionDefinition, final String pushdownQuery)
             throws SQLException {
-        return generateImportStatement(createColumnsDescriptionFromQuery(pushdownQuery), //
-                connectionDefinition, //
+        return generateImportStatement(createColumnsDescriptionFromQuery(pushdownQuery), connectionDefinition,
                 pushdownQuery);
     }
 
