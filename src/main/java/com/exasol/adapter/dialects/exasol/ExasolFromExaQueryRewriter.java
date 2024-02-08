@@ -1,26 +1,78 @@
 package com.exasol.adapter.dialects.exasol;
 
+import java.sql.SQLException;
+import java.util.List;
+import java.util.logging.Logger;
+
 import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
-import com.exasol.adapter.jdbc.RemoteMetadataReader;
+import com.exasol.adapter.dialects.rewriting.*;
+import com.exasol.adapter.jdbc.*;
+import com.exasol.adapter.metadata.DataType;
 
 /**
  * Exasol-specific query rewriter for {@code IMPORT FROM EXA}.
  */
 public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
 
+    private static final Logger LOGGER = Logger.getLogger(ExasolFromExaQueryRewriter.class.getName());
+    /** JDBC connection factory */
+    protected final ConnectionFactory connectionFactory;
+
     /**
-     * Create a new instance of the {@link ExasolFromExaQueryRewriter}.
+     * Construct a new instance of {@link ImportIntoTemporaryTableQueryRewriter}.
      *
      * @param dialect              dialect
      * @param remoteMetadataReader remote metadata reader
+     * @param connectionFactory    factory for the JDBC connection to remote data source
      */
-    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader) {
-        super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
+    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
+            final ConnectionFactory connectionFactory) {
+        this(dialect, remoteMetadataReader, connectionFactory, new BaseConnectionDefinitionBuilder());
+    }
+
+    /**
+     * Construct a new instance of {@link ImportIntoTemporaryTableQueryRewriter}.
+     *
+     * @param dialect                     dialect
+     * @param remoteMetadataReader        remote metadata reader
+     * @param connectionFactory           factory for the JDBC connection to remote data source
+     * @param connectionDefinitionBuilder custom connection definition builder
+     */
+    public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
+            final ConnectionFactory connectionFactory, final ConnectionDefinitionBuilder connectionDefinitionBuilder) {
+        super(dialect, remoteMetadataReader, connectionDefinitionBuilder);
+        this.connectionFactory = connectionFactory;
     }
 
     @Override
-    protected String generateImportStatement(final String connectionDefinition, final String pushdownQuery) {
-        return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '" + pushdownQuery.replace("'", "''") + "'";
+    protected String generateImportStatement(final String connectionDefinition,
+            final List<DataType> selectListDataTypes, final String pushdownQuery) throws SQLException {
+        return generateImportStatement(SqlGenerationHelper.createColumnsDescriptionFromDataTypes(selectListDataTypes),
+                connectionDefinition, //
+                pushdownQuery);
+    }
+
+    @Override
+    protected String generateImportStatement(final String connectionDefinition, final String pushdownQuery)
+            throws SQLException {
+        return generateImportStatement(createColumnsDescriptionFromQuery(pushdownQuery), //
+                connectionDefinition, //
+                pushdownQuery);
+    }
+
+    private String generateImportStatement(final String columnsDescription, final String connectionDefinition,
+            final String pushdownQuery) {
+        return "IMPORT INTO (" + columnsDescription + ") FROM EXA " //
+                + connectionDefinition + " STATEMENT '" //
+                + pushdownQuery.replace("'", "''") + "'";
+    }
+
+    private String createColumnsDescriptionFromQuery(final String query) throws SQLException {
+        final ColumnMetadataReader columnMetadataReader = this.remoteMetadataReader.getColumnMetadataReader();
+        final ResultSetMetadataReader resultSetMetadataReader = new ResultSetMetadataReader(
+                this.connectionFactory.getConnection(), columnMetadataReader);
+        final String columnsDescription = resultSetMetadataReader.describeColumns(query);
+        LOGGER.finer(() -> "Import columns: " + columnsDescription);
+        return columnsDescription;
     }
 }

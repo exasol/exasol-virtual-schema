@@ -887,6 +887,23 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
+    @Test
+    @DisplayName("Verify that a virtual and a normal table can be joined using a HASHTYPE column")
+    void joinHashtypeTables() throws java.sql.SQLException {
+        final Table virtualTable = sourceSchema.createTableBuilder("VIRTUAL").column("VHASH", "HASHTYPE(16 BYTE)")
+                .build();
+        final Table realTable = objectFactory.createSchema("OTHER").createTableBuilder("REAL")
+                .column("RHASH", "HASHTYPE(16 BYTE)").build();
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            final String sql = "select * from " + virtualSchema.getFullyQualifiedName() + "." + virtualTable.getName()
+                    + " INNER JOIN " + realTable.getFullyQualifiedName() + " ON VHASH = RHASH";
+            assertThat(query(sql), table("HASHTYPE", "HASHTYPE").matches());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {
         final ExasolDockerImageReference version = EXASOL.getDockerImageReference();
         final long comparableImageVersion = calculatedComparableVersion((version.hasMajor() ? version.getMajor() : 0),
