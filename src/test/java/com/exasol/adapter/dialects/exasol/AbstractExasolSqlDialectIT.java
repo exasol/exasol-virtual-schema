@@ -892,15 +892,13 @@ abstract class AbstractExasolSqlDialectIT {
     void joinHashtypeTables() throws java.sql.SQLException {
         final Table virtualTable = sourceSchema.createTableBuilder("VIRTUAL").column("VHASH", "HASHTYPE(16 BYTE)")
                 .build();
-        final Table realTable = objectFactory.createSchema("OTHER").createTableBuilder("REAL")
-                .column("RHASH", "HASHTYPE(16 BYTE)").build();
-        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
-        try {
+        try (final ExasolSchema otherSchema = objectFactory.createSchema("OTHER");
+                final Table otherTable = otherSchema.createTableBuilder("REAL").column("RHASH", "HASHTYPE(16 BYTE)")
+                        .build();
+                final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema)) {
             final String sql = "select * from " + virtualSchema.getFullyQualifiedName() + "." + virtualTable.getName()
-                    + " INNER JOIN " + realTable.getFullyQualifiedName() + " ON VHASH = RHASH";
+                    + " INNER JOIN " + otherTable.getFullyQualifiedName() + " ON VHASH = RHASH";
             assertThat(query(sql), table("HASHTYPE", "HASHTYPE").matches());
-        } finally {
-            virtualSchema.drop();
         }
     }
 
