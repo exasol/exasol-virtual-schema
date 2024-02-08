@@ -35,7 +35,7 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * <ul>
  */
 class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
-    private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
+    private static final String EXA_CONNECTION_NAME = "THE_EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
 
     @Override

@@ -27,7 +27,7 @@ public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
      */
     public ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
-        this(dialect, remoteMetadataReader, connectionFactory, new BaseConnectionDefinitionBuilder());
+        this(dialect, remoteMetadataReader, connectionFactory, new ExasolConnectionDefinitionBuilder());
     }
 
     /**
