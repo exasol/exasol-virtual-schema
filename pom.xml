@@ -105,6 +105,19 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgs>
+                        <!-- We turn off `processing` because it complains about every annotation -->
+                        <!-- Disable 'path' warning because compiler fails with error
+                            "[path] bad path element "~/.m2/repository/org/apache/derby/derbyclient/10.14.2.0/derbyLocale_cs.jar": no such file or directory" -->
+                        <arg>-Xlint:all,-processing,-path</arg>
+                        <arg>-Werror</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${project.version}</finalName>

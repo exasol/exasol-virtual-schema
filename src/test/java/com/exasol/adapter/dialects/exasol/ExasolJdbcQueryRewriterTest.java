@@ -79,13 +79,13 @@ class ExasolJdbcQueryRewriterTest {
     }
 
     protected Connection mockConnection() throws SQLException {
-        final ResultSetMetaData metadataMock = (ResultSetMetaData) mock(ResultSetMetaData.class);
+        final ResultSetMetaData metadataMock = mock(ResultSetMetaData.class);
         when(metadataMock.getColumnCount()).thenReturn(1);
         when(metadataMock.getColumnType(1)).thenReturn(4);
-        final PreparedStatement statementMock = (PreparedStatement) mock(PreparedStatement.class);
+        final PreparedStatement statementMock = mock(PreparedStatement.class);
         when(statementMock.getMetaData()).thenReturn(metadataMock);
-        final Connection connectionMock = (Connection) mock(Connection.class);
-        when(connectionMock.prepareStatement((String) any())).thenReturn(statementMock);
+        final Connection connectionMock = mock(Connection.class);
+        when(connectionMock.prepareStatement(any())).thenReturn(statementMock);
         return connectionMock;
     }
 
