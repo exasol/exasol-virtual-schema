@@ -8,7 +8,7 @@ import com.exasol.adapter.jdbc.RemoteMetadataReader;
 /**
  * Exasol-specific query rewriter for regular JDBC connections to the remote Exasol data source.
  */
-public class ExasolJdbcQueryRewriter extends ImportIntoTemporaryTableQueryRewriter {
+class ExasolJdbcQueryRewriter extends ImportIntoTemporaryTableQueryRewriter {
     /**
      * Create a new instance of the {@link ExasolJdbcQueryRewriter}.
      *
@@ -16,7 +16,7 @@ public class ExasolJdbcQueryRewriter extends ImportIntoTemporaryTableQueryRewrit
      * @param remoteMetadataReader remote metadata reader
      * @param connectionFactory    factory for JDBC connection to remote data source
      */
-    public ExasolJdbcQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
+    ExasolJdbcQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
         super(dialect, remoteMetadataReader, connectionFactory, new ExasolConnectionDefinitionBuilder());
     }
