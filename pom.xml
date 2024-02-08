@@ -2,7 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>7.1.6</version>
+    <version>7.1.7</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
@@ -80,7 +80,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>3.5.2</version>
+            <version>3.5.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -95,7 +95,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>2.9.16</version>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -162,7 +162,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>7.1.6</version>
+        <version>7.1.7</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
