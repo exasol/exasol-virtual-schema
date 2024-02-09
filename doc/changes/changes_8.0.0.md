@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 7.1.7, released 2024-02-09
+# Exasol Virtual Schema 8.0.0, released 2024-02-09
 
 Code name: Fix data types for `IMPORT FROM EXA`
 
