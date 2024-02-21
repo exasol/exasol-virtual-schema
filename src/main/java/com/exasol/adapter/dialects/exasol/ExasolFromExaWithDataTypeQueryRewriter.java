@@ -14,12 +14,12 @@ import com.exasol.adapter.metadata.DataType;
  * Exasol-specific query rewriter for {@code IMPORT FROM EXA}. It is similar to {@link ExasolJdbcQueryRewriter} but uses
  * {@code IMPORT INTO (...) FROM EXA}.
  */
-class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
+class ExasolFromExaWithDataTypeQueryRewriter extends AbstractQueryRewriter {
 
-    private static final Logger LOGGER = Logger.getLogger(ExasolFromExaQueryRewriter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ExasolFromExaWithDataTypeQueryRewriter.class.getName());
     private final ConnectionFactory connectionFactory;
 
-    ExasolFromExaQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
+    ExasolFromExaWithDataTypeQueryRewriter(final SqlDialect dialect, final RemoteMetadataReader remoteMetadataReader,
             final ConnectionFactory connectionFactory) {
         super(dialect, remoteMetadataReader, new ExasolConnectionDefinitionBuilder());
         this.connectionFactory = connectionFactory;

@@ -25,16 +25,8 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * In this case the Adapter uses a different (JDBC) connection to attach to the database than the ExaLoader which runs
  * this {@code IMPORT}.
  * </p>
- * <p>
- * These tests take the following specialties of a local connection into account:
- * </p>
- * <ul>
- * <li>{@code INTERVAL} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <li>{@code HASHTYPE} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <ul>
  */
-class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
+class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
     private static final String EXA_CONNECTION_NAME = "THE_EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
 

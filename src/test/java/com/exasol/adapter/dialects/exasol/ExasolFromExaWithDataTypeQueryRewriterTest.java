@@ -27,7 +27,7 @@ import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
 
 @ExtendWith(MockitoExtension.class)
-class ExasolFromExaQueryRewriterTest {
+class ExasolFromExaWithDataTypeQueryRewriterTest {
     private static final List<DataType> EMPTY_SELECT_LIST_DATA_TYPES = Collections.emptyList();
     @Mock
     private RemoteMetadataReader metadataReaderMock;
@@ -48,7 +48,7 @@ class ExasolFromExaQueryRewriterTest {
                 CONNECTION_NAME_PROPERTY, "exasol_connection", //
                 EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION"));
         final SqlDialect dialect = new ExasolSqlDialect(connectionFactoryMock, properties);
-        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect,
+        final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
                 new ExasolMetadataReader(connectionMock, properties), connectionFactoryMock);
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), EMPTY_SELECT_LIST_DATA_TYPES,
@@ -66,7 +66,7 @@ class ExasolFromExaQueryRewriterTest {
                 EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION"));
         when(dialectMock.getSqlGenerator(any())).thenReturn(sqlGeneratorMock);
         when(sqlGeneratorMock.generateSqlFor(any())).thenReturn("string ' with '' quotes \"...");
-        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialectMock,
+        final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialectMock,
                 new ExasolMetadataReader(connectionMock, properties), connectionFactoryMock);
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), EMPTY_SELECT_LIST_DATA_TYPES,

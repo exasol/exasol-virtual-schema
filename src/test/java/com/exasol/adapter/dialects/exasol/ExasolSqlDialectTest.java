@@ -167,7 +167,7 @@ class ExasolSqlDialectTest {
         final AdapterProperties properties = new AdapterProperties(this.rawProperties);
         final SqlDialect dialect = new ExasolSqlDialect(this.connectionFactoryMock, properties);
         assertThat(getMethodReturnViaReflection(dialect, "createQueryRewriter"),
-                instanceOf(ExasolFromExaQueryRewriter.class));
+                instanceOf(ExasolFromExaWithDataTypeQueryRewriter.class));
     }
 
     @Test

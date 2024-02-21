@@ -39,6 +39,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
                 List.of(SchemaNameProperty.validator(NAME), //
                         BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
                         BooleanProperty.validator(EXASOL_IS_LOCAL_PROPERTY), //
+                        BooleanProperty.validator(GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                         ImportProperty.validator(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY)));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,
                 CURRENT_USER, CURRENT_CLUSTER));
@@ -92,15 +93,24 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     protected QueryRewriter createQueryRewriter() {
         if (this.properties.isEnabled(EXASOL_IS_LOCAL_PROPERTY)) {
             return new ExasolLocalQueryRewriter(this);
-        } else if (isImportFromExa(this.properties)) {
-            return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
+        } else if (isImportFromExa()) {
+            if (isGenerateJdbcDataTypeMappingForExa()) {
+                return new ExasolFromExaWithDataTypeQueryRewriter(this, createRemoteMetadataReader(),
+                        this.connectionFactory);
+            } else {
+
+            }
         } else {
             return new ExasolJdbcQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
         }
     }
 
-    private boolean isImportFromExa(final AdapterProperties properties) {
+    private boolean isImportFromExa() {
         return properties.isEnabled(EXASOL_IMPORT_PROPERTY);
+    }
+
+    private boolean isGenerateJdbcDataTypeMappingForExa() {
+        return properties.isEnabled(GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA);
     }
 
     @Override
