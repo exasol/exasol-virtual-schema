@@ -84,6 +84,34 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     EXA_CONNECTION  = 'EXA_CONNECTION';
 ```
 
+#### Auto-generated Datatype Mapping Using EXA Import
+
+Using `IMPORT FROM EXA` might lead to some unexpected datatype mappings. Unlike for a JDBC connection there's no explicit data mapping being generated when using `IMPORT FROM EXA`. As a solution the Exasol Virtual Schema in version 7.2.0 and later supports parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA`:
+
+```sql
+CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL
+USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
+    CONNECTION_NAME                        = 'JDBC_CONNECTION'
+    SCHEMA_NAME                            = '<schema name>'
+    IMPORT_FROM_EXA                        = 'true'
+    EXA_CONNECTION                         = 'EXA_CONNECTION'
+    GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true';
+```
+
+This will add explicit datatype mapping to the generated command when using `IMPORT FROM EXA`.
+
+Example for the generated pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'false'`:
+
+```sql
+IMPORT FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
+```
+
+Pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`:
+
+```sql
+IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
+```
+
 ### Using `IMPORT FROM JDBC`
 
 You can alternatively use a regular JDBC connection for the `IMPORT`. Note that this option is slower because it lacks the parallelization the `IMPORT FROM EXA` variant.
