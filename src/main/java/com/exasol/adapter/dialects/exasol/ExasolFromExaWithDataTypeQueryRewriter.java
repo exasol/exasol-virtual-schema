@@ -11,8 +11,10 @@ import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.metadata.DataType;
 
 /**
- * Exasol-specific query rewriter for {@code IMPORT FROM EXA}. It is similar to {@link ExasolJdbcQueryRewriter} but uses
- * {@code IMPORT INTO (...) FROM EXA}.
+ * Exasol-specific query rewriter for {@code IMPORT FROM EXA} that adds data types to the pushdown query. Data types
+ * like {@code HASHTYPE} will be reported correctly.
+ * <p>
+ * This rewriter is similar to {@link ExasolJdbcQueryRewriter} but uses {@code IMPORT INTO (...) FROM EXA}.
  */
 class ExasolFromExaWithDataTypeQueryRewriter extends AbstractQueryRewriter {
 

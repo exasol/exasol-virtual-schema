@@ -104,7 +104,8 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeVarcharAscii() {
-        assertTypeMapped(varchar(5).byteSize(5), DataType.createVarChar(5, ExaCharset.ASCII));
+        // virtual-schema-common-jdbc 12.0.0 maps this to UTF8
+        assertTypeMapped(varchar(5).byteSize(5), DataType.createVarChar(5, ExaCharset.UTF8));
     }
 
     @Test
@@ -124,7 +125,8 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeCharAscii() {
-        assertTypeMapped(charType(5).byteSize(5), DataType.createChar(5, ExaCharset.ASCII));
+        // virtual-schema-common-jdbc 12.0.0 maps this to UTF8
+        assertTypeMapped(charType(5).byteSize(5), DataType.createChar(5, ExaCharset.UTF8));
     }
 
     @Test
@@ -133,12 +135,12 @@ class ExasolColumnMetadataReaderTest {
     }
 
     @Test
-    void testMapJdbcTypeLongCharMappedToVarcharMaxVarcharLenth() {
+    void testMapJdbcTypeLongCharMappedToVarcharMaxVarcharLength() {
         assertTypeMapped(charType(2_000_001), DataType.createVarChar(2_000_000, ExaCharset.UTF8));
     }
 
     @Test
-    void testMapJdbcTypeCharWithUnknownJdbcTypenName() {
+    void testMapJdbcTypeCharWithUnknownJdbcTypeName() {
         assertTypeMapped(charType(5).typeName("unknown"), DataType.createChar(5, ExaCharset.UTF8));
     }
 

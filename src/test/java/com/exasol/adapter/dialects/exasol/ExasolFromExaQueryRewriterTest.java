@@ -1,14 +1,15 @@
 package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.CONNECTION_NAME_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,7 @@ import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
 
 @ExtendWith(MockitoExtension.class)
-class ExasolFromExaWithDataTypeQueryRewriterTest {
+class ExasolFromExaQueryRewriterTest {
     private static final List<DataType> EMPTY_SELECT_LIST_DATA_TYPES = Collections.emptyList();
     @Mock
     private RemoteMetadataReader metadataReaderMock;
@@ -38,53 +39,38 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     private SqlDialect dialectMock;
     @Mock
     private SqlGenerator sqlGeneratorMock;
+    @Mock
+    private Connection connectionMock;
 
     @Test
     void rewritePushdownQuery() throws AdapterException, SQLException {
-        final Connection connectionMock = mockConnection();
-        when(connectionFactoryMock.getConnection()).thenReturn(connectionMock);
         final AdapterProperties properties = createAdapterProperties();
         final SqlDialect dialect = new ExasolSqlDialect(connectionFactoryMock, properties);
-        final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
-                new ExasolMetadataReader(connectionMock, properties), connectionFactoryMock);
+        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialect,
+                new ExasolMetadataReader(connectionMock, properties));
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), EMPTY_SELECT_LIST_DATA_TYPES,
                         exaMetadataMock, properties),
-                equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA AT \"THE_EXA_CONNECTION\""
-                        + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
+                equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\" STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
     }
 
     private AdapterProperties createAdapterProperties() {
         return new AdapterProperties(Map.of(EXASOL_IMPORT_PROPERTY, "true", //
                 CONNECTION_NAME_PROPERTY, "exasol_connection", //
                 EXASOL_CONNECTION_PROPERTY, "THE_EXA_CONNECTION", //
-                GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA, "true"));
+                "GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA", "false"));
     }
 
     @Test
     void rewritePushdownQueryEscapesSingleQuotes() throws AdapterException, SQLException {
-        final Connection connectionMock = mockConnection();
-        when(connectionFactoryMock.getConnection()).thenReturn(connectionMock);
         final AdapterProperties properties = createAdapterProperties();
         when(dialectMock.getSqlGenerator(any())).thenReturn(sqlGeneratorMock);
         when(sqlGeneratorMock.generateSqlFor(any())).thenReturn("string ' with '' quotes \"...");
-        final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialectMock,
-                new ExasolMetadataReader(connectionMock, properties), connectionFactoryMock);
+        final QueryRewriter queryRewriter = new ExasolFromExaQueryRewriter(dialectMock,
+                new ExasolMetadataReader(connectionMock, properties));
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), EMPTY_SELECT_LIST_DATA_TYPES,
                         exaMetadataMock, properties),
-                equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA AT \"THE_EXA_CONNECTION\""
-                        + " STATEMENT 'string '' with '''' quotes \"...'"));
-    }
-
-    protected Connection mockConnection() throws SQLException {
-        final ResultSetMetaData metadataMock = mock(ResultSetMetaData.class);
-        when(metadataMock.getColumnCount()).thenReturn(1);
-        when(metadataMock.getColumnType(1)).thenReturn(4);
-        final PreparedStatement statementMock = mock(PreparedStatement.class);
-        when(statementMock.getMetaData()).thenReturn(metadataMock);
-        final Connection connectionMock = mock(Connection.class);
-        when(connectionMock.prepareStatement(any())).thenReturn(statementMock);
-        return connectionMock;
+                equalTo("IMPORT FROM EXA AT \"THE_EXA_CONNECTION\" STATEMENT 'string '' with '''' quotes \"...'"));
     }
 }

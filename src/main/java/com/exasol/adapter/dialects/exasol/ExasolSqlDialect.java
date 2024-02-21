@@ -98,7 +98,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
                 return new ExasolFromExaWithDataTypeQueryRewriter(this, createRemoteMetadataReader(),
                         this.connectionFactory);
             } else {
-
+                return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader());
             }
         } else {
             return new ExasolJdbcQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
