@@ -77,6 +77,18 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
                         + " STATEMENT 'string '' with '''' quotes \"...'"));
     }
 
+    @Test
+    void generateImportStatement() throws SQLException {
+        final Connection connectionMock = mockConnection();
+        when(connectionFactoryMock.getConnection()).thenReturn(connectionMock);
+        final AdapterProperties properties = createAdapterProperties();
+        final SqlDialect dialect = new ExasolSqlDialect(connectionFactoryMock, properties);
+        final ExasolFromExaWithDataTypeQueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
+                new ExasolMetadataReader(connectionMock, properties), connectionFactoryMock);
+        assertThat(queryRewriter.generateImportStatement("connection", "pushdownQuery"),
+                equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA connection STATEMENT 'pushdownQuery'"));
+    }
+
     protected Connection mockConnection() throws SQLException {
         final ResultSetMetaData metadataMock = mock(ResultSetMetaData.class);
         when(metadataMock.getColumnCount()).thenReturn(1);
