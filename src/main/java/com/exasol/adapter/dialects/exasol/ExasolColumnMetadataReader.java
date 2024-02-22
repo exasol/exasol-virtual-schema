@@ -1,6 +1,8 @@
 package com.exasol.adapter.dialects.exasol;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -9,6 +11,7 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.IdentifierConverter;
 import com.exasol.adapter.jdbc.BaseColumnMetadataReader;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
+import com.exasol.adapter.metadata.ColumnMetadata;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.errorreporting.ExaError;
 
@@ -39,6 +42,17 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             final IdentifierConverter identifierConverter) {
         super(connection, properties, identifierConverter);
     }
+
+    private static String readSchemaName(final ResultSet columns) throws SQLException {
+        // no identifier conversion
+        return columns.getString("TABLE_SCHEM");
+    }
+
+    private static String readTableName(final ResultSet columns) throws SQLException {
+        // no identifier conversion
+        return columns.getString("TABLE_NAME");
+    }
+
 
     @Override
     public DataType mapJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
@@ -124,9 +138,9 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
-            final String schema = remoteColumn.getString("TABLE_SCHEM");
-            final String table = remoteColumn.getString("TABLE_NAME");
-            final String column = remoteColumn.getString("COLUMN_NAME");
+            final String schema = readSchemaName(remoteColumn);
+            final String table = readTableName(remoteColumn);
+            final String column = readColumnName(remoteColumn);
             preparedStatement.setString(1, schema);
             preparedStatement.setString(2, table);
             preparedStatement.setString(3, column);
@@ -162,5 +176,27 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-3") //
                     .message("Failed to extract INTERVAL YEAR TO MONTH precision").toString());
         }
+    }
+
+    /**
+     * Read columns for the table at current ResultSet cursor position (forward scan only)
+     * @param remoteColumns column result set, sorted by schema, table, column position
+     * @return List of mapped columns, may be empty
+     * @throws SQLException if reading metadata fails
+     */
+    public List<ColumnMetadata> mapCurrentTableColumns(ResultSet remoteColumns) throws SQLException {
+        final String schemaName = readSchemaName(remoteColumns);
+        final String tableName = readTableName(remoteColumns);
+
+        final List<ColumnMetadata> columns = new ArrayList<>();
+        while (tableName.equals(readTableName(remoteColumns)) && schemaName.equals(readSchemaName(remoteColumns))) {
+            mapOrSkipColumn(remoteColumns, columns);
+            if (!remoteColumns.next()) {
+                break;
+            }
+        }
+
+        // end of column list for new table
+        return columns;
     }
 }

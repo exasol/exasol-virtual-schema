@@ -8,6 +8,8 @@ import com.exasol.adapter.properties.PropertyValidator;
  */
 public class SchemaNameProperty {
     /**
+     * Return validator for the property
+     *
      * @param dialect name of the current dialect
      * @return {@link PropertyValidator} for mandatory property {@link AdapterProperties#SCHEMA_NAME_PROPERTY}.
      */
