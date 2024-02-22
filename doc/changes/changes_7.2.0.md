@@ -1,13 +1,14 @@
 # Exasol Virtual Schema 7.2.0, released 2024-02-22
 
-Code name: Fix data types for `IMPORT FROM EXA`
+Code name: Add parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA`
 
 ## Summary
 
-This release fixes the data types reported for virtual schemas using `IMPORT FROM EXA`. The Exasol specific types `GEOMETRY`, `INTERVAL YEAR TO MONTH`, `INTERVAL DAY TO SECOND` and `HASHTYPE` were mapped to `VARCHAR` before. The virtual schema now returns these types correctly.
+Using `IMPORT FROM EXA` might lead to some unexpected datatype mappings. Unlike for a JDBC connection there's no explicit data mapping being generated when using `IMPORT FROM EXA`. The Exasol specific types `GEOMETRY`, `INTERVAL YEAR TO MONTH`, `INTERVAL DAY TO SECOND` and `HASHTYPE` are mapped to `VARCHAR`. This release adds parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA`. When setting this to `true`, the data types are mapped as expected.
 
-This also fixes a bug when joining a table in a virtual schema with a normal table using a `HASHTYPE` column. This failed before in Exasol 7.1 with error message `Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!`. In Exasol 8 the error message was `Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed).Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.`.
+Setting `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA` to `true` also fixes a bug when joining a table in a virtual schema with a normal table using a `HASHTYPE` column. This failed before in Exasol 7.1 with error message `Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!`.
 
+See the [user guide](../dialects/exasol.md#auto-generated-datatype-mapping-using-exa-import) for details.
 
 This release also fixes vulnerabilities CVE-2024-25710 and CVE-2024-26308 in transitive test dependency `org.apache.commons:commons-compress`.
 
