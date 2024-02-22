@@ -5,7 +5,8 @@ import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
 import com.exasol.adapter.jdbc.RemoteMetadataReader;
 
 /**
- * Exasol-specific query rewriter for {@code IMPORT FROM EXA}.
+ * Exasol-specific query rewriter for {@code IMPORT FROM EXA} that does not add data types to the pushdown query. Data
+ * types like {@code HASHTYPE} will be reported as {@code VARCHAR}.
  */
 public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
 
