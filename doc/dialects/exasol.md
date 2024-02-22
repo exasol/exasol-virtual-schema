@@ -84,9 +84,11 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     EXA_CONNECTION  = 'EXA_CONNECTION';
 ```
 
-#### Auto-generated Datatype Mapping Using EXA Import
+#### Map Datatypes With EXA Import
 
-Using `IMPORT FROM EXA` might lead to some unexpected datatype mappings. Unlike for a JDBC connection there's no explicit data mapping being generated when using `IMPORT FROM EXA`. As a solution the Exasol Virtual Schema in version 7.2.0 and later supports parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA`:
+Unlike for a JDBC connection `IMPORT FROM EXA` does not use an explicit datatype mapping. In consequence columns of type `HASHTYPE` are mapped to `VARCHAR` and joining such a column therefore failed in Exasol 7.1 with error message `Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!`.
+
+Exasol Virtual Schema in version 7.2.0 and later mitigates this by offering parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA` with values `true` and `false` (default):
 
 ```sql
 CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL
@@ -100,7 +102,7 @@ USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
 
 This will add explicit datatype mapping to the generated command when using `IMPORT FROM EXA`.
 
-Example for the generated pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'false'`:
+Example for the generated pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'false'` (default):
 
 ```sql
 IMPORT FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
