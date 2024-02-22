@@ -18,6 +18,7 @@ import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
@@ -42,6 +43,7 @@ import com.exasol.matcher.TypeMatchMode;
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
+    private static final Logger LOG = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
     private static final String COLUMN1_NAME = "C1";
 
     @Container
@@ -83,6 +85,11 @@ abstract class AbstractExasolSqlDialectIT {
         adapterScript = null;
         adapterSchema = null;
         connection.close();
+    }
+
+    @BeforeEach
+    void logTestName(final TestInfo testInfo) {
+        LOG.fine(() -> "Running test " + testInfo.getDisplayName() + "...");
     }
 
     @BeforeEach

@@ -35,7 +35,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
         super(connectionFactory, properties,
                 Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
-                        EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
+                        EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY, GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                 List.of(SchemaNameProperty.validator(NAME), //
                         BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
                         BooleanProperty.validator(EXASOL_IS_LOCAL_PROPERTY), //
