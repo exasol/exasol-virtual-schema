@@ -35,7 +35,7 @@ This release also fixes vulnerabilities CVE-2024-25710 and CVE-2024-26308 in tra
 * Updated `org.junit.jupiter:junit-jupiter:5.10.1` to `5.10.2`
 * Updated `org.mockito:mockito-junit-jupiter:5.7.0` to `5.10.0`
 * Updated `org.slf4j:slf4j-jdk14:2.0.9` to `2.0.12`
-* Updated `org.testcontainers:junit-jupiter:1.19.2` to `1.19.5`
+* Updated `org.testcontainers:junit-jupiter:1.19.2` to `1.19.6`
 
 ### Plugin Dependency Updates
 
