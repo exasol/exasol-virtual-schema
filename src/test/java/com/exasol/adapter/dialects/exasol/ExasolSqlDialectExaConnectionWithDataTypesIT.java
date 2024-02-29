@@ -1,6 +1,5 @@
 package com.exasol.adapter.dialects.exasol;
 
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -25,17 +24,9 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * In this case the Adapter uses a different (JDBC) connection to attach to the database than the ExaLoader which runs
  * this {@code IMPORT}.
  * </p>
- * <p>
- * These tests take the following specialties of a local connection into account:
- * </p>
- * <ul>
- * <li>{@code INTERVAL} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <li>{@code HASHTYPE} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
- * <ul>
  */
-class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
-    private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
+class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
+    private static final String EXA_CONNECTION_NAME = "THE_EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
 
     @Override
@@ -61,12 +52,14 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
 
     @Override
     protected Set<String> expectVarcharFor() {
-        return Set.of("GEOMETRY", "INTERVAL", "INTERVAL YEAR TO MONTH", "INTERVAL DAY TO SECOND", "HASHTYPE");
+        return Set.of();
     }
 
     @Override
     protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
-        return Map.of("IMPORT_FROM_EXA", "true", EXASOL_CONNECTION_PROPERTY, this.exaConnection.getName());
+        return Map.of("IMPORT_FROM_EXA", "true", //
+                "EXA_CONNECTION", this.exaConnection.getName(), //
+                "GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA", "true");
     }
 
     @Test
@@ -101,36 +94,5 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
 
     private ResultSet explainVirtual(final String sql) throws SQLException {
         return query("EXPLAIN VIRTUAL " + sql);
-    }
-
-    @Override
-    @Test
-    void testCharMappingAscii() {
-        final Table table = createSingleColumnTable("CHAR(20) ASCII").insert("sun").insert("rain");
-        assertVirtualTableContents(table, table("VARCHAR").row(pad("sun", 20)).row(pad("rain", 20)).matches());
-    }
-
-    @Override
-    @Test
-    void testCharMappingUtf8() {
-        verifyCharMappingUtf8("VARCHAR");
-    }
-
-    @Override
-    @Test
-    void testCastVarcharToChar() {
-        castFrom("VARCHAR(20)").to("CHAR(40)").input("Hello.").accept("VARCHAR").verify(pad("Hello.", 40));
-    }
-
-    @Override
-    @Test
-    void joinHashtypeTables() {
-        final SQLException exception = assertThrows(SQLException.class, super::joinHashtypeTables);
-        assertThat(exception.getMessage(), anyOf(
-                // Error message for Exasol 7.1:
-                containsString("Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!"),
-                // Error message for Exasol 8:
-                containsString(
-                        "Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed).Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.")));
     }
 }

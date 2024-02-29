@@ -11,7 +11,7 @@ import com.exasol.dbbuilder.dialects.Table;
  */
 abstract class AbstractRemoteExasolVirtualSchemaConnectionIT extends AbstractExasolSqlDialectIT {
     @Test
-    void testInvervalYearToMonthMapping() {
+    void testIntervalYearToMonthMapping() {
         final Table table = createSingleColumnTable("INTERVAL YEAR (9) TO MONTH")//
                 .insert("-999999999-11") //
                 .insert("-1-1") //
