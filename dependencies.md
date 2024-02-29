@@ -16,7 +16,7 @@
 | [Virtual Schema Common JDBC][0]                 | [MIT License][1]                 |
 | [Hamcrest][6]                                   | [BSD License 3][7]               |
 | [JUnit Jupiter (Aggregator)][8]                 | [Eclipse Public License v2.0][9] |
-| [mockito-junit-jupiter][10]                     | [MIT][11]                        |
+| [mockito-junit-jupiter][10]                     | [The MIT License][11]            |
 | [Test containers for Exasol on Docker][12]      | [MIT License][13]                |
 | [Testcontainers :: JUnit Jupiter Extension][14] | [MIT][15]                        |
 | [Matcher for SQL Result Sets][16]               | [MIT License][17]                |
@@ -42,17 +42,17 @@
 | [Project Keeper Maven plugin][41]                       | [The MIT License][42]             |
 | [Apache Maven Assembly Plugin][43]                      | [Apache-2.0][31]                  |
 | [Apache Maven JAR Plugin][44]                           | [Apache License, Version 2.0][31] |
-| [Artifact reference checker and unifier][45]            | [MIT][11]                         |
-| [Apache Maven Deploy Plugin][46]                        | [Apache-2.0][31]                  |
-| [Apache Maven GPG Plugin][47]                           | [Apache-2.0][31]                  |
-| [Apache Maven Source Plugin][48]                        | [Apache License, Version 2.0][31] |
-| [Apache Maven Javadoc Plugin][49]                       | [Apache-2.0][31]                  |
-| [Nexus Staging Maven Plugin][50]                        | [Eclipse Public License][51]      |
-| [Apache Maven Dependency Plugin][52]                    | [Apache-2.0][31]                  |
-| [Maven Failsafe Plugin][53]                             | [Apache-2.0][31]                  |
-| [JaCoCo :: Maven Plugin][54]                            | [Eclipse Public License 2.0][27]  |
-| [error-code-crawler-maven-plugin][55]                   | [MIT License][56]                 |
-| [Reproducible Build Maven Plugin][57]                   | [Apache 2.0][36]                  |
+| [Artifact reference checker and unifier][45]            | [MIT][46]                         |
+| [Apache Maven Deploy Plugin][47]                        | [Apache-2.0][31]                  |
+| [Apache Maven GPG Plugin][48]                           | [Apache-2.0][31]                  |
+| [Apache Maven Source Plugin][49]                        | [Apache License, Version 2.0][31] |
+| [Apache Maven Javadoc Plugin][50]                       | [Apache-2.0][31]                  |
+| [Nexus Staging Maven Plugin][51]                        | [Eclipse Public License][52]      |
+| [Apache Maven Dependency Plugin][53]                    | [Apache-2.0][31]                  |
+| [Maven Failsafe Plugin][54]                             | [Apache-2.0][31]                  |
+| [JaCoCo :: Maven Plugin][55]                            | [Eclipse Public License 2.0][27]  |
+| [error-code-crawler-maven-plugin][56]                   | [MIT License][57]                 |
+| [Reproducible Build Maven Plugin][58]                   | [Apache 2.0][36]                  |
 
 [0]: https://github.com/exasol/virtual-schema-common-jdbc/
 [1]: https://github.com/exasol/virtual-schema-common-jdbc/blob/main/LICENSE
@@ -65,7 +65,7 @@
 [8]: https://junit.org/junit5/
 [9]: https://www.eclipse.org/legal/epl-v20.html
 [10]: https://github.com/mockito/mockito
-[11]: https://opensource.org/licenses/MIT
+[11]: https://github.com/mockito/mockito/blob/main/LICENSE
 [12]: https://github.com/exasol/exasol-testcontainers/
 [13]: https://github.com/exasol/exasol-testcontainers/blob/main/LICENSE
 [14]: https://java.testcontainers.org
@@ -100,15 +100,16 @@
 [43]: https://maven.apache.org/plugins/maven-assembly-plugin/
 [44]: https://maven.apache.org/plugins/maven-jar-plugin/
 [45]: https://github.com/exasol/artifact-reference-checker-maven-plugin
-[46]: https://maven.apache.org/plugins/maven-deploy-plugin/
-[47]: https://maven.apache.org/plugins/maven-gpg-plugin/
-[48]: https://maven.apache.org/plugins/maven-source-plugin/
-[49]: https://maven.apache.org/plugins/maven-javadoc-plugin/
-[50]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
-[51]: http://www.eclipse.org/legal/epl-v10.html
-[52]: https://maven.apache.org/plugins/maven-dependency-plugin/
-[53]: https://maven.apache.org/surefire/maven-failsafe-plugin/
-[54]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
-[55]: https://github.com/exasol/error-code-crawler-maven-plugin/
-[56]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
-[57]: http://zlika.github.io/reproducible-build-maven-plugin
+[46]: https://opensource.org/licenses/MIT
+[47]: https://maven.apache.org/plugins/maven-deploy-plugin/
+[48]: https://maven.apache.org/plugins/maven-gpg-plugin/
+[49]: https://maven.apache.org/plugins/maven-source-plugin/
+[50]: https://maven.apache.org/plugins/maven-javadoc-plugin/
+[51]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
+[52]: http://www.eclipse.org/legal/epl-v10.html
+[53]: https://maven.apache.org/plugins/maven-dependency-plugin/
+[54]: https://maven.apache.org/surefire/maven-failsafe-plugin/
+[55]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
+[56]: https://github.com/exasol/error-code-crawler-maven-plugin/
+[57]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
+[58]: http://zlika.github.io/reproducible-build-maven-plugin
