@@ -39,7 +39,7 @@ class ExasolSqlGenerationVisitorTest {
                 this.exasolSqlDialect, null);
         final SqlLiteralTimestampUtc sqlLiteralTimestampUtc = new SqlLiteralTimestampUtc(value);
         assertThat(exasolSqlGenerationVisitor.visit(sqlLiteralTimestampUtc),
-                equalTo("TIMESTAMP '2015-12-01 12:01:01.1234'"));
+                equalTo("LOCALTIMESTAMP '2015-12-01 12:01:01.1234'"));
     }
 
     @Test
