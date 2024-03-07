@@ -204,7 +204,7 @@ abstract class AbstractExasolSqlDialectIT {
         return query("SELECT * FROM " + tableName);
     }
 
-    private String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
+    protected String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
@@ -375,7 +375,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
+    protected void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
