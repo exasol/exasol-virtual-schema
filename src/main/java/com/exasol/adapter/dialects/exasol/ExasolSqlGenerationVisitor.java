@@ -33,7 +33,7 @@ public class ExasolSqlGenerationVisitor extends SqlGenerationVisitor {
         if (exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled()) {
             LOGGER.info("IGNORE_ERRORS = '" + EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH + "' property is enabled.");
 
-            return "LOCALTIMESTAMP " + getDialect().getStringLiteral(literal.getValue());
+            return "cast(TIMESTAMP " + getDialect().getStringLiteral(literal.getValue()) + " as timestamp with local time zone)";
         } else {
             throw new UnsupportedOperationException(ExaError.messageBuilder("E-VSEXA-5") //
                     .message("Attention! Using literals and constant expressions with datatype "
