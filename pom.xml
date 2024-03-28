@@ -169,12 +169,12 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.6.3</version>
                 <configuration>
-                    <failOnError>false</failOnError>
+                    <failOnError>true</failOnError>
                     <additionalOptions>
                         <option>--add-modules</option>
                         <option>java.sql</option>
                         <option>--add-reads</option>
-                        <option>jakarta.json=java.sql</option>
+                        <option>org.glassfish.jakarta.json=java.sql</option>                   
                     </additionalOptions>
                 </configuration>
             </plugin>
