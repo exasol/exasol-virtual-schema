@@ -113,6 +113,9 @@ Pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`:
 ```sql
 IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
 ```
+##### Data type mismatch
+
+In case you run into a `Data type mismatch` issue when using EXA import turning this property on will usually also solve the issue by providing type hints.
 
 ### Using `IMPORT FROM JDBC`
 
