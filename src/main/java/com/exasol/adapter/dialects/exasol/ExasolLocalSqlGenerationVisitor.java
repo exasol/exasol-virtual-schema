@@ -5,10 +5,12 @@ import com.exasol.adapter.dialects.SqlDialect;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.SqlColumn;
-
+/**
+ * This class generates SQL queries for the {@link ExasolSqlDialect}. It is a 'specialisation' for LOCAL mode, based on {@link ExasolSqlGenerationVisitor}.
+ */
 public class ExasolLocalSqlGenerationVisitor extends ExasolSqlGenerationVisitor{
     /**
-     * Creates a new instance of the {@link ExasolSqlGenerationVisitor}.
+     * Creates a new instance of the {@link ExasolLocalSqlGenerationVisitor}.
      *
      * @param dialect {@link ExasolSqlDialect} dialect
      * @param context SQL generation context
