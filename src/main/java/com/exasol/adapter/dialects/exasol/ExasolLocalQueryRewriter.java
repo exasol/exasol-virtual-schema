@@ -37,7 +37,7 @@ class ExasolLocalQueryRewriter implements QueryRewriter {
     public String rewrite(final SqlStatement statement, final List<DataType> selectListDataTypes,
             final ExaMetadata exaMetadata, final AdapterProperties properties) throws AdapterException {
         final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
-                properties.getSchemaName(), false);
+                properties.getSchemaName(), true);
         final SqlGenerator sqlGeneratorVisitor = this.dialect.getSqlGenerator(context);
         final String selectStatement = sqlGeneratorVisitor.generateSqlFor(statement);
         LOGGER.finer(() -> "SELECT push-down statement:\n" + selectStatement);
