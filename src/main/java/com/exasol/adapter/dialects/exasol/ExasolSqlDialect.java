@@ -155,7 +155,12 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
 
     @Override
     public SqlGenerator getSqlGenerator(final SqlGenerationContext context) {
-        return new ExasolSqlGenerationVisitor(this, context);
+        if (context.isLocal()){
+            return new ExasolLocalSqlGenerationVisitor(this, context);
+        } else {
+            return new ExasolSqlGenerationVisitor(this, context);
+        }
+
     }
 
     /**

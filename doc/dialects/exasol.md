@@ -17,7 +17,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-11.0.2-exasol-7.2.0.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-12.0.0-exasol-8.0.0.jar;
 /
 ```
 
@@ -113,6 +113,9 @@ Pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`:
 ```sql
 IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
 ```
+##### Data type mismatch
+
+In case you run into a `Data type mismatch` issue when using EXA import turning this property on will usually also solve the issue by providing type hints.
 
 ### Using `IMPORT FROM JDBC`
 
@@ -204,7 +207,7 @@ The Exasol SQL dialect supports all capabilities that are supported by the virtu
 
 ### Data type `TIMESTAMP WITH LOCAL TIME ZONE`
 
-Using literals and constant expressions with `TIMESTAMP WITH LOCAL TIME ZONE` data type in Virtual Schemas can produce an incorrect results.
+Using literals and constant expressions with `TIMESTAMP WITH LOCAL TIME ZONE` data type in Virtual Schemas can produce incorrect results.
 * We recommend using `TIMESTAMP` instead.
 * If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
 * We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
