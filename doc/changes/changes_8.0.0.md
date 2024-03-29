@@ -1,12 +1,22 @@
-# Exasol Virtual Schema 8.0.0, released 2024-??-??
+# Exasol Virtual Schema 8.0.0, released 2024-04-02
 
-Code name:
+Code name: Charset is always `utf-8`, deprecated IMPORT_DATA_TYPES `FROM_RESULT_SET` value .
 
 ## Summary
 
-## Features
+The behaviour when it comes to character sets is now simplified,
+The target charset is now always UTF-8.
 
-* ISSUE_NUMBER: description
+The `IMPORT_DATA_TYPES` property (and value `FROM_RESULT_SET`) are now deprecated (change in vs-common-jdbc):
+An exception will be thrown when users use`FROM_RESULT_SET`. The exception message warns the user that the value is no longer supported and the property itself is also deprecated.
+
+Using timestamps with local timezone in the Exasol virtual schema now returns a proper timestamp with local timezone.
+
+Querying char and varchar datatypes in LOCAL mode are now returned with UTF8 characterset, as expected.
+
+## Refactoring
+
+* #105: Updated tests to include Exasol V8/ Update to vsjdbc 12.0.0
 
 ## Dependency Updates
 
