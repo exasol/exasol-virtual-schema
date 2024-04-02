@@ -25,7 +25,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.AssertionFailedError;
-import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -61,8 +60,7 @@ abstract class AbstractExasolSqlDialectIT {
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
     @BeforeAll
-    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
-            FileNotFoundException {
+    static void beforeAll() {
         try {
             connection = EXASOL.createConnection("");
             final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(),
