@@ -32,7 +32,7 @@ public class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    public void testVisitSqlLiteralVarchar() throws AdapterException {
+    void testVisitSqlLiteralVarchar() throws AdapterException {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createVarChar(20, ExaCharset.ASCII)).build(),
@@ -44,7 +44,7 @@ public class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    public void testVisitSqlLiteralChar() throws AdapterException {
+    void testVisitSqlLiteralChar() throws AdapterException {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createChar(20, ExaCharset.ASCII)).build(),
@@ -56,7 +56,7 @@ public class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    public void testVisitSqlLiteralDouble() throws AdapterException {
+    void testVisitSqlLiteralDouble() throws AdapterException {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createDouble()).build(), "table_name"); //
