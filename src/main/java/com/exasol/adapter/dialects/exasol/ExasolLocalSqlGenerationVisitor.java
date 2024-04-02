@@ -25,8 +25,7 @@ public class ExasolLocalSqlGenerationVisitor extends ExasolSqlGenerationVisitor 
     @Override
     public String visit(final SqlColumn column) throws AdapterException {
         final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(null, null);
-        String tablePrefix = "";
-        tablePrefix = getTablePrefix(column, exasolSqlDialect, tablePrefix);
+        final String tablePrefix = getTablePrefix(column, exasolSqlDialect);
         final ExaDataType exaDataType = column.getMetadata().getType().getExaDataType();
         if (exaDataType == DataType.ExaDataType.CHAR || //
                 exaDataType == DataType.ExaDataType.VARCHAR) {
@@ -46,7 +45,8 @@ public class ExasolLocalSqlGenerationVisitor extends ExasolSqlGenerationVisitor 
                 + ") UTF8)";
     }
 
-    private String getTablePrefix(final SqlColumn column, final ExasolSqlDialect exasolSqlDialect, String tablePrefix) {
+    private String getTablePrefix(final SqlColumn column, final ExasolSqlDialect exasolSqlDialect) {
+        String tablePrefix = "";
         if (column.hasTableAlias()) {
             tablePrefix = exasolSqlDialect.applyQuote(column.getTableAlias())
                     + exasolSqlDialect.getTableCatalogAndSchemaSeparator();
