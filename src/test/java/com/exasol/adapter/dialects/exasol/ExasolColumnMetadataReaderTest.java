@@ -104,7 +104,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeVarcharAscii() {
-        assertTypeMapped(varchar(5).byteSize(5), DataType.createVarChar(5, ExaCharset.ASCII));
+        assertTypeMapped(varchar(5).byteSize(5), DataType.createVarChar(5, ExaCharset.UTF8));
     }
 
     @Test
@@ -124,7 +124,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeCharAscii() {
-        assertTypeMapped(charType(5).byteSize(5), DataType.createChar(5, ExaCharset.ASCII));
+        assertTypeMapped(charType(5).byteSize(5), DataType.createChar(5, ExaCharset.UTF8));
     }
 
     @Test

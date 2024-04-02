@@ -5,12 +5,11 @@ import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.PA
 import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION;
 import static com.exasol.dbbuilder.dialects.exasol.ExasolObjectPrivilege.SELECT;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
@@ -26,7 +25,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.AssertionFailedError;
-import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -39,6 +37,8 @@ import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
+import com.exasol.udfdebugging.UdfTestSetup;
+import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
@@ -60,12 +60,27 @@ abstract class AbstractExasolSqlDialectIT {
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
     @BeforeAll
-    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
-            FileNotFoundException {
-        connection = EXASOL.createConnection("");
-        objectFactory = new ExasolObjectFactory(connection);
-        adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
-        adapterScript = installVirtualSchemaAdapter(adapterSchema);
+    static void beforeAll() {
+        try {
+            connection = EXASOL.createConnection("");
+            final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(),
+                    EXASOL.getDefaultBucket(), connection);
+            objectFactory = new ExasolObjectFactory(connection,
+                    ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
+            adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
+            adapterScript = installVirtualSchemaAdapter(adapterSchema);
+
+        } catch (final SQLException | BucketAccessException | TimeoutException | FileNotFoundException exception) {
+            throw new IllegalStateException("Failed to created test setup.", exception);
+        }
+    }
+
+    private static String getTestHostIpFromInsideExasol() {
+        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+        if (networks.size() == 0) {
+            return null;
+        }
+        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
@@ -187,7 +202,7 @@ abstract class AbstractExasolSqlDialectIT {
         return query("SELECT * FROM " + tableName);
     }
 
-    private String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
+    protected String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
@@ -358,7 +373,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
+    protected void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
@@ -848,14 +863,44 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
+    static void assumeExasol8OrHigher() {
+        assumeTrue(isExasol8OrHigher(), "is Exasol version 8 or higher");
+    }
+
+    static void assumeExasol7OrLower() {
+        assumeTrue(isExasol7OrLower(), "is Exasol version 7 or lower");
+    }
+
+    static boolean isExasol8OrHigher() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() >= 8);
+    }
+
+    static boolean isExasol7OrLower() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() <= 7);
+    }
+
     @Test
     void testWildcards() throws SQLException {
+        assumeExasol7OrLower();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
         this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
+    }
+
+    @Test
+    void testWildcardsExasolV8() throws SQLException {
+        assumeExasol8OrHigher();
+        final String nameWithWildcard = "A_A";
+        this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
+        this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+                table().row("A", "VARCHAR(20) UTF8", null, null, null, null).matches());
     }
 
     @Test

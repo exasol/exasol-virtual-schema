@@ -17,5 +17,6 @@
   "sonarlint.connectedMode.project": {
     "connectionId": "exasol",
     "projectKey": "com.exasol:exasol-virtual-schema"
-  }
+  },
+  "java.configuration.updateBuildConfiguration": "automatic"
 }
