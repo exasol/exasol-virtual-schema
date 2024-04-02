@@ -1,6 +1,6 @@
 # Exasol Virtual Schema 8.0.0, released 2024-04-02
 
-Code name: Charset is always `utf-8`, deprecated IMPORT_DATA_TYPES `FROM_RESULT_SET` value .
+Code name: Charset is always `utf-8`, deprecated IMPORT_DATA_TYPES `FROM_RESULT_SET` value
 
 ## Summary
 

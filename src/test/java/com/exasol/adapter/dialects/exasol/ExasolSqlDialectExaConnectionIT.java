@@ -78,7 +78,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     //
     // The tests using the newer GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA switch that fixes most of the issues with strict
     // datatype checking on the pushed down queries
-    // can be found in ExasolSqlDialectExaConnectionWithDataTypesIT .
+    // can be found in ExasolSqlDialectExaConnectionWithDataTypesIT.
 
     @Test
     void testPasswordNotVisibleInImportFromExa() throws NoDriverFoundException, SQLException {
