@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>4.1.0</version>
+                <version>4.2.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -173,7 +173,7 @@
                         <option>--add-modules</option>
                         <option>java.sql</option>
                         <option>--add-reads</option>
-                        <option>org.glassfish.jakarta.json=java.sql</option>                   
+                        <option>org.glassfish.jakarta.json=java.sql</option>
                     </additionalOptions>
                 </configuration>
             </plugin>

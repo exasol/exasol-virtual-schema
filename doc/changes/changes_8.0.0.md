@@ -31,8 +31,8 @@ Querying char and varchar datatypes in LOCAL mode are now returned with UTF8 cha
 
 ### Plugin Dependency Updates
 
-* Updated `com.exasol:error-code-crawler-maven-plugin:1.3.1` to `2.0.0`
-* Updated `com.exasol:project-keeper-maven-plugin:3.0.1` to `4.1.0`
+* Updated `com.exasol:error-code-crawler-maven-plugin:1.3.1` to `2.0.1`
+* Updated `com.exasol:project-keeper-maven-plugin:3.0.1` to `4.2.0`
 * Updated `org.apache.maven.plugins:maven-compiler-plugin:3.11.0` to `3.12.1`
 * Updated `org.apache.maven.plugins:maven-failsafe-plugin:3.2.3` to `3.2.5`
 * Updated `org.apache.maven.plugins:maven-javadoc-plugin:3.4.1` to `3.6.3`

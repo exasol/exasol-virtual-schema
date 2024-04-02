@@ -6,8 +6,6 @@ sources:
       - integration_tests
       - udf_coverage
       - maven_central
-excludes:
-  - "W-PK-CORE-153: Project-keeper version 4.1.0 is outdated. Please update project-keeper to latest version 4.2.0."
 build:
   runnerOs: ubuntu-20.04
   freeDiskSpace: false
