@@ -6,7 +6,7 @@
 | Dependency                      | License                |
 | ------------------------------- | ---------------------- |
 | [Virtual Schema Common JDBC][0] | [MIT License][1]       |
-| [EXASolution JDBC Driver][2]    | [EXAClient License][3] |
+| [Exasol JDBC Driver][2]         | [EXAClient License][3] |
 | [error-reporting-java][4]       | [MIT License][5]       |
 
 ## Test Dependencies
@@ -50,14 +50,14 @@
 | [Nexus Staging Maven Plugin][50]                        | [Eclipse Public License][51]      |
 | [Apache Maven Dependency Plugin][52]                    | [Apache-2.0][31]                  |
 | [Maven Failsafe Plugin][53]                             | [Apache-2.0][31]                  |
-| [JaCoCo :: Maven Plugin][54]                            | [Eclipse Public License 2.0][27]  |
+| [JaCoCo :: Maven Plugin][54]                            | [EPL-2.0][27]                     |
 | [error-code-crawler-maven-plugin][55]                   | [MIT License][56]                 |
 | [Reproducible Build Maven Plugin][57]                   | [Apache 2.0][38]                  |
 
 [0]: https://github.com/exasol/virtual-schema-common-jdbc/
 [1]: https://github.com/exasol/virtual-schema-common-jdbc/blob/main/LICENSE
-[2]: http://www.exasol.com
-[3]: https://repo1.maven.org/maven2/com/exasol/exasol-jdbc/7.1.20/exasol-jdbc-7.1.20-license.txt
+[2]: http://www.exasol.com/
+[3]: https://repo1.maven.org/maven2/com/exasol/exasol-jdbc/24.1.0/exasol-jdbc-24.1.0-license.txt
 [4]: https://github.com/exasol/error-reporting-java/
 [5]: https://github.com/exasol/error-reporting-java/blob/main/LICENSE
 [6]: http://hamcrest.org/JavaHamcrest/
