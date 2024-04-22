@@ -7,6 +7,7 @@
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
+        <java.version>17</java.version>
         <vscjdbc.version>12.0.0</vscjdbc.version>
     </properties>
     <dependencies>

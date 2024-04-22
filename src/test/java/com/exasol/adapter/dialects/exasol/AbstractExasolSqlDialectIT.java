@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.nio.file.Path;
 import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
@@ -32,6 +33,7 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
+import com.exasol.containers.slc.ScriptLanguageContainer;
 import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
@@ -46,9 +48,17 @@ abstract class AbstractExasolSqlDialectIT {
     private static final Logger LOG = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
     private static final String COLUMN1_NAME = "C1";
 
+    private static final ScriptLanguageContainer SLC_JAVA17 = ScriptLanguageContainer.builder()
+            .language(com.exasol.containers.slc.ScriptLanguageContainer.Language.JAVA)
+            .udfEntryPoint("/exaudf/exaudfclient_py3")
+            .localFile(Path.of("~/dev/slc/template-Exasol-all-java-17_release.tar.gz"))
+            .sha512sum(
+                    "58fb10d07968cd48e3bfeb5d66b7a6b547773277dedafc459d22f1148f4644cd7bafe7027f166d0c08c7281f166465cd8583e078198145d03d24142b223607f9")
+            .build();
     @Container
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
-            IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
+            IntegrationTestConfiguration.getDockerImageReference()).withReuse(true)
+            .withScriptLanguageContainer(SLC_JAVA17);
     private static ExasolSchema adapterSchema;
     protected static ExasolObjectFactory objectFactory;
     protected static Connection connection;
