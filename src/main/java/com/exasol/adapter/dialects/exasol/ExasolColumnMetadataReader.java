@@ -62,7 +62,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         case EXASOL_GEOMETRY:
             return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_TIMESTAMP:
-            return Optional.of(DataType.createTimestamp(true));
+            return Optional.of(DataType.createTimestamp(true, jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_HASHTYPE:
             return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
         default:

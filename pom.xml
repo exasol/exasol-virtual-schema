@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>8.0.0</version>
+    <version>8.1.0</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
-        <vscjdbc.version>12.0.0</vscjdbc.version>
+        <vscjdbc.version>12.1.0</vscjdbc.version>
     </properties>
     <dependencies>
         <dependency>
@@ -101,7 +101,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>4.2.0</version>
+                <version>4.3.0</version>
                 <executions>
                     <execution>
                         <goals>
@@ -181,7 +181,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>8.0.0</version>
+        <version>8.1.0</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>

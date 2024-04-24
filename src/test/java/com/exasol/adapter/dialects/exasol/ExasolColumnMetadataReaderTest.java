@@ -37,22 +37,33 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
-        assertTypeMapped(timestamp(), DataType.createTimestamp(true));
+        assertTypeMapped(timestamp().precisionOrSize(3), DataType.createTimestamp(true, 3));
+    }
+
+    @Test
+    void testMapJdbcTypeTimestampWithCustomPrecision() {
+        assertTypeMapped(timestamp().precisionOrSize(6), DataType.createTimestamp(true, 6));
     }
 
     @Test
     void testMapJdbcTypeTimestampWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestamp().typeName("unknown"), DataType.createTimestamp(true));
+        assertTypeMapped(timestamp().precisionOrSize(3).typeName("unknown"), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezone() {
-        assertTypeMapped(timestampWithTimeZone(), DataType.createTimestamp(true));
+        assertTypeMapped(timestampWithTimeZone().precisionOrSize(3), DataType.createTimestamp(true, 3));
+    }
+
+    @Test
+    void testMapJdbcTypeTimestampLocalTimezoneCustomTimeZone() {
+        assertTypeMapped(timestampWithTimeZone().precisionOrSize(7), DataType.createTimestamp(true, 7));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestampWithTimeZone().typeName("unknown"), DataType.createTimestamp(true));
+        assertTypeMapped(timestampWithTimeZone().precisionOrSize(3).typeName("unknown"),
+                DataType.createTimestamp(true, 3));
     }
 
     @Test
