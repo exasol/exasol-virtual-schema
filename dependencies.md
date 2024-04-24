@@ -50,7 +50,7 @@
 | [Nexus Staging Maven Plugin][50]                        | [Eclipse Public License][51]      |
 | [Apache Maven Dependency Plugin][52]                    | [Apache-2.0][31]                  |
 | [Maven Failsafe Plugin][53]                             | [Apache-2.0][31]                  |
-| [JaCoCo :: Maven Plugin][54]                            | [Eclipse Public License 2.0][27]  |
+| [JaCoCo :: Maven Plugin][54]                            | [EPL-2.0][27]                     |
 | [error-code-crawler-maven-plugin][55]                   | [MIT License][56]                 |
 | [Reproducible Build Maven Plugin][57]                   | [Apache 2.0][38]                  |
 
