@@ -17,7 +17,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-10.4.0-exasol-7.1.1.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-12.0.0-exasol-8.0.0.jar;
 /
 ```
 
@@ -47,9 +47,9 @@ You can learn more about [defining named connections](https://docs.exasol.com/sq
 
 You have three options to pick from when connecting to an Exasol instance or cluster. The options are explained below.
 
-### Using IMPORT FROM EXA
+### Using `IMPORT FROM EXA`
 
-Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading data from another Exasol instance. You can tell the adapter to use this command instead of `IMPORT FROM JDBC` by setting the `IMPORT_FROM_EXA` property. 
+Exasol provides the faster and parallel `IMPORT FROM EXA` command for loading data from another Exasol instance. You can tell the adapter to use this command instead of `IMPORT FROM JDBC` by setting the `IMPORT_FROM_EXA` property.
 
 In this case you have to provide the additional `EXA_CONNECTION` which contains the name of the connection definition used for the internally used `IMPORT FROM EXA` command.
 
@@ -76,13 +76,51 @@ IDENTIFIED BY '<password>'
 ```
 
 ```sql
-CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL 
+CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>'
     IMPORT_FROM_EXA = 'true'
     EXA_CONNECTION  = 'EXA_CONNECTION';
 ```
+
+#### Map Datatypes With EXA Import
+
+Unlike for a JDBC connection `IMPORT FROM EXA` does not use an explicit datatype mapping. In consequence columns of type `HASHTYPE` are mapped to `VARCHAR` and joining such a column therefore failed in Exasol 7.1 with error message `Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!`.
+
+Exasol Virtual Schema in version 7.2.0 and later mitigates this by offering parameter `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA` with values `true` and `false` (default):
+
+```sql
+CREATE VIRTUAL SCHEMA VIRTUAL_EXASOL
+USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
+    CONNECTION_NAME                        = 'JDBC_CONNECTION'
+    SCHEMA_NAME                            = '<schema name>'
+    IMPORT_FROM_EXA                        = 'true'
+    EXA_CONNECTION                         = 'EXA_CONNECTION'
+    GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true';
+```
+
+This will add explicit datatype mapping to the generated command when using `IMPORT FROM EXA`.
+
+Example for the generated pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'false'` (default):
+
+```sql
+IMPORT FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
+```
+
+Pushdown query with `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`:
+
+```sql
+IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT '...'
+```
+
+##### Data type mismatch
+
+In case you run into a `Data type mismatch` issue which looks like this:
+`Adapter generated invalid pushdown query for virtual table <TABLENAME>: Data type mismatch in column number <COLUMN NUMBER>  (1-indexed).Expected <EXPECTED IMPORT TYPE>, but got <IMPORT TYPE>.`
+
+You can set the datatype mapping to true: `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`. 
+This will usually solve the issue by providing type hints.
 
 ### Using `IMPORT FROM JDBC`
 
@@ -91,7 +129,7 @@ You can alternatively use a regular JDBC connection for the `IMPORT`. Note that 
 #### Creating a Virtual Schema With JDBC Import
 
 ```sql
-CREATE VIRTUAL SCHEMA <virtual schema name> 
+CREATE VIRTUAL SCHEMA <virtual schema name>
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>';
@@ -118,7 +156,7 @@ And that `SELECT` can be directly executed by the core database, whereas the `IM
 #### Creating a Local Virtual Schema
 
 ```sql
-CREATE VIRTUAL SCHEMA <virtual schema name> 
+CREATE VIRTUAL SCHEMA <virtual schema name>
 USING SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL WITH
     CONNECTION_NAME = 'JDBC_CONNECTION'
     SCHEMA_NAME     = '<schema name>'
@@ -170,11 +208,28 @@ IDENTIFIED BY '<password>';
 
 The Exasol SQL dialect supports all capabilities that are supported by the virtual schema framework.
 
-## Known limitations
+## Known Limitations
 
-* Using literals and constant expressions with `TIMESTAMP WITH LOCAL TIME ZONE` data type in Virtual Schemas can produce an incorrect results.
-   * We recommend using `TIMESTAMP` instead.
-   * If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
-   * We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
-* When using an EXA connection, the outermost order of the imported result rows is not guaranteed. This is not a bug, but a deliberate speed optimization in the ExaLoader (the part that runs the `IMPORT`) caused by parallel import.
-  If you need ordering, please wrap your query into an extra `SELECT * FROM (<virtual-schema-query>) ORDER BY <criteria> [, ...]` which will then be executed on the target Exasol database instead of the source.
+### Data type `TIMESTAMP WITH LOCAL TIME ZONE`
+
+Using literals and constant expressions with `TIMESTAMP WITH LOCAL TIME ZONE` data type in Virtual Schemas can produce incorrect results.
+* We recommend using `TIMESTAMP` instead.
+* If you are willing to take the risk and want to use `TIMESTAMP WITH LOCAL TIME ZONE` anyway, please, create a Virtual Schema with the following additional property `IGNORE_ERRORS = 'TIMESTAMP_WITH_LOCAL_TIME_ZONE_USAGE'`.
+* We also recommend to set Exasol system `time_zone` to UTC while working with `TIMESTAMP WITH LOCAL TIME ZONE`.
+
+### Clause `ORDER BY`
+
+Clause `ORDER BY` can be used without limitations when using [local connection](#using-is_local).
+
+Connections [EXA](#using-import-from-exa) and [JDBC](#using-import-from-jdbc) are using `IMPORT` which only supports unordered data transfer. Therefore the outermost order of the imported result rows is not guaranteed.
+
+If you need ordering then please
+* apply the ordering on top-level in the Exasol target database outside the virtual schema,
+* use a sub-query to access the virtual schema and
+* annotate the sub-query with `ORDER BY FALSE` to prevent push down of the top-level `ORDER BY`, e.g.
+
+```sql
+SELECT * FROM (<virtual-schema-query> ORDER BY FALSE) ORDER BY <criteria> [, ...]
+```
+
+See also [General Known Limitations](https://docs.exasol.com/db/latest/database_concepts/virtual_schemas.htm#KnownLimitations) in official Exasol documentation on Virtual Schemas.

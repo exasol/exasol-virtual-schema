@@ -2,8 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
 import static com.exasol.adapter.sql.ScalarFunction.*;
 
 import java.sql.SQLException;
@@ -36,10 +35,11 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
         super(connectionFactory, properties,
                 Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
-                        IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY), //
+                        EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY, GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                 List.of(SchemaNameProperty.validator(NAME), //
                         BooleanProperty.validator(EXASOL_IMPORT_PROPERTY), //
-                        BooleanProperty.validator(IS_LOCAL_PROPERTY), //
+                        BooleanProperty.validator(EXASOL_IS_LOCAL_PROPERTY), //
+                        BooleanProperty.validator(GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                         ImportProperty.validator(EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY)));
         this.omitParenthesesMap.addAll(Set.of(SYSDATE, SYSTIMESTAMP, CURRENT_SCHEMA, CURRENT_SESSION, CURRENT_STATEMENT,
                 CURRENT_USER, CURRENT_CLUSTER));
@@ -91,17 +91,26 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
      */
     @Override
     protected QueryRewriter createQueryRewriter() {
-        if (this.properties.isLocalSource()) {
+        if (this.properties.isEnabled(EXASOL_IS_LOCAL_PROPERTY)) {
             return new ExasolLocalQueryRewriter(this);
-        } else if (isImportFromExa(this.properties)) {
-            return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader());
+        } else if (isImportFromExa()) {
+            if (isGenerateJdbcDataTypeMappingForExa()) {
+                return new ExasolFromExaWithDataTypeQueryRewriter(this, createRemoteMetadataReader(),
+                        this.connectionFactory);
+            } else {
+                return new ExasolFromExaQueryRewriter(this, createRemoteMetadataReader());
+            }
         } else {
             return new ExasolJdbcQueryRewriter(this, createRemoteMetadataReader(), this.connectionFactory);
         }
     }
 
-    private boolean isImportFromExa(final AdapterProperties properties) {
+    private boolean isImportFromExa() {
         return properties.isEnabled(EXASOL_IMPORT_PROPERTY);
+    }
+
+    private boolean isGenerateJdbcDataTypeMappingForExa() {
+        return properties.isEnabled(GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA);
     }
 
     @Override
@@ -146,7 +155,12 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
 
     @Override
     public SqlGenerator getSqlGenerator(final SqlGenerationContext context) {
-        return new ExasolSqlGenerationVisitor(this, context);
+        if (context.isLocal()){
+            return new ExasolLocalSqlGenerationVisitor(this, context);
+        } else {
+            return new ExasolSqlGenerationVisitor(this, context);
+        }
+
     }
 
     /**

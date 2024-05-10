@@ -2,10 +2,8 @@ package com.exasol.adapter.dialects.exasol;
 
 import static com.exasol.adapter.AdapterProperties.*;
 import static com.exasol.adapter.capabilities.MainCapability.*;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_CONNECTION_PROPERTY;
-import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IMPORT_PROPERTY;
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.*;
 import static com.exasol.adapter.dialects.exasol.ExasolSqlDialect.EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH;
-import static com.exasol.reflect.ReflectionUtils.getMethodReturnViaReflection;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -33,8 +31,7 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotes;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotesJsonConverter;
 import com.exasol.adapter.capabilities.*;
-import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.SqlGenerator;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.metadata.*;
@@ -47,12 +44,18 @@ class ExasolSqlDialectTest {
     @Mock
     private ConnectionFactory connectionFactoryMock;
     private ExasolSqlDialect dialect;
-    private Map<String, String> rawProperties;
 
     @BeforeEach
     void beforeEach() {
-        this.dialect = new ExasolSqlDialect(this.connectionFactoryMock, AdapterProperties.emptyProperties());
-        this.rawProperties = new HashMap<>();
+        this.dialect = testee(AdapterProperties.emptyProperties());
+    }
+
+    private ExasolSqlDialect testee(final Map<String, String> rawProperties) {
+        return testee(new AdapterProperties(rawProperties));
+    }
+
+    private ExasolSqlDialect testee(final AdapterProperties properties) {
+        return new ExasolSqlDialect(this.connectionFactoryMock, properties);
     }
 
     @CsvSource({ "A1, \"A1\"", //
@@ -141,34 +144,35 @@ class ExasolSqlDialectTest {
     @Test
     void testCreateRemoteMetadataReader(@Mock final Connection connectionMock) throws SQLException {
         when(this.connectionFactoryMock.getConnection()).thenReturn(connectionMock);
-        assertThat(getMethodReturnViaReflection(this.dialect, "createRemoteMetadataReader"),
-                instanceOf(ExasolMetadataReader.class));
+        assertThat(this.dialect.createRemoteMetadataReader(), instanceOf(ExasolMetadataReader.class));
     }
 
     @Test
-    void testCreateJdbcQueryRewriter(@Mock final Connection connectionMock) throws SQLException {
-        when(this.connectionFactoryMock.getConnection()).thenReturn(connectionMock);
-        assertThat(getMethodReturnViaReflection(this.dialect, "createQueryRewriter"),
-                instanceOf(ExasolJdbcQueryRewriter.class));
+    void createQueryRewriterForLocal() {
+        assertThat(createQueryRewriter(Map.of("IS_LOCAL", "true")), instanceOf(ExasolLocalQueryRewriter.class));
     }
 
     @Test
-    void testCreateLocalQueryRewriter() {
-        this.rawProperties.put(IS_LOCAL_PROPERTY, "true");
-        final AdapterProperties properties = new AdapterProperties(this.rawProperties);
-        final SqlDialect dialect = new ExasolSqlDialect(this.connectionFactoryMock, properties);
-        assertThat(getMethodReturnViaReflection(dialect, "createQueryRewriter"),
-                instanceOf(ExasolLocalQueryRewriter.class));
-    }
-
-    @Test
-    void testCreateFromExaQueryRewriter(@Mock final Connection connectionMock) throws SQLException {
-        when(this.connectionFactoryMock.getConnection()).thenReturn(connectionMock);
-        this.rawProperties.put(EXASOL_IMPORT_PROPERTY, "true");
-        final AdapterProperties properties = new AdapterProperties(this.rawProperties);
-        final SqlDialect dialect = new ExasolSqlDialect(this.connectionFactoryMock, properties);
-        assertThat(getMethodReturnViaReflection(dialect, "createQueryRewriter"),
+    void createQueryRewriterForExa() {
+        assertThat(createQueryRewriter(Map.of("IMPORT_FROM_EXA", "true")),
                 instanceOf(ExasolFromExaQueryRewriter.class));
+    }
+
+    @Test
+    void createQueryRewriterForExaWithDataType() {
+        assertThat(
+                createQueryRewriter(
+                        Map.of("IMPORT_FROM_EXA", "true", "GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA", "true")),
+                instanceOf(ExasolFromExaWithDataTypeQueryRewriter.class));
+    }
+
+    @Test
+    void createQueryRewriterForJdbc() {
+        assertThat(createQueryRewriter(Map.of()), instanceOf(ExasolJdbcQueryRewriter.class));
+    }
+
+    private QueryRewriter createQueryRewriter(final Map<String, String> rawProperties) {
+        return testee(rawProperties).createQueryRewriter();
     }
 
     @Test
@@ -177,14 +181,14 @@ class ExasolSqlDialectTest {
                 .with(EXASOL_IMPORT_PROPERTY, "TrUe") //
                 .with(EXASOL_CONNECTION_PROPERTY, "MY_EXA_CONNECTION") //
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkValidBoolOptionsWithExaConnectionExplicitlyDisabled() throws PropertyValidationException {
         final AdapterProperties adapterProperties = mandatory().with(EXASOL_IMPORT_PROPERTY, "FalSe").build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
@@ -192,7 +196,7 @@ class ExasolSqlDialectTest {
     void testInconsistentExasolProperties() {
         final AdapterProperties adapterProperties = mandatory().with(EXASOL_CONNECTION_PROPERTY, "localhost:5555")
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
@@ -204,7 +208,7 @@ class ExasolSqlDialectTest {
         final AdapterProperties adapterProperties = mandatory() //
                 .with(EXASOL_IMPORT_PROPERTY, "True") //
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
@@ -216,7 +220,7 @@ class ExasolSqlDialectTest {
         final AdapterProperties adapterProperties = mandatory() //
                 .with(CATALOG_NAME_PROPERTY, "MY_CATALOG") //
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
@@ -225,16 +229,16 @@ class ExasolSqlDialectTest {
         final AdapterProperties adapterProperties = mandatory() //
                 .with(SCHEMA_NAME_PROPERTY, "MY_SCHEMA") //
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkInvalidIsLocalProperty() {
         final AdapterProperties adapterProperties = mandatory() //
-                .with(IS_LOCAL_PROPERTY, "asdasd") //
+                .with(EXASOL_IS_LOCAL_PROPERTY, "asdasd") //
                 .build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = testee(adapterProperties);
         final PropertyValidationException exception = assertThrows(PropertyValidationException.class,
                 sqlDialect::validateProperties);
         assertThat(exception.getMessage(), containsString("The value 'asdasd' for property 'IS_LOCAL' is invalid."
@@ -243,15 +247,15 @@ class ExasolSqlDialectTest {
 
     @Test
     void checkValidIsLocalProperty1() throws PropertyValidationException {
-        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "TrUe").build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_IS_LOCAL_PROPERTY, "TrUe").build();
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
     @Test
     void checkValidIsLocalProperty() throws PropertyValidationException {
-        final AdapterProperties adapterProperties = mandatory().with(IS_LOCAL_PROPERTY, "FalSe").build();
-        final SqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final AdapterProperties adapterProperties = mandatory().with(EXASOL_IS_LOCAL_PROPERTY, "FalSe").build();
+        final SqlDialect sqlDialect = testee(adapterProperties);
         sqlDialect.validateProperties();
     }
 
@@ -260,7 +264,7 @@ class ExasolSqlDialectTest {
         final AdapterProperties adapterProperties = mandatory() //
                 .with(IGNORE_ERRORS_PROPERTY, EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH) //
                 .build();
-        final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final ExasolSqlDialect exasolSqlDialect = testee(adapterProperties);
         assertThat(exasolSqlDialect.isTimestampWithLocalTimeZoneEnabled(), equalTo(true));
     }
 
@@ -269,7 +273,7 @@ class ExasolSqlDialectTest {
         final AdapterProperties adapterProperties = mandatory() //
                 .remove(AdapterProperties.SCHEMA_NAME_PROPERTY) //
                 .build();
-        final ExasolSqlDialect sqlDialect = new ExasolSqlDialect(null, adapterProperties);
+        final ExasolSqlDialect sqlDialect = testee(adapterProperties);
         final Exception exception = assertThrows(PropertyValidationException.class,
                 () -> sqlDialect.validateProperties());
         assertThat(exception.getMessage(),

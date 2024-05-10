@@ -5,18 +5,19 @@ import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.PA
 import static com.exasol.adapter.dialects.exasol.IntegrationTestConfiguration.VIRTUAL_SCHEMAS_JAR_NAME_AND_VERSION;
 import static com.exasol.dbbuilder.dialects.exasol.ExasolObjectPrivilege.SELECT;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Logger;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
@@ -24,7 +25,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.AssertionFailedError;
-import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -37,10 +37,13 @@ import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
 import com.exasol.matcher.TypeMatchMode;
+import com.exasol.udfdebugging.UdfTestSetup;
+import com.github.dockerjava.api.model.ContainerNetwork;
 
 @Tag("integration")
 @Testcontainers
 abstract class AbstractExasolSqlDialectIT {
+    private static final Logger LOG = Logger.getLogger(AbstractExasolSqlDialectIT.class.getName());
     private static final String COLUMN1_NAME = "C1";
 
     @Container
@@ -57,12 +60,27 @@ abstract class AbstractExasolSqlDialectIT {
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
     @BeforeAll
-    static void beforeAll() throws BucketAccessException, TimeoutException, NoDriverFoundException, SQLException,
-            FileNotFoundException {
-        connection = EXASOL.createConnection("");
-        objectFactory = new ExasolObjectFactory(connection);
-        adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
-        adapterScript = installVirtualSchemaAdapter(adapterSchema);
+    static void beforeAll() {
+        try {
+            connection = EXASOL.createConnection("");
+            final UdfTestSetup udfTestSetup = new UdfTestSetup(getTestHostIpFromInsideExasol(),
+                    EXASOL.getDefaultBucket(), connection);
+            objectFactory = new ExasolObjectFactory(connection,
+                    ExasolObjectConfiguration.builder().withJvmOptions(udfTestSetup.getJvmOptions()).build());
+            adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
+            adapterScript = installVirtualSchemaAdapter(adapterSchema);
+
+        } catch (final SQLException | BucketAccessException | TimeoutException | FileNotFoundException exception) {
+            throw new IllegalStateException("Failed to created test setup.", exception);
+        }
+    }
+
+    private static String getTestHostIpFromInsideExasol() {
+        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+        if (networks.size() == 0) {
+            return null;
+        }
+        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
@@ -76,20 +94,17 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
-    protected static boolean exasolVersionSupportsFingerprintInAddress() {
-        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
-        if (imageReference.getMajor() >= 8) {
-            return true;
-        }
-        return (imageReference.getMajor() >= 7) && (imageReference.getMinor() >= 1);
-    }
-
     @AfterAll
     static void afterAll() throws SQLException {
         dropAll(adapterScript, adapterSchema);
         adapterScript = null;
         adapterSchema = null;
         connection.close();
+    }
+
+    @BeforeEach
+    void logTestName(final TestInfo testInfo) {
+        LOG.fine(() -> "Running test " + testInfo.getDisplayName() + "...");
     }
 
     @BeforeEach
@@ -107,11 +122,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     private String getJdbcUrl() {
         final int port = EXASOL.getDefaultInternalDatabasePort();
-        if (exasolVersionSupportsFingerprintInAddress()) {
-            final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
-            return "jdbc:exa:localhost/" + fingerprint + ":" + port;
-        }
-        return "jdbc:exa:localhost:" + port + ";validateservercertificate=0";
+        final String fingerprint = EXASOL.getTlsCertificateFingerprint().orElseThrow();
+        return "jdbc:exa:localhost/" + fingerprint + ":" + port;
     }
 
     @AfterEach
@@ -170,6 +182,13 @@ abstract class AbstractExasolSqlDialectIT {
                 .build();
     }
 
+    /**
+     * Get properties for the virtual schema. Note: if you want to enable debug output, you can set <a href=
+     * "https://github.com/exasol/test-db-builder-java/blob/main/doc/user_guide/user_guide.md#debug-output">system
+     * properties defined by test-db-builder-java</a>.
+     * 
+     * @return properties for the virtual schema
+     */
     private Map<String, String> getVirtualSchemaProperties() {
         return getConnectionSpecificVirtualSchemaProperties();
     }
@@ -183,8 +202,12 @@ abstract class AbstractExasolSqlDialectIT {
         return query("SELECT * FROM " + tableName);
     }
 
-    private String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
+    protected String getVirtualTableName(final VirtualSchema virtualSchema, final Table table) {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
+    }
+
+    protected ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
+        return query(MessageFormat.format(sqlFormatString, args));
     }
 
     protected ResultSet query(final String sql) throws SQLException {
@@ -350,7 +373,7 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
-    private void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
+    protected void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
         try {
             assertThat(query(sql), expected);
         } catch (final SQLException exception) {
@@ -840,14 +863,95 @@ abstract class AbstractExasolSqlDialectIT {
         }
     }
 
+    static void assumeExasol8OrHigher() {
+        assumeTrue(isExasol8OrHigher(), "is Exasol version 8 or higher");
+    }
+
+    static void assumeExasol7OrLower() {
+        assumeTrue(isExasol7OrLower(), "is Exasol version 7 or lower");
+    }
+
+    static boolean isExasol8OrHigher() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() >= 8);
+    }
+
+    static boolean isExasol7OrLower() {
+        final ExasolDockerImageReference imageReference = EXASOL.getDockerImageReference();
+        return imageReference.hasMajor() && (imageReference.getMajor() <= 7);
+    }
+
     @Test
     void testWildcards() throws SQLException {
+        assumeExasol7OrLower();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
         this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
+    }
+
+    @Test
+    void testWildcardsExasolV8() throws SQLException {
+        assumeExasol8OrHigher();
+        final String nameWithWildcard = "A_A";
+        this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
+        this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
+        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+                table().row("A", "VARCHAR(20) UTF8", null, null, null, null).matches());
+    }
+
+    @Test
+    @DisplayName("Verify DISTINCT with integer literal")
+    void testDistinctWithIntegerLiteral() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT DISTINCT c1, 0 AS attr from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName()),
+                    table("BIGINT", "SMALLINT") //
+                            .row(1L, (short) 0).row(2L, (short) 0).row(3L, (short) 0) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
+    @DisplayName("Verify GROUP BY with column number reference")
+    void testGroupByWithColumnNumber() throws SQLException {
+        final Table table = createSingleColumnTable("INT") //
+                .insert(1).insert(1).insert(2).insert(3);
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(
+                    query("SELECT c1, count(c1) as count from "
+                            + virtualSchema.getFullyQualifiedName() + "." + table.getName() + " group by 1"),
+                    table("BIGINT", "BIGINT") //
+                            .row(1L, 2L).row(2L, 1L).row(3L, 1L) //
+                            .matchesInAnyOrder());
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
+    @DisplayName("Verify that a virtual and a normal table can be joined using a HASHTYPE column")
+    void joinHashtypeTables() throws java.sql.SQLException {
+        final Table virtualTable = sourceSchema.createTableBuilder("VIRTUAL").column("VHASH", "HASHTYPE(16 BYTE)")
+                .build();
+        try (final ExasolSchema otherSchema = objectFactory.createSchema("OTHER");
+                final Table otherTable = otherSchema.createTableBuilder("REAL").column("RHASH", "HASHTYPE(16 BYTE)")
+                        .build();
+                final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema)) {
+            final String sql = "select * from " + virtualSchema.getFullyQualifiedName() + "." + virtualTable.getName()
+                    + " INNER JOIN " + otherTable.getFullyQualifiedName() + " ON VHASH = RHASH";
+            assertThat(query(sql), table("HASHTYPE", "HASHTYPE").matches());
+        }
     }
 
     boolean isVersionOrHigher(final int majorVersion, final int minorVersion, final int fixVersion) {

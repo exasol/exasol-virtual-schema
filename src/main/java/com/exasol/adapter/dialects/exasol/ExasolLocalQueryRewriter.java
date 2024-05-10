@@ -19,7 +19,7 @@ import com.exasol.adapter.sql.SqlStatement;
  * embedded in. That saves the overhead of using the ExaLoader and is thus considerably faster.
  * </p>
  */
-public class ExasolLocalQueryRewriter implements QueryRewriter {
+class ExasolLocalQueryRewriter implements QueryRewriter {
     private static final Logger LOGGER = Logger.getLogger(ExasolLocalQueryRewriter.class.getName());
 
     private final SqlDialect dialect;
@@ -29,7 +29,7 @@ public class ExasolLocalQueryRewriter implements QueryRewriter {
      *
      * @param dialect dialect
      */
-    public ExasolLocalQueryRewriter(final SqlDialect dialect) {
+    ExasolLocalQueryRewriter(final SqlDialect dialect) {
         this.dialect = dialect;
     }
 
@@ -37,7 +37,7 @@ public class ExasolLocalQueryRewriter implements QueryRewriter {
     public String rewrite(final SqlStatement statement, final List<DataType> selectListDataTypes,
             final ExaMetadata exaMetadata, final AdapterProperties properties) throws AdapterException {
         final SqlGenerationContext context = new SqlGenerationContext(properties.getCatalogName(),
-                properties.getSchemaName(), false);
+                properties.getSchemaName(), true);
         final SqlGenerator sqlGeneratorVisitor = this.dialect.getSqlGenerator(context);
         final String selectStatement = sqlGeneratorVisitor.generateSqlFor(statement);
         LOGGER.finer(() -> "SELECT push-down statement:\n" + selectStatement);

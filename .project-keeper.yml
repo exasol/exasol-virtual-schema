@@ -6,7 +6,9 @@ sources:
       - integration_tests
       - udf_coverage
       - maven_central
-linkReplacements:
-excludes:
-  - "E-PK-CORE-18: Outdated content: '.github/workflows/ci-build.yml'"
-  - regex: "(?s)E-PK-CORE-53: The dependencies.md file has outdated content.*"
+build:
+  runnerOs: ubuntu-20.04
+  freeDiskSpace: false
+  exasolDbVersions:
+    - "7.1.25"
+    - "8.24.0"

@@ -1,5 +1,6 @@
 package com.exasol.adapter.dialects.exasol;
 
+import static com.exasol.adapter.dialects.exasol.ExasolProperties.EXASOL_IS_LOCAL_PROPERTY;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 
 import java.util.*;
@@ -24,7 +25,7 @@ class ExasolSqlDialectLocalConnectionIT extends AbstractExasolSqlDialectIT {
 
     @Override
     protected Map<String, String> getConnectionSpecificVirtualSchemaProperties() {
-        return Map.of("IS_LOCAL", "true");
+        return Map.of(EXASOL_IS_LOCAL_PROPERTY, "true");
     }
 
     @Override

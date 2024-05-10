@@ -1,7 +1,7 @@
 # Exasol Virtual Schema
 
 [![Build Status](https://github.com/exasol/exasol-virtual-schema/actions/workflows/ci-build.yml/badge.svg)](https://github.com/exasol/exasol-virtual-schema/actions/workflows/ci-build.yml)
-[![Maven Central – Exasol Virtual Schema](https://img.shields.io/maven-central/v/com.exasol/exasol-virtual-schema)](https://search.maven.org/artifact/com.exasol/exasol-virtual-schema)
+[![Maven Central &ndash; Exasol Virtual Schema](https://img.shields.io/maven-central/v/com.exasol/exasol-virtual-schema)](https://search.maven.org/artifact/com.exasol/exasol-virtual-schema)
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=com.exasol%3Aexasol-virtual-schema&metric=alert_status)](https://sonarcloud.io/dashboard?id=com.exasol%3Aexasol-virtual-schema)
 
@@ -45,6 +45,7 @@ Find all the documentation in the [Virtual Schemas project][vs-doc].
 ## Information for Developers
 
 * [Virtual Schema API Documentation][vs-api]
+* [Developer Guide](./doc/developer_guide.md)
 
 <!-- @formatter:off -->
 [virtual-schemas-user-guide]: https://docs.exasol.com/database_concepts/virtual_schemas.htm
