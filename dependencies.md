@@ -46,18 +46,18 @@
 | [duplicate-finder-maven-plugin Maven Mojo][45]          | [Apache License 2.0][46]          |
 | [Apache Maven Assembly Plugin][47]                      | [Apache-2.0][29]                  |
 | [Apache Maven JAR Plugin][48]                           | [Apache-2.0][29]                  |
-| [Artifact reference checker and unifier][49]            | [MIT][11]                         |
-| [Apache Maven Deploy Plugin][50]                        | [Apache-2.0][29]                  |
-| [Apache Maven GPG Plugin][51]                           | [Apache-2.0][29]                  |
-| [Apache Maven Source Plugin][52]                        | [Apache License, Version 2.0][29] |
-| [Apache Maven Javadoc Plugin][53]                       | [Apache-2.0][29]                  |
-| [Nexus Staging Maven Plugin][54]                        | [Eclipse Public License][55]      |
-| [Apache Maven Dependency Plugin][56]                    | [Apache-2.0][29]                  |
-| [Maven Failsafe Plugin][57]                             | [Apache-2.0][29]                  |
-| [JaCoCo :: Maven Plugin][58]                            | [EPL-2.0][27]                     |
-| [Quality Summarizer Maven Plugin][59]                   | [MIT License][60]                 |
-| [error-code-crawler-maven-plugin][61]                   | [MIT License][62]                 |
-| [Reproducible Build Maven Plugin][63]                   | [Apache 2.0][42]                  |
+| [Artifact reference checker and unifier][49]            | [MIT License][50]                 |
+| [Apache Maven Deploy Plugin][51]                        | [Apache-2.0][29]                  |
+| [Apache Maven GPG Plugin][52]                           | [Apache-2.0][29]                  |
+| [Apache Maven Source Plugin][53]                        | [Apache License, Version 2.0][29] |
+| [Apache Maven Javadoc Plugin][54]                       | [Apache-2.0][29]                  |
+| [Nexus Staging Maven Plugin][55]                        | [Eclipse Public License][56]      |
+| [Apache Maven Dependency Plugin][57]                    | [Apache-2.0][29]                  |
+| [Maven Failsafe Plugin][58]                             | [Apache-2.0][29]                  |
+| [JaCoCo :: Maven Plugin][59]                            | [EPL-2.0][27]                     |
+| [Quality Summarizer Maven Plugin][60]                   | [MIT License][61]                 |
+| [error-code-crawler-maven-plugin][62]                   | [MIT License][63]                 |
+| [Reproducible Build Maven Plugin][64]                   | [Apache 2.0][42]                  |
 
 [0]: https://github.com/exasol/virtual-schema-common-jdbc/
 [1]: https://github.com/exasol/virtual-schema-common-jdbc/blob/main/LICENSE
@@ -108,18 +108,19 @@
 [46]: http://www.apache.org/licenses/LICENSE-2.0.html
 [47]: https://maven.apache.org/plugins/maven-assembly-plugin/
 [48]: https://maven.apache.org/plugins/maven-jar-plugin/
-[49]: https://github.com/exasol/artifact-reference-checker-maven-plugin
-[50]: https://maven.apache.org/plugins/maven-deploy-plugin/
-[51]: https://maven.apache.org/plugins/maven-gpg-plugin/
-[52]: https://maven.apache.org/plugins/maven-source-plugin/
-[53]: https://maven.apache.org/plugins/maven-javadoc-plugin/
-[54]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
-[55]: http://www.eclipse.org/legal/epl-v10.html
-[56]: https://maven.apache.org/plugins/maven-dependency-plugin/
-[57]: https://maven.apache.org/surefire/maven-failsafe-plugin/
-[58]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
-[59]: https://github.com/exasol/quality-summarizer-maven-plugin/
-[60]: https://github.com/exasol/quality-summarizer-maven-plugin/blob/main/LICENSE
-[61]: https://github.com/exasol/error-code-crawler-maven-plugin/
-[62]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
-[63]: http://zlika.github.io/reproducible-build-maven-plugin
+[49]: https://github.com/exasol/artifact-reference-checker-maven-plugin/
+[50]: https://github.com/exasol/artifact-reference-checker-maven-plugin/blob/main/LICENSE
+[51]: https://maven.apache.org/plugins/maven-deploy-plugin/
+[52]: https://maven.apache.org/plugins/maven-gpg-plugin/
+[53]: https://maven.apache.org/plugins/maven-source-plugin/
+[54]: https://maven.apache.org/plugins/maven-javadoc-plugin/
+[55]: http://www.sonatype.com/public-parent/nexus-maven-plugins/nexus-staging/nexus-staging-maven-plugin/
+[56]: http://www.eclipse.org/legal/epl-v10.html
+[57]: https://maven.apache.org/plugins/maven-dependency-plugin/
+[58]: https://maven.apache.org/surefire/maven-failsafe-plugin/
+[59]: https://www.jacoco.org/jacoco/trunk/doc/maven.html
+[60]: https://github.com/exasol/quality-summarizer-maven-plugin/
+[61]: https://github.com/exasol/quality-summarizer-maven-plugin/blob/main/LICENSE
+[62]: https://github.com/exasol/error-code-crawler-maven-plugin/
+[63]: https://github.com/exasol/error-code-crawler-maven-plugin/blob/main/LICENSE
+[64]: http://zlika.github.io/reproducible-build-maven-plugin

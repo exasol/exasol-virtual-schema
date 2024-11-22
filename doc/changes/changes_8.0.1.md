@@ -30,6 +30,7 @@ Code name:
 
 ### Plugin Dependency Updates
 
+* Updated `com.exasol:artifact-reference-checker-maven-plugin:0.4.1` to `0.4.2`
 * Updated `com.exasol:error-code-crawler-maven-plugin:2.0.1` to `2.0.3`
 * Updated `com.exasol:project-keeper-maven-plugin:4.2.0` to `4.4.0`
 * Added `com.exasol:quality-summarizer-maven-plugin:0.2.0`
