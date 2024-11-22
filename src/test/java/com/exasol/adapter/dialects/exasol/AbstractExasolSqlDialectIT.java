@@ -24,7 +24,6 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.opentest4j.AssertionFailedError;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
@@ -47,6 +46,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static final String COLUMN1_NAME = "C1";
 
     @Container
+    @SuppressWarnings("resource") // Will be closed by @Testcontainers
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
     private static ExasolSchema adapterSchema;
@@ -166,8 +166,6 @@ abstract class AbstractExasolSqlDialectIT {
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         try {
             assertThat(selectAllFromCorrespondingVirtualTable(virtualSchema, table), matcher);
-        } catch (final SQLException exception) {
-            throw new AssertionFailedError("Unable to execute assertion query for table " + table.getName(), exception);
         } finally {
             virtualSchema.drop();
         }
@@ -193,12 +191,11 @@ abstract class AbstractExasolSqlDialectIT {
         return getConnectionSpecificVirtualSchemaProperties();
     }
 
-    protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table)
-            throws SQLException {
+    protected ResultSet selectAllFromCorrespondingVirtualTable(final VirtualSchema virtualSchema, final Table table) {
         return selectAllFrom(getVirtualTableName(virtualSchema, table));
     }
 
-    private ResultSet selectAllFrom(final String tableName) throws SQLException {
+    private ResultSet selectAllFrom(final String tableName) {
         return query("SELECT * FROM " + tableName);
     }
 
@@ -206,15 +203,15 @@ abstract class AbstractExasolSqlDialectIT {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
-    protected ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
+    protected ResultSet query(final String sqlFormatString, final Object... args) {
         return query(MessageFormat.format(sqlFormatString, args));
     }
 
-    protected ResultSet query(final String sql) throws SQLException {
+    protected ResultSet query(final String sql) {
         try {
             return connection.createStatement().executeQuery(sql);
         } catch (final SQLException exception) {
-            throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
+            throw new IllegalStateException("Error executing '" + sql + "': " + exception.getMessage(), exception);
         }
     }
 
@@ -374,11 +371,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     protected void assertVsQuery(final String sql, final Matcher<ResultSet> expected) {
-        try {
-            assertThat(query(sql), expected);
-        } catch (final SQLException exception) {
-            throw new AssertionFailedError("Unable to run assertion query: '" + sql + "'", exception);
-        }
+        assertThat(query(sql), expected);
     }
 
     @Test
@@ -588,7 +581,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testCreateVirtualSchemaWithIgnoreErrorsProperty() throws SQLException {
+    void testCreateVirtualSchemaWithIgnoreErrorsProperty() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
         properties.put("IGNORE_ERRORS", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
@@ -850,7 +843,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testCurrentClusterFunction() throws SQLException {
+    void testCurrentClusterFunction() {
         final Table table = createSingleColumnTable("VARCHAR(20) UTF8").insert("_cluster");
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         try {
@@ -882,7 +875,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testWildcards() throws SQLException {
+    void testWildcards() {
         assumeExasol7OrLower();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
@@ -893,7 +886,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testWildcardsExasolV8() throws SQLException {
+    void testWildcardsExasolV8() {
         assumeExasol8OrHigher();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
@@ -905,7 +898,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     @DisplayName("Verify DISTINCT with integer literal")
-    void testDistinctWithIntegerLiteral() throws SQLException {
+    void testDistinctWithIntegerLiteral() {
         final Table table = createSingleColumnTable("INT") //
                 .insert(1).insert(1).insert(2).insert(3);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
@@ -923,7 +916,7 @@ abstract class AbstractExasolSqlDialectIT {
 
     @Test
     @DisplayName("Verify GROUP BY with column number reference")
-    void testGroupByWithColumnNumber() throws SQLException {
+    void testGroupByWithColumnNumber() {
         final Table table = createSingleColumnTable("INT") //
                 .insert(1).insert(1).insert(2).insert(3);
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);

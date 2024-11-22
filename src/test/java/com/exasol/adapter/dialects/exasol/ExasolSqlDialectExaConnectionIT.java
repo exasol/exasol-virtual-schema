@@ -34,7 +34,6 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
  * <ul>
  */
-
 class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
     private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
@@ -102,7 +101,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     }
 
     @Test
-    void testAlterVirtualSchemaTriggersPropertyValidation() throws SQLException {
+    void testAlterVirtualSchemaTriggersPropertyValidation() {
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         final String name = this.virtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
@@ -111,7 +110,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
         assertThat(exception.getMessage(), containsString(expected));
     }
 
-    private ResultSet explainVirtual(final String sql) throws SQLException {
+    private ResultSet explainVirtual(final String sql) {
         return query("EXPLAIN VIRTUAL " + sql);
     }
 

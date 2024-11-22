@@ -83,7 +83,7 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
     }
 
     @Test
-    void testAlterVirtualSchemaTriggersPropertyValidation() throws SQLException {
+    void testAlterVirtualSchemaTriggersPropertyValidation() {
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         final String name = this.virtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
