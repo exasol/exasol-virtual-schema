@@ -146,7 +146,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
                 containsString("Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!"),
                 // Error message for Exasol 8:
                 containsString(
-                        "Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed).Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.")));
+                        "Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed). Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.")));
     }
 
     @Test
