@@ -34,7 +34,6 @@ import com.exasol.dbbuilder.dialects.exasol.ConnectionDefinition;
  * <li>{@code GEOMETRY} types are reported with JDBC type name {@code VARCHAR} in ResultSets</li>
  * <ul>
  */
-
 class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaConnectionIT {
     private static final String EXA_CONNECTION_NAME = "EXA_CONNECTION";
     private ConnectionDefinition exaConnection;
@@ -102,7 +101,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     }
 
     @Test
-    void testAlterVirtualSchemaTriggersPropertyValidation() throws SQLException {
+    void testAlterVirtualSchemaTriggersPropertyValidation() {
         this.virtualSchema = createVirtualSchema(this.sourceSchema);
         final String name = this.virtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
@@ -111,7 +110,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
         assertThat(exception.getMessage(), containsString(expected));
     }
 
-    private ResultSet explainVirtual(final String sql) throws SQLException {
+    private ResultSet explainVirtual(final String sql) {
         return query("EXPLAIN VIRTUAL " + sql);
     }
 
@@ -146,7 +145,7 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
                 containsString("Feature not supported: Incomparable Types: VARCHAR(32) UTF8 and HASHTYPE(16 BYTE)!"),
                 // Error message for Exasol 8:
                 containsString(
-                        "Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed).Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.")));
+                        "Adapter generated invalid pushdown query for virtual table VIRTUAL: Data type mismatch in column number 1 (1-indexed). Expected HASHTYPE(16 BYTE), but got VARCHAR(32) UTF8.")));
     }
 
     @Test
