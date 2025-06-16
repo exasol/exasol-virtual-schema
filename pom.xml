@@ -8,8 +8,8 @@
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
         <virtual-schema-common-jdbc.version>13.0.0</virtual-schema-common-jdbc.version>
-        <exasol-jdbc.version>25.2.3</exasol-jdbc.version>
-        <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
+        <exasol-jdbc.version>7.1.20</exasol-jdbc.version>
+        <exasol-testcontainers.version>7.0.1</exasol-testcontainers.version>
     </properties>
     <dependencies>
         <dependency>
