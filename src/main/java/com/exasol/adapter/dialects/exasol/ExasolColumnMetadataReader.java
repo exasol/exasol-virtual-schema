@@ -1,10 +1,14 @@
 package com.exasol.adapter.dialects.exasol;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.IdentifierConverter;
 import com.exasol.adapter.jdbc.BaseColumnMetadataReader;
@@ -34,10 +38,11 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * @param connection          JDBC connection through which the column metadata is read from the remote database
      * @param properties          user-defined adapter properties
      * @param identifierConverter converter between source and Exasol identifiers
+     * @param exaMetadata Metadata of the Exasol database
      */
     public ExasolColumnMetadataReader(final Connection connection, final AdapterProperties properties,
-            final IdentifierConverter identifierConverter) {
-        super(connection, properties, identifierConverter);
+                                      final ExaMetadata exaMetadata, final IdentifierConverter identifierConverter) {
+        super(connection, properties, exaMetadata, identifierConverter);
     }
 
     @Override
@@ -62,7 +67,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         case EXASOL_GEOMETRY:
             return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_TIMESTAMP:
-            return Optional.of(DataType.createTimestamp(true));
+            return Optional.of(DataType.createTimestamp(true, jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_HASHTYPE:
             return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
         default:

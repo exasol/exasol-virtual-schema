@@ -8,8 +8,8 @@
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
         <virtual-schema-common-jdbc.version>13.0.0</virtual-schema-common-jdbc.version>
-        <exasol-jdbc.version>7.1.20</exasol-jdbc.version>
-        <exasol-testcontainers.version>7.0.1</exasol-testcontainers.version>
+        <exasol-jdbc.version>25.2.3</exasol-jdbc.version>
+        <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
     </properties>
     <dependencies>
         <dependency>
@@ -176,6 +176,16 @@
                         <option>--add-reads</option>
                         <option>org.glassfish.jakarta.json=java.sql</option>
                     </additionalOptions>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.ossindex.maven</groupId>
+                <artifactId>ossindex-maven-plugin</artifactId>
+                <configuration>
+                    <excludeVulnerabilityIds>
+                        <!-- Exasol's JDBC driver was fixed in version 24.2.1, but OSSIndex does not reflect that yet -->
+                        <exclude>CVE-2024-55551</exclude>
+                    </excludeVulnerabilityIds>
                 </configuration>
             </plugin>
         </plugins>

@@ -23,7 +23,7 @@ class ExasolSqlDialectFactoryTest {
 
     @Test
     void testCreateDialect() {
-        assertThat(this.factory.createSqlDialect(null, AdapterProperties.emptyProperties()),
+        assertThat(this.factory.createSqlDialect(null, AdapterProperties.emptyProperties(), null),
               instanceOf(ExasolSqlDialect.class));
     }
 }

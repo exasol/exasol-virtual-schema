@@ -30,7 +30,7 @@ class ExasolLocalQueryRewriterTest {
     @Test
     void rewriteLocal() throws AdapterException, SQLException {
         final AdapterProperties properties = new AdapterProperties(Map.of("IS_LOCAL", "true"));
-        final SqlDialect dialect = new ExasolSqlDialect(null, properties);
+        final SqlDialect dialect = new ExasolSqlDialect(null, properties, exaMetadataMock);
         final QueryRewriter queryRewriter = new ExasolLocalQueryRewriter(dialect);
         assertThat(queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(),
                 EMPTY_SELECT_LIST_DATA_TYPES, exaMetadataMock, properties), equalTo("SELECT 1 FROM \"DUAL\""));

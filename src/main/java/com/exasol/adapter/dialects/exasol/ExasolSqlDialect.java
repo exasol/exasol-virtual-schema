@@ -9,11 +9,16 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
+import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.capabilities.*;
-import com.exasol.adapter.dialects.*;
+import com.exasol.adapter.dialects.AbstractSqlDialect;
+import com.exasol.adapter.dialects.QueryRewriter;
+import com.exasol.adapter.dialects.SqlGenerator;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
-import com.exasol.adapter.jdbc.*;
+import com.exasol.adapter.jdbc.ConnectionFactory;
+import com.exasol.adapter.jdbc.RemoteMetadataReader;
+import com.exasol.adapter.jdbc.RemoteMetadataReaderException;
 import com.exasol.adapter.properties.BooleanProperty;
 import com.exasol.adapter.properties.ImportProperty;
 import com.exasol.errorreporting.ExaError;
@@ -31,9 +36,10 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
      *
      * @param connectionFactory factory for the JDBC connection to the remote data source
      * @param properties        adapter properties
+     * @param exaMetadata Metadata of the Exasol database
      */
-    public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties) {
-        super(connectionFactory, properties,
+    public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties, ExaMetadata exaMetadata) {
+        super(connectionFactory, properties, exaMetadata,
                 Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
                         EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY, GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                 List.of(SchemaNameProperty.validator(NAME), //
@@ -67,7 +73,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     @Override
     protected RemoteMetadataReader createRemoteMetadataReader() {
         try {
-            return new ExasolMetadataReader(this.connectionFactory.getConnection(), this.properties);
+            return new ExasolMetadataReader(this.connectionFactory.getConnection(), this.properties, this.exaMetadata);
         } catch (final SQLException exception) {
             throw new RemoteMetadataReaderException(ExaError.messageBuilder("E-VSEXA-4") //
                     .message("Unable to create Exasol remote metadata reader.").toString(), exception);

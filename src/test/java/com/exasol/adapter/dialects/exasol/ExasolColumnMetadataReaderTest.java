@@ -9,7 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
+import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
@@ -19,10 +21,13 @@ import com.exasol.adapter.metadata.DataType.ExaCharset;
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
 
+    private ExaMetadata exaMetadataMock;
+
     @BeforeEach
     void beforeEach() {
+        this.exaMetadataMock = Mockito.mock(ExaMetadata.class);
         this.exasolColumnMetadataReader = new ExasolColumnMetadataReader(null, AdapterProperties.emptyProperties(),
-                BaseIdentifierConverter.createDefault());
+                exaMetadataMock, BaseIdentifierConverter.createDefault());
     }
 
     @Test
@@ -37,22 +42,22 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
-        assertTypeMapped(timestamp(), DataType.createTimestamp(true));
+        assertTypeMapped(timestamp(), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestamp().typeName("unknown"), DataType.createTimestamp(true));
+        assertTypeMapped(timestamp().typeName("unknown"), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezone() {
-        assertTypeMapped(timestampWithTimeZone(), DataType.createTimestamp(true));
+        assertTypeMapped(timestampWithTimeZone(), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestampWithTimeZone().typeName("unknown"), DataType.createTimestamp(true));
+        assertTypeMapped(timestampWithTimeZone().typeName("unknown"), DataType.createTimestamp(true, 3));
     }
 
     @Test
