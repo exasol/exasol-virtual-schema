@@ -2,23 +2,25 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>8.0.0</version>
+    <version>8.0.1</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
-        <vscjdbc.version>12.0.0</vscjdbc.version>
+        <virtual-schema-common-jdbc.version>13.0.0</virtual-schema-common-jdbc.version>
+        <exasol-jdbc.version>25.2.3</exasol-jdbc.version>
+        <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>virtual-schema-common-jdbc</artifactId>
-            <version>${vscjdbc.version}</version>
+            <version>${virtual-schema-common-jdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-jdbc</artifactId>
-            <version>7.1.20</version>
+            <version>${exasol-jdbc.version}</version>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
@@ -29,7 +31,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>virtual-schema-common-jdbc</artifactId>
-            <version>${vscjdbc.version}</version>
+            <version>${virtual-schema-common-jdbc.version}</version>
             <classifier>tests</classifier>
             <type>jar</type>
             <scope>test</scope>
@@ -56,7 +58,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>7.0.1</version>
+            <version>${exasol-testcontainers.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -101,7 +103,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>4.2.0</version>
+                <version>5.2.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -126,7 +128,7 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <finalName>virtual-schema-dist-${vscjdbc.version}-exasol-${project.version}</finalName>
+                    <finalName>virtual-schema-dist-${virtual-schema-common-jdbc.version}-exasol-${project.version}</finalName>
                 </configuration>
                 <executions>
                     <execution>
@@ -181,7 +183,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>8.0.0</version>
+        <version>8.0.1</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>

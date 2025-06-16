@@ -1,6 +1,0 @@
-# Note that  we need to release the Exasol Virtual Schema Java on Maven Central.
-# The reason is that RLS Java builds on the JAR of the EVS, so the dependency must be satisfied via MC.
-release-platforms:
-  - GitHub
-  - Maven # Intentional, don't remove! RLS needs this as a base library.
-language: Java
