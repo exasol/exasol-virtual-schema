@@ -188,7 +188,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeDefault() {
-        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 3, 0, "BOOLEAN");
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 0, 0, "BOOLEAN");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription), equalTo(DataType.createBool()));
     }
 

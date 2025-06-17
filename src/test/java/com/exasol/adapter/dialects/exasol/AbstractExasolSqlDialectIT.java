@@ -13,16 +13,25 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.AssertionFailedError;
 import org.testcontainers.junit.jupiter.Container;
@@ -32,7 +41,10 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.*;
+import com.exasol.dbbuilder.dialects.DatabaseObject;
+import com.exasol.dbbuilder.dialects.Schema;
+import com.exasol.dbbuilder.dialects.Table;
+import com.exasol.dbbuilder.dialects.User;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
@@ -318,19 +330,39 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("DATE").row(date).matches());
     }
 
-    @Test
-    void testTimestampMapping() {
-        final Timestamp timestamp = Timestamp.valueOf("2020-02-02 01:23:45.678");
-        final Table table = createSingleColumnTable("TIMESTAMP").insert(timestamp);
-        assertVirtualTableContents(table, table("TIMESTAMP").row(timestamp).matches());
+    private static Stream<Arguments> timestampTypeArguments() {
+        return Stream.of(
+                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
+                Arguments.of("TIMESTAMP(3)", Timestamp.valueOf("2020-02-02 01:23:45.678")),
+                Arguments.of("TIMESTAMP(5)", Timestamp.valueOf("2020-02-02 01:23:45.67891")),
+                Arguments.of("TIMESTAMP(9)", Timestamp.valueOf("2020-02-02 01:23:45.678912345")),
+                Arguments.of("TIMESTAMP(23)", Timestamp.valueOf("2020-02-02 01:23:45.678912345")) // capped to 9
+        );
     }
 
-    @Test
-    void testTimestampWithLocalTimeZoneMapping() {
-        final Timestamp timestamp = Timestamp.valueOf("3030-03-03 12:34:56.789");
-        final Table table = createSingleColumnTable("TIMESTAMP WITH LOCAL TIME ZONE").insert(timestamp);
-        // Note that the JDBC driver reports the timestamp as regular timestamp in the result set.
-        assertVirtualTableContents(table, table("TIMESTAMP").row(timestamp).matches());
+    private static Stream<Arguments> timestampWithLocalTimeZoneArguments() {
+        return Stream.of(
+                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789")),
+                Arguments.of("TIMESTAMP(3) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789")),
+                Arguments.of("TIMESTAMP(5) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.78912")),
+                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789123456")),
+                Arguments.of("TIMESTAMP(23) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789123456")) // capped to 9
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("timestampTypeArguments")
+    void testTimestampMapping(String columnType, Timestamp value) {
+        final Table table = createSingleColumnTable(columnType).insert(value);
+        assertVirtualTableContents(table, table(columnType).row(value).matches());
+    }
+
+    @ParameterizedTest
+    @MethodSource("timestampWithLocalTimeZoneArguments")
+    void testTimestampWithLocalTimeZoneMapping(String columnType, Timestamp value) {
+        final Table table = createSingleColumnTable(columnType).insert(value);
+        // JDBC driver still reports as regular TIMESTAMP
+        assertVirtualTableContents(table, table(columnType).row(value).matches());
     }
 
     @Test
