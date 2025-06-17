@@ -476,12 +476,10 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static Stream<Arguments> varcharToTimestampArgs() {
-        final String value = "2016-06-01 13:17:02.081123";
-        final Timestamp expected = Timestamp.valueOf(value);
         return Stream.of(
-                Arguments.of("TIMESTAMP", "2016-06-01 13:17:02.081234", Timestamp.valueOf("2016-06-01 13:17:02.081234")),
+                Arguments.of("TIMESTAMP", "2016-06-01 13:17:02.081234", Timestamp.valueOf("2016-06-01 13:17:02.081")),
                 Arguments.of("TIMESTAMP(5)", "2016-06-01 13:17:02.08123", Timestamp.valueOf("2016-06-01 13:17:02.08123")),
-                Arguments.of("TIMESTAMP(9)", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234"))
+                Arguments.of("TIMESTAMP(9)", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234567"))
         );
     }
 
