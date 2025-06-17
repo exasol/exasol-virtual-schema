@@ -26,7 +26,6 @@ This issue has been fixed quite a while back now, but the OSSIndex unfortunately
 
 * Updated `com.exasol:exasol-jdbc:7.1.20` to `25.2.3`
 * Updated `com.exasol:virtual-schema-common-jdbc:12.0.0` to `13.0.0`
-* Updated `org.jacoco:org.jacoco.agent:0.8.11` to `0.8.13`
 
 ### Test Dependency Updates
 
