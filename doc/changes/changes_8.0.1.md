@@ -30,8 +30,17 @@ This issue has been fixed quite a while back now, but the OSSIndex unfortunately
 ### Test Dependency Updates
 
 * Updated `com.exasol:exasol-testcontainers:7.0.1` to `7.1.6`
+* Updated `com.exasol:hamcrest-resultset-matcher:1.6.4` to `1.7.1`
+* Updated `com.exasol:maven-project-version-getter:1.2.0` to `1.2.1`
+* Updated `com.exasol:test-db-builder-java:3.5.3` to `3.6.2`
+* Updated `com.exasol:udf-debugging-java:0.6.11` to `0.6.16`
 * Updated `com.exasol:virtual-schema-common-jdbc:12.0.0` to `13.0.0`
+* Updated `org.hamcrest:hamcrest:2.2` to `3.0`
 * Updated `org.jacoco:org.jacoco.agent:0.8.11` to `0.8.13`
+* Updated `org.junit.jupiter:junit-jupiter:5.10.2` to `5.13.1`
+* Updated `org.mockito:mockito-junit-jupiter:5.10.0` to `5.18.0`
+* Updated `org.slf4j:slf4j-jdk14:2.0.12` to `2.0.17`
+* Updated `org.testcontainers:junit-jupiter:1.19.6` to `1.21.1`
 
 ### Plugin Dependency Updates
 

@@ -195,8 +195,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
         final Pattern pattern = Pattern.compile("TIMESTAMP(?:\\((\\d+)\\))?(?: WITH LOCAL TIME ZONE)?");
         final Matcher matcher = pattern.matcher(typeDescriptionString);
-        final String matcherGroup = matcher.group(1);
-        final int precision = matcher.matches() && matcherGroup != null
+        final String matcherGroup = matcher.matches() ? matcher.group(1) : null;
+        final int precision = matcherGroup != null
                 ? Integer.parseInt(matcherGroup)
                 : 3; // Default precision
         return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(), precision,

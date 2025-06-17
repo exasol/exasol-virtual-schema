@@ -14,13 +14,13 @@
 | Dependency                                      | License                          |
 | ----------------------------------------------- | -------------------------------- |
 | [Virtual Schema Common JDBC][0]                 | [MIT License][1]                 |
-| [Hamcrest][6]                                   | [BSD License 3][7]               |
+| [Hamcrest][6]                                   | [BSD-3-Clause][7]                |
 | [JUnit Jupiter (Aggregator)][8]                 | [Eclipse Public License v2.0][9] |
 | [mockito-junit-jupiter][10]                     | [MIT][11]                        |
 | [Test containers for Exasol on Docker][12]      | [MIT License][13]                |
 | [Testcontainers :: JUnit Jupiter Extension][14] | [MIT][15]                        |
 | [Matcher for SQL Result Sets][16]               | [MIT License][17]                |
-| [SLF4J JDK14 Provider][18]                      | [MIT License][19]                |
+| [SLF4J JDK14 Provider][18]                      | [MIT][19]                        |
 | [Test Database Builder for Java][20]            | [MIT License][21]                |
 | [Maven Project Version Getter][22]              | [MIT License][23]                |
 | [udf-debugging-java][24]                        | [MIT License][25]                |
@@ -67,7 +67,7 @@
 [4]: https://github.com/exasol/error-reporting-java/
 [5]: https://github.com/exasol/error-reporting-java/blob/main/LICENSE
 [6]: http://hamcrest.org/JavaHamcrest/
-[7]: http://opensource.org/licenses/BSD-3-Clause
+[7]: https://raw.githubusercontent.com/hamcrest/JavaHamcrest/master/LICENSE
 [8]: https://junit.org/junit5/
 [9]: https://www.eclipse.org/legal/epl-v20.html
 [10]: https://github.com/mockito/mockito
@@ -79,7 +79,7 @@
 [16]: https://github.com/exasol/hamcrest-resultset-matcher/
 [17]: https://github.com/exasol/hamcrest-resultset-matcher/blob/main/LICENSE
 [18]: http://www.slf4j.org
-[19]: http://www.opensource.org/licenses/mit-license.php
+[19]: https://opensource.org/license/mit
 [20]: https://github.com/exasol/test-db-builder-java/
 [21]: https://github.com/exasol/test-db-builder-java/blob/main/LICENSE
 [22]: https://github.com/exasol/maven-project-version-getter/
