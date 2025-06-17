@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -45,6 +46,11 @@ class ExasolFromExaQueryRewriterTest {
     private SqlGenerator sqlGeneratorMock;
     @Mock
     private Connection connectionMock;
+
+    @BeforeEach
+    void beforeEach() {
+        when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
+    }
 
     @Test
     void rewritePushdownQuery() throws AdapterException, SQLException {

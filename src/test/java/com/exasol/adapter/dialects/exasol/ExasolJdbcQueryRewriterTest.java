@@ -4,8 +4,7 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +13,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -40,6 +40,11 @@ class ExasolJdbcQueryRewriterTest {
     private ConnectionFactory connectionFactoryMock;
     @Mock
     private ExaMetadata exaMetadataMock;
+
+    @BeforeEach
+    void beforeEach() throws SQLException {
+        lenient().when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
+    }
 
     @Test
     void pushdownQuery() throws AdapterException, SQLException {

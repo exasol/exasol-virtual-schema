@@ -2,6 +2,7 @@ package com.exasol.adapter.dialects.exasol;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Mockito.when;
 
 import java.sql.Types;
 
@@ -26,6 +27,7 @@ class ExasolColumnMetadataReaderTest {
     @BeforeEach
     void beforeEach() {
         this.exaMetadataMock = Mockito.mock(ExaMetadata.class);
+        when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
         this.exasolColumnMetadataReader = new ExasolColumnMetadataReader(null, AdapterProperties.emptyProperties(),
                 exaMetadataMock, BaseIdentifierConverter.createDefault());
     }
@@ -42,22 +44,22 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
-        assertTypeMapped(timestamp(), DataType.createTimestamp(true, 3));
+        assertTypeMapped(timestamp(3), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestamp().typeName("unknown"), DataType.createTimestamp(true, 3));
+        assertTypeMapped(timestamp(9).typeName("unknown"), DataType.createTimestamp(true, 9));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezone() {
-        assertTypeMapped(timestampWithTimeZone(), DataType.createTimestamp(true, 3));
+        assertTypeMapped(timestampWithTimeZone(3), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestampWithTimeZone().typeName("unknown"), DataType.createTimestamp(true, 3));
+        assertTypeMapped(timestampWithTimeZone(8).typeName("unknown"), DataType.createTimestamp(true, 8));
     }
 
     @Test
@@ -149,7 +151,7 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeDefault() {
-        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 0, 0, "BOOLEAN");
+        final JDBCTypeDescription jdbcTypeDescription = new JDBCTypeDescription(Types.BOOLEAN, 0, 3, 0, "BOOLEAN");
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(jdbcTypeDescription), equalTo(DataType.createBool()));
     }
 
@@ -187,12 +189,12 @@ class ExasolColumnMetadataReaderTest {
         return jdbcType("HASHTYPE").jdbcType(ExasolColumnMetadataReader.EXASOL_HASHTYPE).byteSize(byteSize);
     }
 
-    private static JdbcTypeBuilder timestampWithTimeZone() {
-        return jdbcType("TIMESTAMP WITH LOCAL TIME ZONE").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP);
+    private static JdbcTypeBuilder timestampWithTimeZone(int precision) {
+        return jdbcType("TIMESTAMP WITH LOCAL TIME ZONE").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
-    private static JdbcTypeBuilder timestamp() {
-        return jdbcType("TIMESTAMP").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP);
+    private static JdbcTypeBuilder timestamp(int precision) {
+        return jdbcType("TIMESTAMP").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
     private static JdbcTypeBuilder geometry(final int srid) {

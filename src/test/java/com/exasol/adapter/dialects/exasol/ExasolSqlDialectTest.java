@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
@@ -58,6 +59,7 @@ class ExasolSqlDialectTest {
     @BeforeEach
     void beforeEach() {
         this.dialect = testee(AdapterProperties.emptyProperties());
+        lenient().when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
     }
 
     private ExasolSqlDialect testee(final Map<String, String> rawProperties) {
