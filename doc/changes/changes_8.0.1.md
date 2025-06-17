@@ -1,12 +1,24 @@
-# Exasol Virtual Schema 8.0.1, released 2025-??-??
+# Exasol Virtual Schema 8.0.1, released 2025-06-17
 
-Code name:
+Code name: Timestamp precision
 
 ## Summary
 
+This release improves the support for columns types with fractional second precision (FSP), i.e. TIME, DATETIME and
+TIMESTAMP. The specified FSP will be maintained in Exasol newer versions (>= 8.32.0)
+
+This release also contains a security update. We updated the dependencies of the project to fix transitive security issues.
+
+We also added an exception for the OSSIndex for CVE-2024-55551, which is a false positive in Exasol's JDBC driver.
+This issue has been fixed quite a while back now, but the OSSIndex unfortunately does not contain the fix version of 24.2.1 (2024-12-10) set.
+
 ## Features
 
-* ISSUE_NUMBER: description
+* #123: TS(9) support in Exasol VS
+
+## Security
+
+* #129:  Fix CVE-2024-55551 in com.exasol:exasol-jdbc:jar:7.1.20:compile
 
 ## Dependency Updates
 
@@ -14,6 +26,7 @@ Code name:
 
 * Updated `com.exasol:exasol-jdbc:7.1.20` to `25.2.3`
 * Updated `com.exasol:virtual-schema-common-jdbc:12.0.0` to `13.0.0`
+* Updated `org.jacoco:org.jacoco.agent:0.8.11` to `0.8.13`
 
 ### Test Dependency Updates
 
