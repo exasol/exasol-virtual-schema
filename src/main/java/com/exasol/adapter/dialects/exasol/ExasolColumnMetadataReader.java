@@ -32,6 +32,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             "INTERVAL DAY" + DIGITS_IN_PARENTHESES + " TO SECOND" + DIGITS_IN_PARENTHESES);
     private static final Pattern SRID_PATTERN = Pattern.compile(DIGITS_IN_PARENTHESES);
 
+    private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("TIMESTAMP(?:\\((\\d+)\\))?(?: WITH LOCAL TIME ZONE)?");
+
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
      *
@@ -131,7 +133,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
-            final String schema = remoteColumn.getString("TABLE_SCHEM");
+            final String schema = remoteColumn.getString("TABLE_SCHEMA");
             final String table = remoteColumn.getString("TABLE_NAME");
             final String column = remoteColumn.getString("COLUMN_NAME");
             preparedStatement.setString(1, schema);
@@ -193,12 +195,12 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     JDBCTypeDescription extractTimestampPrecision(final ResultSet remoteColumn,
                                                   final JDBCTypeDescription typeDescription) throws SQLException {
         final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
-        final Pattern pattern = Pattern.compile("TIMESTAMP(?:\\((\\d+)\\))?(?: WITH LOCAL TIME ZONE)?");
-        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        final Matcher matcher = TIMESTAMP_PATTERN.matcher(typeDescriptionString);
         final String matcherGroup = matcher.matches() ? matcher.group(1) : null;
-        final int precision = matcherGroup != null
+        final int parsedPrecision = matcherGroup != null
                 ? Integer.parseInt(matcherGroup)
                 : 3; // Default precision
+        final int precision = Math.min(parsedPrecision, 9);
         return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(), precision,
                 typeDescription.getByteSize(), typeDescription.getTypeName());
     }

@@ -103,8 +103,8 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
         when(metadataMock.getColumnType(1)).thenReturn(4);
         final PreparedStatement statementMock = mock(PreparedStatement.class);
         when(statementMock.getMetaData()).thenReturn(metadataMock);
-        final Connection connectionMock = mock(Connection.class);
-        when(connectionMock.prepareStatement(any())).thenReturn(statementMock);
-        return connectionMock;
+        final Connection connection = mock(Connection.class);
+        when(connection.prepareStatement(any())).thenReturn(statementMock);
+        return connection;
     }
 }

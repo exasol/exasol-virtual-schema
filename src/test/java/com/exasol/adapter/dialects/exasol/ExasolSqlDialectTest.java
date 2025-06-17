@@ -115,12 +115,14 @@ class ExasolSqlDialectTest {
     }
 
     private SqlNode getTestSqlNode() {
-        // SELECT USER_ID, count(URL) FROM CLICKS
-        // WHERE 1 < USER_ID
-        // GROUP BY USER_ID
-        // HAVING 1 < COUNT(URL)
-        // ORDER BY USER_ID
-        // LIMIT 10;
+        /**
+         * SELECT USER_ID, count(URL) FROM CLICKS
+         * WHERE 1 < USER_ID
+         * GROUP BY USER_ID
+         * HAVING 1 < COUNT(URL)
+         * ORDER BY USER_ID
+         * LIMIT 10;
+         */
         final TableMetadata clicksMeta = getClicksTableMetadata();
         final SqlTable fromClause = new SqlTable("CLICKS", clicksMeta);
         final SqlSelectList selectList = SqlSelectList.createRegularSelectList(
@@ -281,13 +283,13 @@ class ExasolSqlDialectTest {
     }
 
     @Test
-    void testMissing() throws PropertyValidationException {
+    void testMissing() {
         final AdapterProperties adapterProperties = mandatory() //
                 .remove(AdapterProperties.SCHEMA_NAME_PROPERTY) //
                 .build();
         final ExasolSqlDialect sqlDialect = testee(adapterProperties);
         final Exception exception = assertThrows(PropertyValidationException.class,
-                () -> sqlDialect.validateProperties());
+                sqlDialect::validateProperties);
         assertThat(exception.getMessage(),
                 equalTo("E-VSEXA-6: EXASOL virtual schema dialect requires to specify a schema name."
                         + " Please specify a schema name using property 'SCHEMA_NAME'."));

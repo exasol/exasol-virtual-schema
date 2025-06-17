@@ -227,10 +227,12 @@ class ExasolColumnMetadataReaderTest {
                 Arguments.of("TIMESTAMP(3)", 3),
                 Arguments.of("TIMESTAMP(5)", 5),
                 Arguments.of("TIMESTAMP(9)", 9),
+                Arguments.of("TIMESTAMP(23)", 9),
                 Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", 3), // default
                 Arguments.of("TIMESTAMP(3) WITH LOCAL TIME ZONE", 3),
                 Arguments.of("TIMESTAMP(5) WITH LOCAL TIME ZONE", 5),
-                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", 9)
+                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", 9),
+                Arguments.of("TIMESTAMP(23) WITH LOCAL TIME ZONE", 9)
         );
     }
 

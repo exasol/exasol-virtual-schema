@@ -42,7 +42,7 @@ class ExasolJdbcQueryRewriterTest {
     private ExaMetadata exaMetadataMock;
 
     @BeforeEach
-    void beforeEach() throws SQLException {
+    void beforeEach() {
         lenient().when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
     }
 
