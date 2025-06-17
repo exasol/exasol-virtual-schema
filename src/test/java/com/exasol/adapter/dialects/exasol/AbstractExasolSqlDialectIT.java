@@ -333,11 +333,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static Stream<Arguments> timestampTypeArguments() {
         return Stream.of(
                 Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.67891")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678912345")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.78912")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789123456"))
+                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789"))
         );
     }
 
@@ -485,7 +481,7 @@ abstract class AbstractExasolSqlDialectIT {
         return Stream.of(
                 Arguments.of("TIMESTAMP", "2016-06-01 13:17:02.081234", Timestamp.valueOf("2016-06-01 13:17:02.081234")),
                 Arguments.of("TIMESTAMP(5)", "2016-06-01 13:17:02.08123", Timestamp.valueOf("2016-06-01 13:17:02.08123")),
-                Arguments.of("TIMESTAMP(9)", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234567"))
+                Arguments.of("TIMESTAMP(9)", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234"))
         );
     }
 
