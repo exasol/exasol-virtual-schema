@@ -333,9 +333,9 @@ abstract class AbstractExasolSqlDialectIT {
     private static Stream<Arguments> timestampTypeArguments() {
         return Stream.of(
                 Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
-                Arguments.of("TIMESTAM", Timestamp.valueOf("2020-02-02 01:23:45.678")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.67891")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678912345"))
+                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
+                Arguments.of("TIMESTAMP(5)", Timestamp.valueOf("2020-02-02 01:23:45.67891")),
+                Arguments.of("TIMESTAMP(9)", Timestamp.valueOf("2020-02-02 01:23:45.678912345"))
         );
     }
 
@@ -343,8 +343,8 @@ abstract class AbstractExasolSqlDialectIT {
         return Stream.of(
                 Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789")),
                 Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789")),
-                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.78912")),
-                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789123456"))
+                Arguments.of("TIMESTAMP(5) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.78912")),
+                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", Timestamp.valueOf("3030-03-03 12:34:56.789123456"))
         );
     }
 
@@ -500,8 +500,8 @@ abstract class AbstractExasolSqlDialectIT {
         return Stream.of(
                 Arguments.of("TIMESTAMP", value, expected),
                 Arguments.of("TIMESTAMP", value, expected),
-                Arguments.of("TIMESTAMP", "2016-06-01 13:17:02.08123", Timestamp.valueOf("2016-06-01 13:17:02.08123")),
-                Arguments.of("TIMESTAMP", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234567"))
+                Arguments.of("TIMESTAMP(5)", "2016-06-01 13:17:02.08123", Timestamp.valueOf("2016-06-01 13:17:02.08123")),
+                Arguments.of("TIMESTAMP(9)", "2016-06-01 13:17:02.081234567", Timestamp.valueOf("2016-06-01 13:17:02.081234567"))
         );
     }
 
@@ -510,8 +510,8 @@ abstract class AbstractExasolSqlDialectIT {
         return Stream.of(
                 Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", base, Timestamp.valueOf(base)),
                 Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", base, Timestamp.valueOf(base)),
-                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", "2017-11-03 14:18:02.08112", Timestamp.valueOf("2017-11-03 14:18:02.08112")),
-                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", "2017-11-03 14:18:02.081123456", Timestamp.valueOf("2017-11-03 14:18:02.081123456"))
+                Arguments.of("TIMESTAMP(5) WITH LOCAL TIME ZONE", "2017-11-03 14:18:02.08112", Timestamp.valueOf("2017-11-03 14:18:02.08112")),
+                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", "2017-11-03 14:18:02.081123456", Timestamp.valueOf("2017-11-03 14:18:02.081123456"))
         );
     }
 
