@@ -117,7 +117,7 @@ IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT 
 ##### Data type mismatch
 
 In case you run into a `Data type mismatch` issue which looks like this:
-`Adapter generated invalid pushdown query for virtual table <TABLENAME>: Data type mismatch in column number <COLUMN NUMBER>  (1-indexed).Expected <EXPECTED IMPORT TYPE>, but got <IMPORT TYPE>.`
+`Adapter generated invalid pushdown query for virtual table <TABLENAME>: Data type mismatch in column number <COLUMN NUMBER>  (1-indexed). Expected <EXPECTED IMPORT TYPE>, but got <IMPORT TYPE>.`
 
 You can set the datatype mapping to true: `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`. 
 This will usually solve the issue by providing type hints.

@@ -26,8 +26,12 @@ class ExasolColumnMetadataReaderTest {
 
     @BeforeEach
     void beforeEach() {
+        prepareMocks("8.34.0");
+    }
+
+    private void prepareMocks(String exaDbVersion) {
         this.exaMetadataMock = Mockito.mock(ExaMetadata.class);
-        when(exaMetadataMock.getDatabaseVersion()).thenReturn("8.34.0");
+        when(exaMetadataMock.getDatabaseVersion()).thenReturn(exaDbVersion);
         this.exasolColumnMetadataReader = new ExasolColumnMetadataReader(null, AdapterProperties.emptyProperties(),
                 exaMetadataMock, BaseIdentifierConverter.createDefault());
     }
@@ -44,21 +48,49 @@ class ExasolColumnMetadataReaderTest {
 
     @Test
     void testMapJdbcTypeTimestamp() {
+        assertMapJdbcTypeTimestamp("8.29.9");
+        assertMapJdbcTypeTimestamp("8.34.0");
+        assertMapJdbcTypeTimestamp("7.1.30");
+    }
+
+    private void assertMapJdbcTypeTimestamp(String exaDbVersion) {
+        prepareMocks(exaDbVersion);
         assertTypeMapped(timestamp(3), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampWithUnknownJdbcTypeName() {
+        assertMapJdbcTypeTimestampWithUnknownJdbcTypeName("8.29.9");
+        assertMapJdbcTypeTimestampWithUnknownJdbcTypeName("8.34.0");
+        assertMapJdbcTypeTimestampWithUnknownJdbcTypeName("7.1.30");
+    }
+
+    private void assertMapJdbcTypeTimestampWithUnknownJdbcTypeName(String exaDbVersion) {
+        prepareMocks(exaDbVersion);
         assertTypeMapped(timestamp(9).typeName("unknown"), DataType.createTimestamp(true, 9));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezone() {
+        assertMapJdbcTypeTimestampLocalTimezone("8.34.0");
+        assertMapJdbcTypeTimestampLocalTimezone("8.29.9");
+        assertMapJdbcTypeTimestampLocalTimezone("7.1.30");
+    }
+
+    private void assertMapJdbcTypeTimestampLocalTimezone(String exaDbVersion) {
+        prepareMocks(exaDbVersion);
         assertTypeMapped(timestampWithTimeZone(3), DataType.createTimestamp(true, 3));
     }
 
     @Test
     void testMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName() {
+        assertMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName("8.34.0");
+        assertMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName("8.29.9");
+        assertMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName("7.1.30");
+    }
+
+    private void assertMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName(String exaDbVersion) {
+        prepareMocks(exaDbVersion);
         assertTypeMapped(timestampWithTimeZone(8).typeName("unknown"), DataType.createTimestamp(true, 8));
     }
 
