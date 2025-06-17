@@ -133,7 +133,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
-            final String schema = remoteColumn.getString("TABLE_SCHEMA");
+            final String schema = remoteColumn.getString("TABLE_SCHEM");
             final String table = remoteColumn.getString("TABLE_NAME");
             final String column = remoteColumn.getString("COLUMN_NAME");
             preparedStatement.setString(1, schema);
@@ -176,20 +176,31 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     /**
      * Extracts the precision for a TIMESTAMP type from the type description string of a column.
      * <p>
-     * This method parses the type description string (e.g., "TIMESTAMP(3)", "TIMESTAMP WITH LOCAL TIME ZONE")
-     * to determine the precision. If no precision is explicitly defined, it defaults to {@code 3}.
+     * This method parses the type description string (e.g., {@code "TIMESTAMP(3)"},
+     * {@code "TIMESTAMP WITH LOCAL TIME ZONE"}) to determine the precision of the timestamp.
+     * If no precision is explicitly defined, it defaults to {@code 3}.
      * <p>
      * Supported formats include:
      * <ul>
      *     <li>{@code TIMESTAMP}</li>
      *     <li>{@code TIMESTAMP(5)}</li>
+     *     <li>{@code TIMESTAMP(9)}</li>
+     *     <li>{@code TIMESTAMP(23)}</li>
      *     <li>{@code TIMESTAMP WITH LOCAL TIME ZONE}</li>
+     *     <li>{@code TIMESTAMP(3) WITH LOCAL TIME ZONE}</li>
      *     <li>{@code TIMESTAMP(9) WITH LOCAL TIME ZONE}</li>
+     *     <li>{@code TIMESTAMP(23) WITH LOCAL TIME ZONE}</li>
      * </ul>
+     * <p>
+     * Example:
+     * <pre>
+     *     TIMESTAMP(23) --> precision = 9
+     * </pre>
+     * Any precision value greater than 9 is converted to 9, as Exasol supports a maximum timestamp precision of 9.
      *
      * @param remoteColumn     the {@link ResultSet} row representing the column metadata
      * @param typeDescription  the original {@link JDBCTypeDescription} to update with extracted precision
-     * @return a new {@link JDBCTypeDescription} containing the updated precision
+     * @return a new {@link JDBCTypeDescription} containing the updated precision (capped at 9 if necessary)
      * @throws SQLException if accessing the type description string from the result set fails
      */
     JDBCTypeDescription extractTimestampPrecision(final ResultSet remoteColumn,
