@@ -4,12 +4,17 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
 import com.exasol.ExaMetadata;
@@ -193,6 +198,40 @@ class ExasolColumnMetadataReaderTest {
             "GEOMETRY(2222), 2222" })
     void testExtractSrid(final String input, final int expected) {
         assertThat(this.exasolColumnMetadataReader.extractSrid(input), equalTo(expected));
+    }
+
+    @ParameterizedTest
+    @MethodSource("timestampTypeDescriptions")
+    void testExtractTimestampPrecisionFromTypeString(final String typeDescription, final int expectedPrecision)
+            throws SQLException {
+        final ResultSet resultSetMock = Mockito.mock(ResultSet.class);
+        when(resultSetMock.getString("COLUMN_SCHEMA")).thenReturn("MY_SCHEMA");
+        when(resultSetMock.getString("COLUMN_TABLE")).thenReturn("MY_TABLE");
+        when(resultSetMock.getString("COLUMN_NAME")).thenReturn("MY_COLUMN");
+
+        final ExasolColumnMetadataReader readerSpy = Mockito.spy(this.exasolColumnMetadataReader);
+        Mockito.doReturn(typeDescription).when(readerSpy).getTypeDescriptionStringForColumn(resultSetMock);
+
+        final JDBCTypeDescription baseDescription = new JDBCTypeDescription(
+                ExasolColumnMetadataReader.EXASOL_TIMESTAMP, 0, 0, 0, "TIMESTAMP WITH LOCAL TIME ZONE");
+
+        // Call the precision extractor directly
+        final JDBCTypeDescription result = readerSpy.extractTimestampPrecision(resultSetMock, baseDescription);
+
+        assertThat(result.getPrecisionOrSize(), equalTo(expectedPrecision));
+    }
+
+    private static Stream<Arguments> timestampTypeDescriptions() {
+        return Stream.of(
+                Arguments.of("TIMESTAMP", 3), // default
+                Arguments.of("TIMESTAMP(3)", 3),
+                Arguments.of("TIMESTAMP(5)", 5),
+                Arguments.of("TIMESTAMP(9)", 9),
+                Arguments.of("TIMESTAMP WITH LOCAL TIME ZONE", 3), // default
+                Arguments.of("TIMESTAMP(3) WITH LOCAL TIME ZONE", 3),
+                Arguments.of("TIMESTAMP(5) WITH LOCAL TIME ZONE", 5),
+                Arguments.of("TIMESTAMP(9) WITH LOCAL TIME ZONE", 9)
+        );
     }
 
     private void assertTypeMapped(final JdbcTypeBuilder typeBuilder, final DataType expectedDataType) {

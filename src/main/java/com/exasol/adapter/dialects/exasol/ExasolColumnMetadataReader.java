@@ -96,6 +96,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
         case EXASOL_GEOMETRY:
             return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
+        case EXASOL_TIMESTAMP:
+            return extractTimestampPrecision(remoteColumn, typeDescription);
         default:
             return typeDescription;
         }
@@ -126,7 +128,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         }
     }
 
-    private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
+    String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
             final String schema = remoteColumn.getString("TABLE_SCHEM");
@@ -167,5 +169,37 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-3") //
                     .message("Failed to extract INTERVAL YEAR TO MONTH precision").toString());
         }
+    }
+
+    /**
+     * Extracts the precision for a TIMESTAMP type from the type description string of a column.
+     * <p>
+     * This method parses the type description string (e.g., "TIMESTAMP(3)", "TIMESTAMP WITH LOCAL TIME ZONE")
+     * to determine the precision. If no precision is explicitly defined, it defaults to {@code 3}.
+     * <p>
+     * Supported formats include:
+     * <ul>
+     *     <li>{@code TIMESTAMP}</li>
+     *     <li>{@code TIMESTAMP(5)}</li>
+     *     <li>{@code TIMESTAMP WITH LOCAL TIME ZONE}</li>
+     *     <li>{@code TIMESTAMP(9) WITH LOCAL TIME ZONE}</li>
+     * </ul>
+     *
+     * @param remoteColumn     the {@link ResultSet} row representing the column metadata
+     * @param typeDescription  the original {@link JDBCTypeDescription} to update with extracted precision
+     * @return a new {@link JDBCTypeDescription} containing the updated precision
+     * @throws SQLException if accessing the type description string from the result set fails
+     */
+    JDBCTypeDescription extractTimestampPrecision(final ResultSet remoteColumn,
+                                                  final JDBCTypeDescription typeDescription) throws SQLException {
+        final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
+        final Pattern pattern = Pattern.compile("TIMESTAMP(?:\\((\\d+)\\))?(?: WITH LOCAL TIME ZONE)?");
+        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        final String matcherGroup = matcher.group(1);
+        final int precision = matcher.matches() && matcherGroup != null
+                ? Integer.parseInt(matcherGroup)
+                : 3; // Default precision
+        return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(), precision,
+                typeDescription.getByteSize(), typeDescription.getTypeName());
     }
 }
