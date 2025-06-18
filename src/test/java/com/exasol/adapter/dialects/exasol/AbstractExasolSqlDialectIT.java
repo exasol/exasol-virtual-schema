@@ -13,15 +13,14 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
@@ -88,11 +87,32 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static String getTestHostIpFromInsideExasol() {
-        final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
-        if (networks.size() == 0) {
+        String localEnv = System.getenv("LOCAL_ENV");
+
+        if (localEnv == null || !localEnv.equalsIgnoreCase("true")) {
+            // This works inside GitHub Actions container environment
+            final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+            return networks.values().iterator().next().getGateway();
+        } else {
+            // Fallback for local machine: find a non-loopback IPv4 address
+            try {
+                Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+                for (NetworkInterface netint : Collections.list(nets)) {
+                    if (netint.isUp() && !netint.isLoopback()) {
+                        Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+                        for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+                            if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
+                                return inetAddress.getHostAddress();
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // If everything fails, return null or throw
             return null;
         }
-        return networks.values().iterator().next().getGateway();
     }
 
     private static AdapterScript installVirtualSchemaAdapter(final ExasolSchema adapterSchema)
