@@ -67,7 +67,7 @@ abstract class AbstractExasolSqlDialectIT {
     protected static AdapterScript adapterScript;
     protected ExasolSchema sourceSchema;
     protected User user;
-    protected VirtualSchema virtualSchema;
+    protected VirtualSchema testVirtualSchema;
     private ConnectionDefinition jdbcConnection;
     private final Set<String> expectVarcharFor = expectVarcharFor();
 
@@ -124,7 +124,7 @@ abstract class AbstractExasolSqlDialectIT {
         this.sourceSchema = objectFactory.createSchema("SOURCE_SCHEMA");
         this.user = objectFactory.createLoginUser("VS_USER", "VS_USER_PWD").grant(this.sourceSchema, SELECT);
         this.jdbcConnection = createAdapterConnectionDefinition(this.user);
-        this.virtualSchema = null;
+        this.testVirtualSchema = null;
     }
 
     private ConnectionDefinition createAdapterConnectionDefinition(final User user) {
@@ -140,8 +140,8 @@ abstract class AbstractExasolSqlDialectIT {
 
     @AfterEach
     void afterEach() {
-        dropAll(this.virtualSchema, this.jdbcConnection, this.user, this.sourceSchema);
-        this.virtualSchema = null;
+        dropAll(this.testVirtualSchema, this.jdbcConnection, this.user, this.sourceSchema);
+        this.testVirtualSchema = null;
         this.jdbcConnection = null;
         this.user = null;
         this.sourceSchema = null;
@@ -333,7 +333,10 @@ abstract class AbstractExasolSqlDialectIT {
     private static Stream<Arguments> timestampTypeArguments() {
         return Stream.of(
                 Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789"))
+                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789")),
+                Arguments.of("TIMESTAMP(3)", Timestamp.valueOf("3030-03-03 12:34:56.123")),
+                Arguments.of("TIMESTAMP(5)", Timestamp.valueOf("3030-03-03 12:34:56.12345")),
+                Arguments.of("TIMESTAMP(9)", Timestamp.valueOf("3030-03-03 12:34:56.123456789"))
         );
     }
 
@@ -354,16 +357,16 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testDecimalLiteral() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT 10.2 FROM " + getVirtualTableName(this.virtualSchema, table),
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("SELECT 10.2 FROM " + getVirtualTableName(this.testVirtualSchema, table),
                 table("DECIMAL").row(BigDecimal.valueOf(10.2)).matches());
     }
 
     @Test
     void testDoubleLiteral() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("SELECT CAST(10.2 as DOUBLE) FROM " + getVirtualTableName(this.virtualSchema, table),
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("SELECT CAST(10.2 as DOUBLE) FROM " + getVirtualTableName(this.testVirtualSchema, table),
                 table("DOUBLE PRECISION").row(10.2).matches());
     }
 
@@ -375,9 +378,9 @@ abstract class AbstractExasolSqlDialectIT {
             this.user.grant(mixedCaseSchema, SELECT);
             final Table table = mixedCaseSchema.createTable("MixedCaseTable", "Column1", "VARCHAR(20)", "column2",
                     "VARCHAR(20)", "COLUMN3", "VARCHAR(20)").insert("foo", "bar", "baz");
-            this.virtualSchema = createVirtualSchema(mixedCaseSchema);
+            this.testVirtualSchema = createVirtualSchema(mixedCaseSchema);
             assertVsQuery(
-                    "SELECT \"Column1\", \"column2\", COLUMN3 FROM " + getVirtualTableName(this.virtualSchema, table),
+                    "SELECT \"Column1\", \"column2\", COLUMN3 FROM " + getVirtualTableName(this.testVirtualSchema, table),
                     table().row("foo", "bar", "baz").matches());
         } finally {
             dropAll(mixedCaseSchema);
@@ -415,17 +418,17 @@ abstract class AbstractExasolSqlDialectIT {
                 .insert(102, 1) //
                 .insert(103, 2) //
                 .insert(104, null);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final String sql = "SELECT " + concat + "FROM " + getVirtualTableName(this.virtualSchema, table);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String sql = "SELECT " + concat + "FROM " + getVirtualTableName(this.testVirtualSchema, table);
         assertVsQuery(sql, table().row(concatResult).matches());
     }
 
     @Test
     void testExtractFromDate() {
         final Table table = createSingleColumnTable("DATE").insert("2000-11-01");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT EXTRACT(MONTH FROM " + getColumnName(table, 0) + ") FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row((short) 11).matches());
+                + getVirtualTableName(this.testVirtualSchema, table), table().row((short) 11).matches());
     }
 
     private String getColumnName(final Table table, final int index) {
@@ -435,9 +438,9 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testExtractFromInterval() {
         final Table table = createSingleColumnTable("INTERVAL YEAR(3) TO MONTH").insert("123-09");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT EXTRACT(MONTH FROM " + getColumnName(table, 0) + ") FROM "
-                + getVirtualTableName(this.virtualSchema, table), table().row((short) 9).matches());
+                + getVirtualTableName(this.testVirtualSchema, table), table().row((short) 9).matches());
     }
 
     @Test
@@ -475,10 +478,20 @@ abstract class AbstractExasolSqlDialectIT {
                 .verify("POINT (2 5)");
     }
 
-    @Test
-    void testCastVarcharAsTimestamp() {
-        final String timestampAsString = "2016-06-01 13:17:02.081";
-        castFrom("VARCHAR(30)").to("TIMESTAMP").input(timestampAsString).verify(Timestamp.valueOf(timestampAsString));
+    private static Stream<Arguments> varcharTypeArguments() {
+        return Stream.of(
+                Arguments.of("TIMESTAMP",    "2020-02-02 01:23:45.678"),
+                Arguments.of("TIMESTAMP(3)", "3030-03-03 12:34:56.123"),
+                Arguments.of("TIMESTAMP(5)", "3030-03-03 12:34:56.12345"),
+                Arguments.of("TIMESTAMP(9)", "3030-03-03 12:34:56.123456789")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("varcharTypeArguments")
+    void testCastVarcharAsTimestamp(String columnType, String timestampAsString) {
+        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        castFrom("VARCHAR(30)").to(columnType).input(timestampAsString).verify(timestamp);
     }
 
     @Test
@@ -496,18 +509,18 @@ abstract class AbstractExasolSqlDialectIT {
     @Test
     void testCaseEqual() {
         final Table table = createSingleColumnTable("INTEGER").insert(1).insert(2).insert(3);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT CASE C1 WHEN 1 THEN 'YES' WHEN 2 THEN 'PERHAPS' ELSE 'NO' END FROM " //
-                + getVirtualTableName(this.virtualSchema, table), //
+                + getVirtualTableName(this.testVirtualSchema, table), //
                 table().row("YES").row("PERHAPS").row("NO").matches());
     }
 
     @Test
     void testCaseGreaterThan() {
         final Table table = createSingleColumnTable("INTEGER").insert(1).insert(2).insert(3);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT CASE WHEN C1 > 1 THEN 'YES' ELSE 'NO' END FROM " //
-                + getVirtualTableName(this.virtualSchema, table), //
+                + getVirtualTableName(this.testVirtualSchema, table), //
                 table().row("NO").row("YES").row("YES").matches());
     }
 
@@ -527,7 +540,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .insert("K1", "L1").insert(null, "L2").insert("K3", "L3");
         this.sourceSchema.createTable("TR", COLUMN1_NAME, "VARCHAR(2)", "C2", "VARCHAR(2)") //
                 .insert("K1", "R1").insert("K2", "R2").insert(null, "R3");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
     }
 
     @Test
@@ -603,22 +616,22 @@ abstract class AbstractExasolSqlDialectIT {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
         properties.put("IGNORE_ERRORS", EXASOL_TIMESTAMP_WITH_LOCAL_TIME_ZONE_SWITCH);
-        this.virtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
+        this.testVirtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
                 .properties(properties) //
                 .connectionDefinition(this.jdbcConnection) //
                 .build();
-        assertThat(query("SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table)),
+        assertThat(query("SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.testVirtualSchema, table)),
                 instanceOf(ResultSet.class));
     }
 
     @Test
     void testCreateVirtualSchemaWithoutIgnoreErrorsPropertyThrowsException() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertQueryFailsWithErrorContaining(
-                "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.virtualSchema, table), //
+                "SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.testVirtualSchema, table), //
                 "Attention! Using literals and constant expressions with datatype " //
                         + "`TIMESTAMP WITH LOCAL TIME ZONE` in Virtual Schemas can produce incorrect results.");
     }
@@ -632,7 +645,7 @@ abstract class AbstractExasolSqlDialectIT {
         table.insert(true, "varchar_1", 10);
         table.insert(false, "varchar_2", -10);
         createVirtualSchemaWithoutSelectListProjectionCapability();
-        assertVsQuery(select + " FROM " + getVirtualTableName(this.virtualSchema, table), //
+        assertVsQuery(select + " FROM " + getVirtualTableName(this.testVirtualSchema, table), //
                 table() //
                         .row(true, "varchar_1", 10) //
                         .row(false, "varchar_2", -10) //
@@ -642,7 +655,7 @@ abstract class AbstractExasolSqlDialectIT {
     private void createVirtualSchemaWithoutSelectListProjectionCapability() {
         final Map<String, String> properties = new HashMap<>(getConnectionSpecificVirtualSchemaProperties());
         properties.put("EXCLUDED_CAPABILITIES", "SELECTLIST_PROJECTION");
-        this.virtualSchema = objectFactory
+        this.testVirtualSchema = objectFactory
                 .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
@@ -898,8 +911,8 @@ abstract class AbstractExasolSqlDialectIT {
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
         this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.testVirtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null).matches());
     }
 
@@ -909,8 +922,8 @@ abstract class AbstractExasolSqlDialectIT {
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
         this.sourceSchema.createTable("AXA", "X", "VARCHAR(20)");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        assertVsQuery("describe " + this.virtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        assertVsQuery("describe " + this.testVirtualSchema.getFullyQualifiedName() + ".\"" + nameWithWildcard + "\"",
                 table().row("A", "VARCHAR(20) UTF8", null, null, null, null).matches());
     }
 
@@ -1080,7 +1093,7 @@ abstract class AbstractExasolSqlDialectIT {
 
         public void verify(final Object... expectedValues) {
             final Table table = prepareInputTable();
-            this.parent.virtualSchema = this.parent.createVirtualSchema(this.parent.sourceSchema);
+            this.parent.testVirtualSchema = this.parent.createVirtualSchema(this.parent.sourceSchema);
             final Builder expectedTable = prepareExpectation(expectedValues);
             this.parent.assertVsQuery(createCastQuery(table), expectedTable.matches());
         }
@@ -1110,7 +1123,7 @@ abstract class AbstractExasolSqlDialectIT {
 
         private String createCastQuery(final Table table) {
             return "SELECT CAST(" + this.parent.getColumnName(table, 0) + " AS " + this.castToType + ") FROM "
-                    + this.parent.getVirtualTableName(this.parent.virtualSchema, table);
+                    + this.parent.getVirtualTableName(this.parent.testVirtualSchema, table);
         }
     }
 }

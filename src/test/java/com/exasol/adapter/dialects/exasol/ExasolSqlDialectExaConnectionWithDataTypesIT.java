@@ -65,8 +65,8 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
     @Test
     void testPasswordNotVisibleInImportFromExa() throws NoDriverFoundException, SQLException {
         final Table table = this.sourceSchema.createTable("T1", "C1", "VARCHAR(20)").insert("Hello.");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final String sql = "SELECT * FROM " + this.virtualSchema.getFullyQualifiedName() + ".\"" + table.getName()
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String sql = "SELECT * FROM " + this.testVirtualSchema.getFullyQualifiedName() + ".\"" + table.getName()
                 + "\"";
         assertThat(explainVirtual(sql), //
                 table().row( //
@@ -84,8 +84,8 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
 
     @Test
     void testAlterVirtualSchemaTriggersPropertyValidation() throws SQLException {
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final String name = this.virtualSchema.getFullyQualifiedName();
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String name = this.testVirtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
                 () -> query("alter virtual schema {0} set EXA_CONNECTION = Null", name));
         final String expected = PropertyValidationException.class.getName() + ": E-VSCJDBC-17";

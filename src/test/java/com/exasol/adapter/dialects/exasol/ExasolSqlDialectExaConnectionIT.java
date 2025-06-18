@@ -86,8 +86,8 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testPasswordNotVisibleInImportFromExa() throws NoDriverFoundException, SQLException {
         assumeExasol7OrLower();
         final Table table = this.sourceSchema.createTable("T1", "C1", "VARCHAR(20)").insert("Hello.");
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final String sql = "SELECT * FROM " + this.virtualSchema.getFullyQualifiedName() + ".\"" + table.getName()
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String sql = "SELECT * FROM " + this.testVirtualSchema.getFullyQualifiedName() + ".\"" + table.getName()
                 + "\"";
         assertThat(explainVirtual(sql), //
                 table().row( //
@@ -105,8 +105,8 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
 
     @Test
     void testAlterVirtualSchemaTriggersPropertyValidation() {
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
-        final String name = this.virtualSchema.getFullyQualifiedName();
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String name = this.testVirtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
                 () -> query("alter virtual schema {0} set EXA_CONNECTION = Null", name));
         final String expected = PropertyValidationException.class.getName() + ": E-VSCJDBC-17";
@@ -339,9 +339,9 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testCaseEqual() {
         assumeExasol7OrLower();
         final Table table = createSingleColumnTable("INTEGER").insert(1).insert(2).insert(3);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT CASE C1 WHEN 1 THEN 'YES' WHEN 2 THEN 'PERHAPS' ELSE 'NO' END FROM " //
-                + getVirtualTableName(this.virtualSchema, table), //
+                + getVirtualTableName(this.testVirtualSchema, table), //
                 table().row("YES").row("PERHAPS").row("NO").matches());
     }
 
@@ -350,9 +350,9 @@ class ExasolSqlDialectExaConnectionIT extends AbstractRemoteExasolVirtualSchemaC
     void testCaseGreaterThan() {
         assumeExasol7OrLower();
         final Table table = createSingleColumnTable("INTEGER").insert(1).insert(2).insert(3);
-        this.virtualSchema = createVirtualSchema(this.sourceSchema);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         assertVsQuery("SELECT CASE WHEN C1 > 1 THEN 'YES' ELSE 'NO' END FROM " //
-                + getVirtualTableName(this.virtualSchema, table), //
+                + getVirtualTableName(this.testVirtualSchema, table), //
                 table().row("NO").row("YES").row("YES").matches());
     }
 }
