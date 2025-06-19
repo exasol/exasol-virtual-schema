@@ -33,6 +33,7 @@ import org.opentest4j.AssertionFailedError;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.exasol.adapter.dialects.exasol.release.ExasolDbVersion;
 import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
@@ -353,15 +354,26 @@ abstract class AbstractExasolSqlDialectIT {
     @ParameterizedTest
     @CsvSource({
             "'TIMESTAMP', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'"
+    })
+    void testTimestampWithDefaultPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
+        Assumptions.assumeFalse(supportTimestampPrecision());
+        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
+        assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "'TIMESTAMP(3)', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5)', 'TIMESTAMP', '3030-03-03 12:34:56.12345'",
             "'TIMESTAMP(9)', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'",
-            "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(3) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.12345'",
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'"
     })
-    void testTimestampMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
+    void testTimestampWithCustomPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
+        Assumptions.assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
@@ -501,13 +513,22 @@ abstract class AbstractExasolSqlDialectIT {
     @ParameterizedTest
     @CsvSource({
             "'TIMESTAMP', '2020-02-02 01:23:45.678'",
+            "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'"
+    })
+    void testCastVarcharAsTimestampWithDefaultPrecision(String timestampType, String timestampAsString) {
+        Assumptions.assumeFalse(supportTimestampPrecision());
+        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
             "'TIMESTAMP(3)', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5)', '3030-03-03 12:34:56.12345'",
             "'TIMESTAMP(6)', '3030-03-03 12:34:56.123456'",
             "'TIMESTAMP(7)', '3030-03-03 12:34:56.123456'",
             "'TIMESTAMP(8)', '3030-03-03 12:34:56.123456'",
             "'TIMESTAMP(9)', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'",
             "'TIMESTAMP(3) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.12345'",
             "'TIMESTAMP(6) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
@@ -515,9 +536,22 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP(8) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'"
     })
-    void testCastVarcharAsTimestamp(String timestampType, String timestampAsString) {
+    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) {
+        Assumptions.assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
+    }
+
+    private boolean supportTimestampPrecision() {
+        final ExasolDockerImageReference dockerImage = EXASOL.getDockerImageReference();
+        if (!dockerImage.hasMajor() || !dockerImage.hasMinor() || !dockerImage.hasFix()) {
+            return false;
+        }
+        final ExasolDbVersion exasolDbVersion = ExasolDbVersion.of(dockerImage.getMajor(), dockerImage.getMinor(), dockerImage.getFixVersion());
+        if ((dockerImage.getMajor() == 8) && exasolDbVersion.isGreaterOrEqualThan(ExasolDbVersion.parse("8.32.0"))) {
+            return true;
+        }
+        return false;
     }
 
     @Test
