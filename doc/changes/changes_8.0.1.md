@@ -4,8 +4,7 @@ Code name: Timestamp precision
 
 ## Summary
 
-This release improves the support for columns types with fractional second precision (FSP), i.e. TIME, DATETIME and
-TIMESTAMP. The specified FSP will be maintained in Exasol newer versions (>= 8.32.0)
+This release improves the support for TIMESTAMP columns types with fractional second precision (FSP). The specified FSP will be maintained in Exasol newer versions (>= 8.32.0)
 
 This release also contains a security update. We updated the dependencies of the project to fix transitive security issues.
 
@@ -18,7 +17,7 @@ This issue has been fixed quite a while back now, but the OSSIndex unfortunately
 
 ## Security
 
-* #129:  Fix CVE-2024-55551 in com.exasol:exasol-jdbc:jar:7.1.20:compile
+* #129: Fix CVE-2024-55551 in `com.exasol:exasol-jdbc:jar:7.1.20:compile`
 
 ## Dependency Updates
 
@@ -37,7 +36,9 @@ This issue has been fixed quite a while back now, but the OSSIndex unfortunately
 * Updated `com.exasol:virtual-schema-common-jdbc:12.0.0` to `13.0.0`
 * Updated `org.hamcrest:hamcrest:2.2` to `3.0`
 * Updated `org.jacoco:org.jacoco.agent:0.8.11` to `0.8.13`
-* Updated `org.junit.jupiter:junit-jupiter:5.10.2` to `5.13.1`
+* Added `org.junit.jupiter:junit-jupiter-api:5.13.1`
+* Added `org.junit.jupiter:junit-jupiter-params:5.13.1`
+* Removed `org.junit.jupiter:junit-jupiter:5.10.2`
 * Updated `org.mockito:mockito-junit-jupiter:5.10.0` to `5.18.0`
 * Updated `org.slf4j:slf4j-jdk14:2.0.12` to `2.0.17`
 * Updated `org.testcontainers:junit-jupiter:1.19.6` to `1.21.1`

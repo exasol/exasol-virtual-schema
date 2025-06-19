@@ -10,6 +10,7 @@
         <virtual-schema-common-jdbc.version>13.0.0</virtual-schema-common-jdbc.version>
         <exasol-jdbc.version>25.2.3</exasol-jdbc.version>
         <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
+        <junit-jupiter.version>5.13.1</junit-jupiter.version>
     </properties>
     <dependencies>
         <dependency>
@@ -44,8 +45,14 @@
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>5.13.1</version>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit-jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit-jupiter.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

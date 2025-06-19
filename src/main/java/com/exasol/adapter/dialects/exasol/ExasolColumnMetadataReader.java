@@ -75,6 +75,17 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         }
     }
 
+    /**
+     * Converts a given decimal scale into an Exasol {@link DataType} representing a TIMESTAMP.
+     * <p>
+     * If the system supports timestamps with nanosecond precision, the fractional precision
+     * of the timestamp will be set to the minimum of the provided decimal scale and 9
+     * (since nanosecond precision supports up to 9 fractional digits).
+     * Otherwise, a default fractional precision of 3 (milliseconds) is used.
+     *
+     * @param decimalScale the number of fractional digits to use for the TIMESTAMP precision
+     * @return a {@link DataType} representing a TIMESTAMP with the appropriate fractional precision
+     */
     private DataType convertTimestamp(final int decimalScale) {
         if (supportsTimestampsWithNanoPrecision()) {
             final int fractionalPrecision = Math.min(decimalScale, 9);
