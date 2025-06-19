@@ -67,7 +67,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         case EXASOL_GEOMETRY:
             return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_TIMESTAMP:
-            return Optional.of(convertTimestamp(jdbcTypeDescription.getDecimalScale()));
+            return Optional.of(convertExasolTimestamp(jdbcTypeDescription.getDecimalScale()));
         case EXASOL_HASHTYPE:
             return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
         default:
@@ -86,7 +86,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * @param decimalScale the number of fractional digits to use for the TIMESTAMP precision
      * @return a {@link DataType} representing a TIMESTAMP with the appropriate fractional precision
      */
-    private DataType convertTimestamp(final int decimalScale) {
+    private DataType convertExasolTimestamp(final int decimalScale) {
         if (supportsTimestampsWithNanoPrecision()) {
             final int fractionalPrecision = Math.min(decimalScale, 9);
             return DataType.createTimestamp(true, fractionalPrecision);
@@ -145,7 +145,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         }
     }
 
-    String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
+    private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
                 "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
             final String schema = remoteColumn.getString("TABLE_SCHEM");

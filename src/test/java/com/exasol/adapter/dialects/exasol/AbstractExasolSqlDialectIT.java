@@ -959,7 +959,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testWildcards() throws SQLException {
+    void testWildcards() {
         assumeExasol7OrLower();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
@@ -970,7 +970,7 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    void testWildcardsExasolV8() throws SQLException {
+    void testWildcardsExasolV8() {
         assumeExasol8OrHigher();
         final String nameWithWildcard = "A_A";
         this.sourceSchema.createTable(nameWithWildcard, "A", "VARCHAR(20)");
