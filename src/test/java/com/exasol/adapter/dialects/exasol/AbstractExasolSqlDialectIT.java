@@ -23,14 +23,11 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Logger;
-import java.util.stream.Stream;
 
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.opentest4j.AssertionFailedError;
 import org.testcontainers.junit.jupiter.Container;
@@ -87,11 +84,14 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     private static String getTestHostIpFromInsideExasol() {
-        String localEnv = System.getenv("LOCAL_ENV");
+        String localMacosEnv = System.getenv("LOCAL_MACOS_ENV");
 
-        if (localEnv == null || !localEnv.equalsIgnoreCase("true")) {
+        if (localMacosEnv == null || !localMacosEnv.equalsIgnoreCase("true")) {
             // This works inside GitHub Actions container environment
             final Map<String, ContainerNetwork> networks = EXASOL.getContainerInfo().getNetworkSettings().getNetworks();
+            if (networks.isEmpty()) {
+                return null;
+            }
             return networks.values().iterator().next().getGateway();
         } else {
             // Fallback for local machine: find a non-loopback IPv4 address
@@ -350,21 +350,21 @@ abstract class AbstractExasolSqlDialectIT {
         assertVirtualTableContents(table, table("DATE").row(date).matches());
     }
 
-    private static Stream<Arguments> timestampTypeArguments() {
-        return Stream.of(
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("2020-02-02 01:23:45.678")),
-                Arguments.of("TIMESTAMP", Timestamp.valueOf("3030-03-03 12:34:56.789")),
-                Arguments.of("TIMESTAMP(3)", Timestamp.valueOf("3030-03-03 12:34:56.123")),
-                Arguments.of("TIMESTAMP(5)", Timestamp.valueOf("3030-03-03 12:34:56.12345")),
-                Arguments.of("TIMESTAMP(9)", Timestamp.valueOf("3030-03-03 12:34:56.123456789"))
-        );
-    }
-
     @ParameterizedTest
-    @MethodSource("timestampTypeArguments")
-    void testTimestampMapping(String columnType, Timestamp value) {
-        final Table table = createSingleColumnTable(columnType).insert(value);
-        assertVirtualTableContents(table, table(columnType).row(value).matches());
+    @CsvSource({
+            "'TIMESTAMP', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(3)', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(5)', 'TIMESTAMP', '3030-03-03 12:34:56.12345'",
+            "'TIMESTAMP(9)', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'",
+            "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(3) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(5) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.12345'",
+            "'TIMESTAMP(9) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'"
+    })
+    void testTimestampMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
+        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
+        assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
     }
 
     @Test
@@ -498,27 +498,26 @@ abstract class AbstractExasolSqlDialectIT {
                 .verify("POINT (2 5)");
     }
 
-    private static Stream<Arguments> varcharTypeArguments() {
-        return Stream.of(
-                Arguments.of("TIMESTAMP",    "2020-02-02 01:23:45.678"),
-                Arguments.of("TIMESTAMP(3)", "3030-03-03 12:34:56.123"),
-                Arguments.of("TIMESTAMP(5)", "3030-03-03 12:34:56.12345"),
-                Arguments.of("TIMESTAMP(9)", "3030-03-03 12:34:56.123456789")
-        );
-    }
-
     @ParameterizedTest
-    @MethodSource("varcharTypeArguments")
-    void testCastVarcharAsTimestamp(String columnType, String timestampAsString) {
+    @CsvSource({
+            "'TIMESTAMP', '2020-02-02 01:23:45.678'",
+            "'TIMESTAMP(3)', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(5)', '3030-03-03 12:34:56.12345'",
+            "'TIMESTAMP(6)', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(7)', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(8)', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(9)', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'",
+            "'TIMESTAMP(3) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123'",
+            "'TIMESTAMP(5) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.12345'",
+            "'TIMESTAMP(6) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(7) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(8) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'"
+    })
+    void testCastVarcharAsTimestamp(String timestampType, String timestampAsString) {
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
-        castFrom("VARCHAR(30)").to(columnType).input(timestampAsString).verify(timestamp);
-    }
-
-    @Test
-    void testCastVarcharAsTimestampWithLocalTimezone() {
-        final String timestamp = "2017-11-03 14:18:02.081";
-        castFrom("VARCHAR(30)").to("TIMESTAMP WITH LOCAL TIME ZONE").input(timestamp).accept("TIMESTAMP")
-                .verify(Timestamp.valueOf(timestamp));
+        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
 
     @Test

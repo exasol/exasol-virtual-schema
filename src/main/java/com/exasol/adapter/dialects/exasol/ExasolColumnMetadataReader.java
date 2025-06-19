@@ -32,8 +32,6 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             "INTERVAL DAY" + DIGITS_IN_PARENTHESES + " TO SECOND" + DIGITS_IN_PARENTHESES);
     private static final Pattern SRID_PATTERN = Pattern.compile(DIGITS_IN_PARENTHESES);
 
-    private static final Pattern TIMESTAMP_PATTERN = Pattern.compile("TIMESTAMP(?:\\((\\d+)\\))?(?: WITH LOCAL TIME ZONE)?");
-
     /**
      * Create a new instance of the {@link ExasolColumnMetadataReader}.
      *
@@ -69,12 +67,20 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
         case EXASOL_GEOMETRY:
             return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
         case EXASOL_TIMESTAMP:
-            return Optional.of(DataType.createTimestamp(true, jdbcTypeDescription.getPrecisionOrSize()));
+            return Optional.of(convertTimestamp(jdbcTypeDescription.getDecimalScale()));
         case EXASOL_HASHTYPE:
             return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
         default:
             return Optional.empty();
         }
+    }
+
+    private DataType convertTimestamp(final int decimalScale) {
+        if (supportsTimestampsWithNanoPrecision()) {
+            final int fractionalPrecision = Math.min(decimalScale, 9);
+            return DataType.createTimestamp(true, fractionalPrecision);
+        }
+        return DataType.createTimestamp(true, 3);
     }
 
     private Optional<DataType> getDataTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
