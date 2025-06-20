@@ -99,6 +99,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static void setNlsTimestampFormat() throws SQLException {
         if (supportTimestampPrecision()) {
             modifyQuery("ALTER SYSTEM SET NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF9'");
+            modifyQuery("ALTER SESSION SET NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF9'");
         }
     }
 
