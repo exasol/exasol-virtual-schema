@@ -577,7 +577,7 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP(7) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.1234567'",
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456789'"
     })
-    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) throws SQLException {
+    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) {
         assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
