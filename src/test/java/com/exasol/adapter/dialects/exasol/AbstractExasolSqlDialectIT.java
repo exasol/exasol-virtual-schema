@@ -521,6 +521,18 @@ abstract class AbstractExasolSqlDialectIT {
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
 
+    /**
+     * Verifies that casting from {@code VARCHAR} to {@code TIMESTAMP(n)} and {@code TIMESTAMP(n) WITH LOCAL TIME ZONE}
+     * behaves as expected for different levels of fractional second precision.
+     * <p>
+     * ⚠️ Due to a known issue in Exasol, casting from {@code VARCHAR} to {@code TIMESTAMP(n)} where {@code n > 6}
+     * currently truncates fractional seconds to 6 digits.
+     * Once this issue is fixed, expected values in this test must be updated accordingly for
+     * {@code TIMESTAMP(7-9)} and {@code TIMESTAMP(7-9) WITH LOCAL TIME ZONE}.
+     * </p>
+     *
+     * @see <a href="https://github.com/exasol/exasol-virtual-schema/issues/132">GitHub Issue #132</a>
+     */
     @ParameterizedTest
     @CsvSource({
             "'TIMESTAMP(3)', '3030-03-03 12:34:56.123'",
