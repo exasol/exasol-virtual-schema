@@ -9,6 +9,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
@@ -79,11 +80,42 @@ abstract class AbstractExasolSqlDialectIT {
             adapterSchema = objectFactory.createSchema("ADAPTER_SCHEMA");
             adapterScript = installVirtualSchemaAdapter(adapterSchema);
 
+            setNlsTimestampFormat();
         } catch (final SQLException | BucketAccessException | TimeoutException | FileNotFoundException exception) {
             throw new IllegalStateException("Failed to created test setup.", exception);
         }
     }
 
+    /**
+     * If the Exasol database version supports fractional‐second precision beyond 3 digits,
+     * configures the system‐wide default timestamp format to include up to 9 fractional digits.
+     * <p>
+     * This issues an ALTER SYSTEM command, so it must be run by a user with the appropriate
+     * system‐wide privileges. All subsequent sessions (including UDF/Virtual Schema sessions)
+     * will inherit this NLS_TIMESTAMP_FORMAT setting.
+     *
+     * @throws SQLException if executing the ALTER SYSTEM statement fails
+     */
+    private static void setNlsTimestampFormat() throws SQLException {
+        if (supportTimestampPrecision()) {
+            modifyQuery("ALTER SYSTEM SET NLS_TIMESTAMP_FORMAT = 'YYYY-MM-DD HH24:MI:SS.FF9'");
+        }
+    }
+
+    /**
+     * Determines the host IP address that should be used inside the Exasol container
+     * to refer to the test host (typically the machine running the integration tests).
+     * <p>
+     * This method supports two environments:
+     * <ul>
+     *     <li><b>CI environments (e.g., GitHub Actions):</b> It retrieves the Docker gateway IP address
+     *         from the Exasol container's network settings.</li>
+     *     <li><b>Local macOS environments:</b> If the environment variable {@code LOCAL_MACOS_ENV=true}
+     *         is set, it attempts to find the first available non-loopback IPv4 address of the local machine.</li>
+     * </ul>
+     *
+     * @return the IP address as seen from inside the Exasol container, or {@code null} if it cannot be determined
+     */
     private static String getTestHostIpFromInsideExasol() {
         String localMacosEnv = System.getenv("LOCAL_MACOS_ENV");
 
@@ -239,13 +271,21 @@ abstract class AbstractExasolSqlDialectIT {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
-    protected ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
+    protected static ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
         return query(MessageFormat.format(sqlFormatString, args));
     }
 
-    protected ResultSet query(final String sql) throws SQLException {
+    protected static ResultSet query(final String sql) throws SQLException {
         try {
             return connection.createStatement().executeQuery(sql);
+        } catch (final SQLException exception) {
+            throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
+        }
+    }
+
+    protected static void modifyQuery(final String sql) throws SQLException {
+        try {
+            connection.createStatement().executeUpdate(sql);
         } catch (final SQLException exception) {
             throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
         }
@@ -357,7 +397,7 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'"
     })
     void testTimestampWithDefaultPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
-        Assumptions.assumeFalse(supportTimestampPrecision());
+        assumeFalse(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
@@ -373,7 +413,7 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'"
     })
     void testTimestampWithCustomPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
-        Assumptions.assumeTrue(supportTimestampPrecision());
+        assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
@@ -516,7 +556,7 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'"
     })
     void testCastVarcharAsTimestampWithDefaultPrecision(String timestampType, String timestampAsString) {
-        Assumptions.assumeFalse(supportTimestampPrecision());
+        assumeFalse(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
@@ -524,37 +564,25 @@ abstract class AbstractExasolSqlDialectIT {
     /**
      * Verifies that casting from {@code VARCHAR} to {@code TIMESTAMP(n)} and {@code TIMESTAMP(n) WITH LOCAL TIME ZONE}
      * behaves as expected for different levels of fractional second precision.
-     * <p>
-     * ⚠️ Due to a known issue in Exasol, casting from {@code VARCHAR} to {@code TIMESTAMP(n)} where {@code n > 6}
-     * currently truncates fractional seconds to 6 digits.
-     * Once this issue is fixed, expected values in this test must be updated accordingly for
-     * {@code TIMESTAMP(7-9)} and {@code TIMESTAMP(7-9) WITH LOCAL TIME ZONE}.
-     * </p>
-     *
-     * @see <a href="https://github.com/exasol/exasol-virtual-schema/issues/132">GitHub Issue #132</a>
      */
     @ParameterizedTest
     @CsvSource({
             "'TIMESTAMP(3)', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5)', '3030-03-03 12:34:56.12345'",
-            "'TIMESTAMP(6)', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(7)', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(8)', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(9)', '3030-03-03 12:34:56.123456'",
+            "'TIMESTAMP(7)', '3030-03-03 12:34:56.1234567'",
+            "'TIMESTAMP(9)', '3030-03-03 12:34:56.123456789'",
             "'TIMESTAMP(3) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP(5) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.12345'",
-            "'TIMESTAMP(6) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(7) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(8) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'",
-            "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456'"
+            "'TIMESTAMP(7) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.1234567'",
+            "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456789'"
     })
-    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) {
-        Assumptions.assumeTrue(supportTimestampPrecision());
+    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) throws SQLException {
+        assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
-        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
+        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).verify(timestamp);
     }
 
-    private boolean supportTimestampPrecision() {
+    private static boolean supportTimestampPrecision() {
         final ExasolDockerImageReference dockerImage = EXASOL.getDockerImageReference();
         if (!dockerImage.hasMajor() || !dockerImage.hasMinor() || !dockerImage.hasFix()) {
             return false;
