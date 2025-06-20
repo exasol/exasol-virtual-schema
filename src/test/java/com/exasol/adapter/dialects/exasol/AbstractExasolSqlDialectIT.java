@@ -579,7 +579,7 @@ abstract class AbstractExasolSqlDialectIT {
     void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) throws SQLException {
         assumeTrue(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
-        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).verify(timestamp);
+        castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
 
     private static boolean supportTimestampPrecision() {
