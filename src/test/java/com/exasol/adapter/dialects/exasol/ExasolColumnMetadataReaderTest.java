@@ -50,6 +50,7 @@ class ExasolColumnMetadataReaderTest {
     @ParameterizedTest
     @CsvSource({
             "8.34.0, true",
+            "2025.1.0, true",
             "8.29.9, false",
             "7.1.30, false"
     })

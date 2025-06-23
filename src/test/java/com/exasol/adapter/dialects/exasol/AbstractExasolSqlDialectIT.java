@@ -9,17 +9,13 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileNotFoundException;
 import java.math.BigDecimal;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.TimeoutException;
@@ -142,7 +138,7 @@ abstract class AbstractExasolSqlDialectIT {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                throw new IllegalStateException("Failed to determine local host IP address in macOS environment", e);
             }
             // If everything fails, return null or throw
             return null;
@@ -277,16 +273,16 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     protected static ResultSet query(final String sql) throws SQLException {
-        try {
-            return connection.createStatement().executeQuery(sql);
+        try (Statement stmt = connection.createStatement()) {
+            return stmt.executeQuery(sql);
         } catch (final SQLException exception) {
             throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
         }
     }
 
     protected static void modifyQuery(final String sql) throws SQLException {
-        try {
-            connection.createStatement().executeUpdate(sql);
+        try (Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(sql);
         } catch (final SQLException exception) {
             throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
         }
@@ -398,7 +394,6 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'"
     })
     void testTimestampWithDefaultPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
-        assumeFalse(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
@@ -557,7 +552,6 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'"
     })
     void testCastVarcharAsTimestampWithDefaultPrecision(String timestampType, String timestampAsString) {
-        assumeFalse(supportTimestampPrecision());
         Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
