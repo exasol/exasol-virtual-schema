@@ -1,3 +1,4 @@
+SECURITY.md                                                      linguist-generated=true
 dependencies.md                                                  linguist-generated=true
 doc/changes/changelog.md                                         linguist-generated=true
 pk_generated_parent.pom                                          linguist-generated=true
@@ -9,5 +10,4 @@ pk_generated_parent.pom                                          linguist-genera
 .github/workflows/release.yml                                    linguist-generated=true
 .settings/org.eclipse.jdt.core.prefs                             linguist-generated=true
 .settings/org.eclipse.jdt.ui.prefs                               linguist-generated=true
-.settings/org.eclipse.jdt.core.prefs                             linguist-generated=true
-.settings/org.eclipse.jdt.ui.prefs                               linguist-generated=true
+

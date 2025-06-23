@@ -19,14 +19,14 @@ import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.metadata.DataType.ExaCharset;
 import com.exasol.adapter.sql.SqlColumn;
 
-public class ExasolLocalSqlGenerationVisitorTest {
+class ExasolLocalSqlGenerationVisitorTest {
     private static ExasolLocalSqlGenerationVisitor exasolLocalSqlGenerationVisitor;
 
     @BeforeAll
-    public static void beforeAll() {
+    static void beforeAll() {
         final Map<String, String> rawProperties = new HashMap<>();
         final AdapterProperties adapterProperties = new AdapterProperties(rawProperties);
-        final SqlDialect sqlDialect = new DummySqlDialect(null, adapterProperties);
+        final SqlDialect sqlDialect = new DummySqlDialect(null, adapterProperties, null);
         final SqlGenerationContext context = new SqlGenerationContext("", "TEXT_SCHEMA_NAME", false);
         exasolLocalSqlGenerationVisitor = new ExasolLocalSqlGenerationVisitor(sqlDialect, context);
     }

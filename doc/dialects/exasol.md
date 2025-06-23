@@ -17,7 +17,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-12.0.0-exasol-8.0.0.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-13.0.0-exasol-8.0.1.jar;
 /
 ```
 
@@ -117,7 +117,7 @@ IMPORT INTO (c1 DECIMAL(36,1), c2 .... ) FROM EXA AT "EXA_CONNECTION" STATEMENT 
 ##### Data type mismatch
 
 In case you run into a `Data type mismatch` issue which looks like this:
-`Adapter generated invalid pushdown query for virtual table <TABLENAME>: Data type mismatch in column number <COLUMN NUMBER>  (1-indexed).Expected <EXPECTED IMPORT TYPE>, but got <IMPORT TYPE>.`
+`Adapter generated invalid pushdown query for virtual table <TABLENAME>: Data type mismatch in column number <COLUMN NUMBER>  (1-indexed). Expected <EXPECTED IMPORT TYPE>, but got <IMPORT TYPE>.`
 
 You can set the datatype mapping to true: `GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA = 'true'`. 
 This will usually solve the issue by providing type hints.

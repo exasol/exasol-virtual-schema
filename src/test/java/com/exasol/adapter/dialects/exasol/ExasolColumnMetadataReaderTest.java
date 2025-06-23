@@ -2,6 +2,8 @@ package com.exasol.adapter.dialects.exasol;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.when;
 
 import java.sql.Types;
 
@@ -9,7 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.Mockito;
 
+import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.BaseIdentifierConverter;
 import com.exasol.adapter.jdbc.JDBCTypeDescription;
@@ -19,10 +23,18 @@ import com.exasol.adapter.metadata.DataType.ExaCharset;
 class ExasolColumnMetadataReaderTest {
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
 
+    private ExaMetadata exaMetadataMock;
+
     @BeforeEach
     void beforeEach() {
+        prepareMocks("8.34.0");
+    }
+
+    private void prepareMocks(String exaDbVersion) {
+        this.exaMetadataMock = Mockito.mock(ExaMetadata.class);
+        when(exaMetadataMock.getDatabaseVersion()).thenReturn(exaDbVersion);
         this.exasolColumnMetadataReader = new ExasolColumnMetadataReader(null, AdapterProperties.emptyProperties(),
-                BaseIdentifierConverter.createDefault());
+                exaMetadataMock, BaseIdentifierConverter.createDefault());
     }
 
     @Test
@@ -35,24 +47,22 @@ class ExasolColumnMetadataReaderTest {
         assertTypeMapped(geometry(2222).typeName("unknown"), DataType.createGeometry(2222));
     }
 
-    @Test
-    void testMapJdbcTypeTimestamp() {
-        assertTypeMapped(timestamp(), DataType.createTimestamp(true));
-    }
-
-    @Test
-    void testMapJdbcTypeTimestampWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestamp().typeName("unknown"), DataType.createTimestamp(true));
-    }
-
-    @Test
-    void testMapJdbcTypeTimestampLocalTimezone() {
-        assertTypeMapped(timestampWithTimeZone(), DataType.createTimestamp(true));
-    }
-
-    @Test
-    void testMapJdbcTypeTimestampLocalTimezoneWithUnknownJdbcTypeName() {
-        assertTypeMapped(timestampWithTimeZone().typeName("unknown"), DataType.createTimestamp(true));
+    @ParameterizedTest
+    @CsvSource({
+            "8.34.0, true",
+            "2025.1.0, true",
+            "8.29.9, false",
+            "7.1.30, false"
+    })
+    void testMapJdbcTypeTimestamp(String exaDbVersion, boolean supportsTimestampPrecision) {
+        prepareMocks(exaDbVersion);
+        int precision = supportsTimestampPrecision ? 9 : 3;
+        assertAll(
+            () -> assertTypeMapped(timestamp(precision), DataType.createTimestamp(true, precision)),
+            () -> assertTypeMapped(timestamp(precision).typeName("unknown"), DataType.createTimestamp(true, precision)),
+            () -> assertTypeMapped(timestampWithTimeZone(precision), DataType.createTimestamp(true, precision)),
+            () -> assertTypeMapped(timestampWithTimeZone(precision).typeName("unknown"), DataType.createTimestamp(true, precision))
+        );
     }
 
     @Test
@@ -156,6 +166,30 @@ class ExasolColumnMetadataReaderTest {
         assertThat(this.exasolColumnMetadataReader.extractSrid(input), equalTo(expected));
     }
 
+    @ParameterizedTest
+    @CsvSource({
+            "'TIMESTAMP', 3",
+            "'TIMESTAMP(3)', 3",
+            "'TIMESTAMP(5)', 5",
+            "'TIMESTAMP(9)', 9",
+            "'TIMESTAMP(23)', 9",
+            "'TIMESTAMP WITH LOCAL TIME ZONE', 3",
+            "'TIMESTAMP(3) WITH LOCAL TIME ZONE', 3",
+            "'TIMESTAMP(5) WITH LOCAL TIME ZONE', 5",
+            "'TIMESTAMP(9) WITH LOCAL TIME ZONE', 9"
+    })
+    void testExtractTimestampPrecisionFromTypeString(final String typeDescription, final int expectedPrecision) {
+        final ExasolColumnMetadataReader readerSpy = Mockito.spy(this.exasolColumnMetadataReader);
+        final JDBCTypeDescription baseDescription = new JDBCTypeDescription(
+                getJdbcType(typeDescription), expectedPrecision, 0, 0, typeDescription);
+        final DataType result = readerSpy.mapJdbcType(baseDescription);
+        assertThat(result.getPrecision(), equalTo(expectedPrecision));
+    }
+
+    private int getJdbcType(String typeDescription) {
+        return typeDescription.contains("WITH LOCAL TIME ZONE") ? ExasolColumnMetadataReader.EXASOL_TIMESTAMP : Types.TIMESTAMP;
+    }
+
     private void assertTypeMapped(final JdbcTypeBuilder typeBuilder, final DataType expectedDataType) {
         assertThat(this.exasolColumnMetadataReader.mapJdbcType(typeBuilder.build()), equalTo(expectedDataType));
     }
@@ -182,12 +216,12 @@ class ExasolColumnMetadataReaderTest {
         return jdbcType("HASHTYPE").jdbcType(ExasolColumnMetadataReader.EXASOL_HASHTYPE).byteSize(byteSize);
     }
 
-    private static JdbcTypeBuilder timestampWithTimeZone() {
-        return jdbcType("TIMESTAMP WITH LOCAL TIME ZONE").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP);
+    private static JdbcTypeBuilder timestampWithTimeZone(int precision) {
+        return jdbcType("TIMESTAMP WITH LOCAL TIME ZONE", precision).jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
-    private static JdbcTypeBuilder timestamp() {
-        return jdbcType("TIMESTAMP").jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP);
+    private static JdbcTypeBuilder timestamp(int precision) {
+        return jdbcType("TIMESTAMP", precision).jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
     private static JdbcTypeBuilder geometry(final int srid) {
@@ -195,7 +229,11 @@ class ExasolColumnMetadataReaderTest {
     }
 
     private static JdbcTypeBuilder jdbcType(final String typeName) {
-        return new JdbcTypeBuilder().jdbcType(0).typeName(typeName).byteSize(0).decimalScale(0);
+        return jdbcType(typeName, 0);
+    }
+
+    private static JdbcTypeBuilder jdbcType(final String typeName, int decimalScale) {
+        return new JdbcTypeBuilder().jdbcType(0).typeName(typeName).byteSize(0).decimalScale(decimalScale);
     }
 
     private static class JdbcTypeBuilder {
