@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 8.0.1, released 2025-06-17
+# Exasol Virtual Schema 8.0.1, released 2025-06-23
 
 Code name: Timestamp precision
 
