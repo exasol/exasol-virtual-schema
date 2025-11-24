@@ -4,7 +4,10 @@ Code name: Update virtual-schema-common-jdbc dependency
 
 ## Summary
 
-This release updates virtual-schema-common-jdbc to propagate the fix in underlying lbiraries.
+This release updates virtual-schema-common-jdbc to propagate the fix in underlying libraries.
+Fixed issues: 
+- https://github.com/exasol/virtual-schema-common-java/issues/292
+- https://github.com/exasol/virtual-schema-common-java/issues/297
 
 ## Dependency Updates
 
