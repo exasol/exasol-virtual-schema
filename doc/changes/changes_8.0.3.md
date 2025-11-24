@@ -1,13 +1,14 @@
-# Exasol Virtual Schema 8.0.3, released 2025-11-24
+# Exasol Virtual Schema 8.0.3, released 2025-11-25
 
 Code name: Update virtual-schema-common-jdbc dependency
 
 ## Summary
 
 This release updates virtual-schema-common-jdbc to propagate the fix in underlying libraries.
-Fixed issues: 
-- https://github.com/exasol/virtual-schema-common-java/issues/292
-- https://github.com/exasol/virtual-schema-common-java/issues/297
+
+Fixed issues:
+1. When applying CAST on the results of COUNT(*) of the empty table from the Virtual Scheme, it returns Null instead of 0.
+2. Query from empty virtual schema table returns empty result (instead of expected 1): `SELECT 1 FROM VST.TEST1 HAVING  max(COL1) is null;`
 
 ## Dependency Updates
 
