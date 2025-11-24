@@ -40,7 +40,7 @@
 | [Project Keeper Maven plugin][36]                       | [The MIT License][37]                       |
 | [Apache Maven Compiler Plugin][38]                      | [Apache-2.0][29]                            |
 | [Apache Maven Enforcer Plugin][39]                      | [Apache-2.0][29]                            |
-| [Maven Flatten Plugin][40]                              | [Apache Software Licenese][29]              |
+| [Maven Flatten Plugin][40]                              | [Apache Software License][29]               |
 | [org.sonatype.ossindex.maven:ossindex-maven-plugin][41] | [ASL2][42]                                  |
 | [Maven Surefire Plugin][43]                             | [Apache-2.0][29]                            |
 | [Versions Maven Plugin][44]                             | [Apache License, Version 2.0][29]           |
