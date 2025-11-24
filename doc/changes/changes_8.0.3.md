@@ -1,12 +1,10 @@
-# Exasol Virtual Schema 8.0.3, released 2025-??-??
+# Exasol Virtual Schema 8.0.3, released 2025-11-24
 
-Code name:
+Code name: Update virtual-schema-common-jdbc dependency
 
 ## Summary
 
-## Features
-
-* ISSUE_NUMBER: description
+This release updates virtual-schema-common-jdbc to propagate the fix in underlying lbiraries.
 
 ## Dependency Updates
 
