@@ -1,6 +1,7 @@
 # Exasol SQL Dialect
 
 Connecting to an Exasol database is the simplest way to get started with Virtual Schemas. You don't have to install any JDBC driver, because it is already installed in the Exasol database and also included in the JAR of the JDBC adapter.
+
 ## Telemetry
 
 This virtual schema uses `telemetry-java` to send anonymous feature-usage events.
