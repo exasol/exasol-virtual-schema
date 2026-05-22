@@ -1,10 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
-import com.exasol.ExaMetadata;
-import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.SqlDialectFactory;
-import com.exasol.adapter.jdbc.ConnectionFactory;
+import com.exasol.adapter.dialects.*;
+import com.exasol.logging.VersionCollector;
 
 /**
  * Factory for the Exasol SQL dialect.
@@ -16,12 +13,19 @@ public class ExasolSqlDialectFactory implements SqlDialectFactory {
     }
 
     @Override
-    public String getSqlDialectVersion() {
-        return null;
+    public SqlDialect createSqlDialect(final JDBCAdapterContext context) {
+        return new ExasolSqlDialect(context);
     }
 
     @Override
-    public SqlDialect createSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties, final ExaMetadata exaMetadata) {
-        return new ExasolSqlDialect(connectionFactory, properties, exaMetadata);
+    public String getSqlDialectVersion() {
+        final VersionCollector versionCollector = new VersionCollector(
+                "META-INF/maven/com.exasol/exasol-virtual-schema/pom.properties");
+        return versionCollector.getVersionNumber();
+    }
+
+    @Override
+    public String getAdapterProjectShortTag() {
+        return "VSEXA";
     }
 }

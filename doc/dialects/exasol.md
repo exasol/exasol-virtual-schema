@@ -2,6 +2,12 @@
 
 Connecting to an Exasol database is the simplest way to get started with Virtual Schemas. You don't have to install any JDBC driver, because it is already installed in the Exasol database and also included in the JAR of the JDBC adapter.
 
+## Telemetry
+
+This virtual schema uses `telemetry-java` to send anonymous feature-usage events.
+
+For details on what is collected and how to disable telemetry, see the [documentation](https://github.com/exasol/telemetry-java/blob/main/doc/app-user-guide.md).
+
 ## Installing the Adapter Script
 
 Upload the latest available release of [Exasol Virtual Schema](https://github.com/exasol/exasol-virtual-schema/releases) to Bucket FS.
@@ -17,7 +23,7 @@ The SQL statement below creates the adapter script, defines the Java class that 
 ```sql
 CREATE JAVA ADAPTER SCRIPT SCHEMA_FOR_VS_SCRIPT.ADAPTER_SCRIPT_EXASOL AS
     %scriptclass com.exasol.adapter.RequestDispatcher;
-    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-13.0.1-exasol-8.0.3.jar;
+    %jar /buckets/<BFS service>/<bucket>/virtual-schema-dist-14.0.2-exasol-9.0.0.jar;
 /
 ```
 

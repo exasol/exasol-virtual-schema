@@ -17,10 +17,7 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,14 +33,10 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotes;
 import com.exasol.adapter.adapternotes.ColumnAdapterNotesJsonConverter;
 import com.exasol.adapter.capabilities.*;
-import com.exasol.adapter.dialects.QueryRewriter;
-import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.SqlGenerator;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.jdbc.ConnectionFactory;
-import com.exasol.adapter.metadata.ColumnMetadata;
-import com.exasol.adapter.metadata.DataType;
-import com.exasol.adapter.metadata.TableMetadata;
+import com.exasol.adapter.metadata.*;
 import com.exasol.adapter.properties.PropertyValidationException;
 import com.exasol.adapter.sql.*;
 import com.exasol.sql.SqlNormalizer;
@@ -67,7 +60,8 @@ class ExasolSqlDialectTest {
     }
 
     private ExasolSqlDialect testee(final AdapterProperties properties) {
-        return new ExasolSqlDialect(this.connectionFactoryMock, properties, this.exaMetadataMock);
+        return new ExasolSqlDialect(
+                JDBCAdapterContext.builder().connectionFactory(connectionFactoryMock).properties(properties).metadata(exaMetadataMock).build());
     }
 
     @CsvSource({ "A1, \"A1\"", //

@@ -8,13 +8,8 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.sql.*;
+import java.util.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +20,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.dialects.QueryRewriter;
-import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.SqlGenerator;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
@@ -56,7 +49,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     @Test
     void rewritePushdownQuery() throws AdapterException, SQLException {
         final AdapterProperties properties = createAdapterProperties();
-        final SqlDialect dialect = new ExasolSqlDialect(connectionFactoryMock, properties, exaMetadataMock);
+        final SqlDialect dialect = testee(properties);
         final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
                 new ExasolMetadataReader(connectionMock, properties, exaMetadataMock), connectionFactoryMock);
         assertThat(
@@ -64,6 +57,11 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
                         exaMetadataMock, properties),
                 equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA AT \"THE_EXA_CONNECTION\""
                         + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
+    }
+
+    private SqlDialect testee(final AdapterProperties properties) {
+        return new ExasolSqlDialect(
+                JDBCAdapterContext.builder().connectionFactory(connectionFactoryMock).properties(properties).metadata(exaMetadataMock).build());
     }
 
     private AdapterProperties createAdapterProperties() {
@@ -90,7 +88,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     @Test
     void generateImportStatement() throws SQLException {
         final AdapterProperties properties = createAdapterProperties();
-        final SqlDialect dialect = new ExasolSqlDialect(connectionFactoryMock, properties, exaMetadataMock);
+        final SqlDialect dialect = testee(properties);
         final ExasolFromExaWithDataTypeQueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
                 new ExasolMetadataReader(connectionMock, properties, exaMetadataMock), connectionFactoryMock);
         assertThat(queryRewriter.generateImportStatement("connection", "pushdownQuery"),
