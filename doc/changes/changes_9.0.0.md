@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 9.0.0, released 2026-??-??
+# Exasol Virtual Schema 9.0.0, released 2026-05-22
 
 Code name: Anonymous telemetry
 
