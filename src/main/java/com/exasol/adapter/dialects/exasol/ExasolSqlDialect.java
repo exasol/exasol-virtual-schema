@@ -9,14 +9,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Set;
 
-import com.exasol.ExaMetadata;
-import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.capabilities.*;
-import com.exasol.adapter.dialects.AbstractSqlDialect;
-import com.exasol.adapter.dialects.QueryRewriter;
-import com.exasol.adapter.dialects.SqlGenerator;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
-import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.jdbc.RemoteMetadataReader;
 import com.exasol.adapter.jdbc.RemoteMetadataReaderException;
 import com.exasol.adapter.properties.BooleanProperty;
@@ -34,12 +29,10 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
     /**
      * Create a new instance of the {@link ExasolSqlDialect}.
      *
-     * @param connectionFactory factory for the JDBC connection to the remote data source
-     * @param properties        adapter properties
-     * @param exaMetadata Metadata of the Exasol database
+     * @param context context for the SQL dialect
      */
-    public ExasolSqlDialect(final ConnectionFactory connectionFactory, final AdapterProperties properties, ExaMetadata exaMetadata) {
-        super(connectionFactory, properties, exaMetadata,
+    public ExasolSqlDialect(final JDBCAdapterContext context) {
+        super(context,
                 Set.of(CATALOG_NAME_PROPERTY, SCHEMA_NAME_PROPERTY, EXASOL_IMPORT_PROPERTY, EXASOL_CONNECTION_PROPERTY,
                         EXASOL_IS_LOCAL_PROPERTY, IGNORE_ERRORS_PROPERTY, GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA), //
                 List.of(SchemaNameProperty.validator(NAME), //
@@ -161,7 +154,7 @@ public class ExasolSqlDialect extends AbstractSqlDialect {
 
     @Override
     public SqlGenerator getSqlGenerator(final SqlGenerationContext context) {
-        if (context.isLocal()){
+        if (context.isLocal()) {
             return new ExasolLocalSqlGenerationVisitor(this, context);
         } else {
             return new ExasolSqlGenerationVisitor(this, context);

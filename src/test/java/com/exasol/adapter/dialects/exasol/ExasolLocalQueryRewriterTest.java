@@ -16,8 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.dialects.QueryRewriter;
-import com.exasol.adapter.dialects.SqlDialect;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.TestSqlStatementFactory;
 
@@ -30,7 +29,7 @@ class ExasolLocalQueryRewriterTest {
     @Test
     void rewriteLocal() throws AdapterException, SQLException {
         final AdapterProperties properties = new AdapterProperties(Map.of("IS_LOCAL", "true"));
-        final SqlDialect dialect = new ExasolSqlDialect(null, properties, exaMetadataMock);
+        final SqlDialect dialect = new ExasolSqlDialect(JDBCAdapterContext.builder().properties(properties).metadata(exaMetadataMock).build());
         final QueryRewriter queryRewriter = new ExasolLocalQueryRewriter(dialect);
         assertThat(queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(),
                 EMPTY_SELECT_LIST_DATA_TYPES, exaMetadataMock, properties), equalTo("SELECT 1 FROM \"DUAL\""));

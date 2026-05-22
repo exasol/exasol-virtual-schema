@@ -1,6 +1,7 @@
 package com.exasol.adapter.dialects.exasol;
 
 import com.exasol.adapter.AdapterException;
+import com.exasol.adapter.dialects.JDBCAdapterContext;
 import com.exasol.adapter.dialects.SqlDialect;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.metadata.DataType;
@@ -24,7 +25,7 @@ public class ExasolLocalSqlGenerationVisitor extends ExasolSqlGenerationVisitor 
 
     @Override
     public String visit(final SqlColumn column) throws AdapterException {
-        final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(null, null, null);
+        final ExasolSqlDialect exasolSqlDialect = new ExasolSqlDialect(JDBCAdapterContext.builder().build());
         final String tablePrefix = getTablePrefix(column, exasolSqlDialect);
         final ExaDataType exaDataType = column.getMetadata().getType().getExaDataType();
         if (exaDataType == DataType.ExaDataType.CHAR || //

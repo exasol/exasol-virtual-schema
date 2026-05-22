@@ -2,15 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>8.0.3</version>
+    <version>9.0.0</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
-        <virtual-schema-common-jdbc.version>13.0.1</virtual-schema-common-jdbc.version>
-        <exasol-jdbc.version>25.2.3</exasol-jdbc.version>
+        <virtual-schema-common-jdbc.version>14.0.2</virtual-schema-common-jdbc.version>
+        <exasol-jdbc.version>26.2.7</exasol-jdbc.version>
         <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
-        <junit-jupiter.version>5.13.1</junit-jupiter.version>
+        <!-- Version 6 requires Java 17 -->
+        <junit-jupiter.version>5.14.4</junit-jupiter.version>
     </properties>
     <dependencies>
         <dependency>
@@ -26,7 +27,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>error-reporting-java</artifactId>
-            <version>1.0.1</version>
+            <version>1.0.2</version>
         </dependency>
         <!--Unit test dependencies -->
         <dependency>
@@ -58,50 +59,50 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.18.0</version>
+            <version>5.23.0</version>
             <scope>test</scope>
         </dependency>
         <!--Integration test dependencies -->
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>7.1.7</version>
+            <version>7.3.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>junit-jupiter</artifactId>
-            <version>1.21.1</version>
+            <version>1.21.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.7.1</version>
+            <version>1.7.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.17</version>
+            <version>2.0.18</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>3.6.2</version>
+            <version>4.0.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>maven-project-version-getter</artifactId>
-            <version>1.2.1</version>
+            <version>1.2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
-            <version>0.6.16</version>
+            <version>0.6.18</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -110,7 +111,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>5.4.3</version>
+                <version>5.6.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -151,7 +152,6 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>artifact-reference-checker-maven-plugin</artifactId>
-                <version>0.4.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -185,22 +185,12 @@
                     </additionalOptions>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.sonatype.ossindex.maven</groupId>
-                <artifactId>ossindex-maven-plugin</artifactId>
-                <configuration>
-                    <excludeVulnerabilityIds>
-                        <!-- Exasol's JDBC driver was fixed in version 24.2.1, but OSSIndex does not reflect that yet -->
-                        <exclude>CVE-2024-55551</exclude>
-                    </excludeVulnerabilityIds>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>8.0.3</version>
+        <version>9.0.0</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>

@@ -35,10 +35,7 @@ import com.exasol.bucketfs.Bucket;
 import com.exasol.bucketfs.BucketAccessException;
 import com.exasol.containers.ExasolContainer;
 import com.exasol.containers.ExasolDockerImageReference;
-import com.exasol.dbbuilder.dialects.DatabaseObject;
-import com.exasol.dbbuilder.dialects.Schema;
-import com.exasol.dbbuilder.dialects.Table;
-import com.exasol.dbbuilder.dialects.User;
+import com.exasol.dbbuilder.dialects.*;
 import com.exasol.dbbuilder.dialects.exasol.*;
 import com.exasol.dbbuilder.dialects.exasol.AdapterScript.Language;
 import com.exasol.matcher.ResultSetStructureMatcher.Builder;
@@ -53,6 +50,7 @@ abstract class AbstractExasolSqlDialectIT {
     private static final String COLUMN1_NAME = "C1";
 
     @Container
+    @SuppressWarnings("resource") // Will be closed by @Container annotation
     protected static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>(
             IntegrationTestConfiguration.getDockerImageReference()).withReuse(true);
     private static ExasolSchema adapterSchema;
@@ -105,16 +103,16 @@ abstract class AbstractExasolSqlDialectIT {
      * <p>
      * This method supports two environments:
      * <ul>
-     *     <li><b>CI environments (e.g., GitHub Actions):</b> It retrieves the Docker gateway IP address
-     *         from the Exasol container's network settings.</li>
-     *     <li><b>Local macOS environments:</b> If the environment variable {@code LOCAL_MACOS_ENV=true}
-     *         is set, it attempts to find the first available non-loopback IPv4 address of the local machine.</li>
+     * <li><b>CI environments (e.g., GitHub Actions):</b> It retrieves the Docker gateway IP address
+     * from the Exasol container's network settings.</li>
+     * <li><b>Local macOS environments:</b> If the environment variable {@code LOCAL_MACOS_ENV=true}
+     * is set, it attempts to find the first available non-loopback IPv4 address of the local machine.</li>
      * </ul>
      *
      * @return the IP address as seen from inside the Exasol container, or {@code null} if it cannot be determined
      */
     private static String getTestHostIpFromInsideExasol() {
-        String localMacosEnv = System.getenv("LOCAL_MACOS_ENV");
+        final String localMacosEnv = System.getenv("LOCAL_MACOS_ENV");
 
         if (localMacosEnv == null || !localMacosEnv.equalsIgnoreCase("true")) {
             // This works inside GitHub Actions container environment
@@ -126,18 +124,18 @@ abstract class AbstractExasolSqlDialectIT {
         } else {
             // Fallback for local machine: find a non-loopback IPv4 address
             try {
-                Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-                for (NetworkInterface netint : Collections.list(nets)) {
+                final Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+                for (final NetworkInterface netint : Collections.list(nets)) {
                     if (netint.isUp() && !netint.isLoopback()) {
-                        Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
-                        for (InetAddress inetAddress : Collections.list(inetAddresses)) {
+                        final Enumeration<InetAddress> inetAddresses = netint.getInetAddresses();
+                        for (final InetAddress inetAddress : Collections.list(inetAddresses)) {
                             if (!inetAddress.isLoopbackAddress() && inetAddress instanceof java.net.Inet4Address) {
                                 return inetAddress.getHostAddress();
                             }
                         }
                     }
                 }
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new IllegalStateException("Failed to determine local host IP address in macOS environment", e);
             }
             // If everything fails, return null or throw
@@ -240,7 +238,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .sourceSchema(sourceSchema) //
                 .adapterScript(adapterScript) //
                 .connectionDefinition(this.jdbcConnection) //
-                .properties(getVirtualSchemaProperties()) //
+                .addProperties(getVirtualSchemaProperties()) //
                 .build();
     }
 
@@ -393,8 +391,8 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP', 'TIMESTAMP', '3030-03-03 12:34:56.123'",
             "'TIMESTAMP WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123'"
     })
-    void testTimestampWithDefaultPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
-        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+    void testTimestampWithDefaultPrecisionMapping(final String columnTypeWithPrecision, final String actualColumnType, final String timestampAsString) {
+        final Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
     }
@@ -408,9 +406,9 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP(5) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.12345'",
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', 'TIMESTAMP', '3030-03-03 12:34:56.123456789'"
     })
-    void testTimestampWithCustomPrecisionMapping(String columnTypeWithPrecision, String actualColumnType, String timestampAsString) {
+    void testTimestampWithCustomPrecisionMapping(final String columnTypeWithPrecision, final String actualColumnType, final String timestampAsString) {
         assumeTrue(supportTimestampPrecision());
-        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        final Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         final Table table = createSingleColumnTable(columnTypeWithPrecision).insert(timestamp);
         assertVirtualTableContents(table, table(actualColumnType).row(timestamp).matches());
     }
@@ -551,8 +549,8 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP', '2020-02-02 01:23:45.678'",
             "'TIMESTAMP WITH LOCAL TIME ZONE', '2020-02-02 01:23:45.678'"
     })
-    void testCastVarcharAsTimestampWithDefaultPrecision(String timestampType, String timestampAsString) {
-        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+    void testCastVarcharAsTimestampWithDefaultPrecision(final String timestampType, final String timestampAsString) {
+        final Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
 
@@ -571,9 +569,9 @@ abstract class AbstractExasolSqlDialectIT {
             "'TIMESTAMP(7) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.1234567'",
             "'TIMESTAMP(9) WITH LOCAL TIME ZONE', '3030-03-03 12:34:56.123456789'"
     })
-    void testCastVarcharAsTimestampWithCustomPrecision(String timestampType, String timestampAsString) {
+    void testCastVarcharAsTimestampWithCustomPrecision(final String timestampType, final String timestampAsString) {
         assumeTrue(supportTimestampPrecision());
-        Timestamp timestamp = Timestamp.valueOf(timestampAsString);
+        final Timestamp timestamp = Timestamp.valueOf(timestampAsString);
         castFrom("VARCHAR(30)").to(timestampType).input(timestampAsString).accept("TIMESTAMP").verify(timestamp);
     }
 
@@ -707,7 +705,7 @@ abstract class AbstractExasolSqlDialectIT {
         this.testVirtualSchema = objectFactory.createVirtualSchemaBuilder("VIRTUAL_SCHEMA_IGNORES_ERRORS") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
-                .properties(properties) //
+                .addProperties(properties) //
                 .connectionDefinition(this.jdbcConnection) //
                 .build();
         assertThat(query("SELECT NOW() - INTERVAL '1' MINUTE FROM " + getVirtualTableName(this.testVirtualSchema, table)),
@@ -747,7 +745,7 @@ abstract class AbstractExasolSqlDialectIT {
                 .createVirtualSchemaBuilder("VIRTUAL_SCHEMA_WITHOUT_SELECT_LIST_PROJECTION_CAPABILITY") //
                 .sourceSchema(this.sourceSchema) //
                 .adapterScript(adapterScript) //
-                .properties(properties) //
+                .addProperties(properties) //
                 .connectionDefinition(this.jdbcConnection) //
                 .build();
     }

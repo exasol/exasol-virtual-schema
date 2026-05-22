@@ -6,10 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
@@ -22,9 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
-import com.exasol.adapter.dialects.QueryRewriter;
-import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.SqlDialectFactory;
+import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.jdbc.RemoteMetadataReader;
 import com.exasol.adapter.metadata.DataType;
@@ -61,10 +56,8 @@ class ExasolJdbcQueryRewriterTest {
         final Connection connectionMock = mockConnection();
         when(connectionFactoryMock.getConnection()).thenReturn(connectionMock);
         final AdapterProperties properties = new AdapterProperties(Map.of("CONNECTION_NAME", CONNECTION_NAME));
-        final SqlDialectFactory dialectFactory = new ExasolSqlDialectFactory();
-        final SqlDialect dialect = dialectFactory.createSqlDialect(connectionFactoryMock, properties, exaMetadataMock);
         final ExasolMetadataReader metadataReader = new ExasolMetadataReader(connectionMock, properties, exaMetadataMock);
-        final QueryRewriter queryRewriter = new ExasolJdbcQueryRewriter(dialect, metadataReader, connectionFactoryMock);
+        final QueryRewriter queryRewriter = new ExasolJdbcQueryRewriter(dialect(properties), metadataReader, connectionFactoryMock);
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), emptyList(), exaMetadataMock,
                         properties),
@@ -76,10 +69,8 @@ class ExasolJdbcQueryRewriterTest {
     void rewriteWithJdbcConnectionAndExpectedResultSetDataTypes() throws AdapterException, SQLException {
         final Connection connectionMock = mock(Connection.class);
         final AdapterProperties properties = new AdapterProperties(Map.of("CONNECTION_NAME", CONNECTION_NAME));
-        final SqlDialectFactory dialectFactory = new ExasolSqlDialectFactory();
-        final SqlDialect dialect = dialectFactory.createSqlDialect(connectionFactoryMock, properties, exaMetadataMock);
         final ExasolMetadataReader metadataReader = new ExasolMetadataReader(connectionMock, properties, exaMetadataMock);
-        final QueryRewriter queryRewriter = new ExasolJdbcQueryRewriter(dialect, metadataReader, connectionFactoryMock);
+        final QueryRewriter queryRewriter = new ExasolJdbcQueryRewriter(dialect(properties), metadataReader, connectionFactoryMock);
         final List<DataType> dataTypes = List.of(DataType.createGeometry(4));
         assertThat(
                 queryRewriter.rewrite(TestSqlStatementFactory.createSelectOneFromDual(), dataTypes, exaMetadataMock,
@@ -99,9 +90,16 @@ class ExasolJdbcQueryRewriterTest {
         return connectionMock;
     }
 
+    private SqlDialect dialect(final AdapterProperties properties) {
+        final SqlDialectFactory dialectFactory = new ExasolSqlDialectFactory();
+        return dialectFactory.createSqlDialect(
+                JDBCAdapterContext.builder().connectionFactory(connectionFactoryMock).properties(properties).metadata(exaMetadataMock).build());
+    }
+
     private ExasolJdbcQueryRewriter testee(final AdapterProperties properties) {
         final SqlDialectFactory dialectFactory = new ExasolSqlDialectFactory();
-        final SqlDialect dialect = dialectFactory.createSqlDialect(connectionFactoryMock, properties, exaMetadataMock);
+        final SqlDialect dialect = dialectFactory.createSqlDialect(
+                JDBCAdapterContext.builder().connectionFactory(connectionFactoryMock).properties(properties).metadata(exaMetadataMock).build());
         return new ExasolJdbcQueryRewriter(dialect, metadataReaderMock, connectionFactoryMock);
     }
 }
