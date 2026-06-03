@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 9.0.1, released TBD
+# Exasol Virtual Schema 9.0.1, released 2026-??-??
 
 Code name: Reused local SQL dialect
 
