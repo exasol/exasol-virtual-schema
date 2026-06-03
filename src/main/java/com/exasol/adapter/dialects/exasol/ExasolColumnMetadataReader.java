@@ -1,10 +1,8 @@
 package com.exasol.adapter.dialects.exasol;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +18,7 @@ import com.exasol.errorreporting.ExaError;
  * This class implements Exasol-specific reading of column metadata.
  */
 public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
+    private static final Logger LOGGER = Logger.getLogger(ExasolColumnMetadataReader.class.getName());
     static final int EXASOL_INTERVAL_DAY_TO_SECOND = -104;
     static final int EXASOL_INTERVAL_YEAR_TO_MONTH = -103;
     static final int EXASOL_GEOMETRY = 123;
@@ -38,10 +37,10 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * @param connection          JDBC connection through which the column metadata is read from the remote database
      * @param properties          user-defined adapter properties
      * @param identifierConverter converter between source and Exasol identifiers
-     * @param exaMetadata Metadata of the Exasol database
+     * @param exaMetadata         Metadata of the Exasol database
      */
     public ExasolColumnMetadataReader(final Connection connection, final AdapterProperties properties,
-                                      final ExaMetadata exaMetadata, final IdentifierConverter identifierConverter) {
+            final ExaMetadata exaMetadata, final IdentifierConverter identifierConverter) {
         super(connection, properties, exaMetadata, identifierConverter);
     }
 
@@ -59,19 +58,19 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
 
     private Optional<DataType> getDataTypeBasedOnJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECOND:
-            return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
-                    jdbcTypeDescription.getDecimalScale()));
-        case EXASOL_INTERVAL_YEAR_TO_MONTH:
-            return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
-        case EXASOL_GEOMETRY:
-            return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
-        case EXASOL_TIMESTAMP:
-            return Optional.of(convertExasolTimestamp(jdbcTypeDescription.getDecimalScale()));
-        case EXASOL_HASHTYPE:
-            return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
-        default:
-            return Optional.empty();
+            case EXASOL_INTERVAL_DAY_TO_SECOND:
+                return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
+                        jdbcTypeDescription.getDecimalScale()));
+            case EXASOL_INTERVAL_YEAR_TO_MONTH:
+                return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
+            case EXASOL_GEOMETRY:
+                return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
+            case EXASOL_TIMESTAMP:
+                return Optional.of(convertExasolTimestamp(jdbcTypeDescription.getDecimalScale()));
+            case EXASOL_HASHTYPE:
+                return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
+            default:
+                return Optional.empty();
         }
     }
 
@@ -109,14 +108,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     public JDBCTypeDescription readJdbcTypeDescription(final ResultSet remoteColumn) throws SQLException {
         final JDBCTypeDescription typeDescription = super.readJdbcTypeDescription(remoteColumn);
         switch (typeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECOND:
-            return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
-        case EXASOL_INTERVAL_YEAR_TO_MONTH:
-            return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
-        case EXASOL_GEOMETRY:
-            return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
-        default:
-            return typeDescription;
+            case EXASOL_INTERVAL_DAY_TO_SECOND:
+                return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
+            case EXASOL_INTERVAL_YEAR_TO_MONTH:
+                return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
+            case EXASOL_GEOMETRY:
+                return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
+            default:
+                return typeDescription;
         }
     }
 
