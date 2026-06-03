@@ -1,10 +1,10 @@
 # Exasol Virtual Schema 9.0.1, released 2026-??-??
 
-Code name: Reused local SQL dialect
+Code name: Improvements
 
 ## Summary
 
-This release fixes unnecessary dialect allocation during local SQL generation.
+This release addresses several issues found within Exasol-virtual-schema.
 
 ## Bugfixes
 
