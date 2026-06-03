@@ -3,14 +3,11 @@ package com.exasol.adapter.dialects.exasol;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.dialects.JDBCAdapterContext;
 import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
 import com.exasol.adapter.metadata.ColumnMetadata;
@@ -32,7 +29,7 @@ class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    void testVisitSqlLiteralVarchar() throws AdapterException {
+    void testVisitSqlLiteralVarchar() {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createVarChar(20, ExaCharset.ASCII)).build(),
@@ -47,7 +44,7 @@ class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    void testVisitSqlLiteralChar() throws AdapterException {
+    void testVisitSqlLiteralChar() {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createChar(20, ExaCharset.ASCII)).build(),
@@ -62,7 +59,7 @@ class ExasolLocalSqlGenerationVisitorTest {
     }
 
     @Test
-    void testVisitSqlLiteralDouble() throws AdapterException {
+    void testVisitSqlLiteralDouble() {
 
         final SqlColumn argument = new SqlColumn(1, //
                 ColumnMetadata.builder().name("a").type(DataType.createDouble()).build(), "table_name"); //
