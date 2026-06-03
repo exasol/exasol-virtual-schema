@@ -3,7 +3,7 @@ package com.exasol.adapter.dialects.exasol;
 import java.nio.file.Path;
 
 public final class IntegrationTestConfiguration {
-    private static final String DEFAULT_DOCKER_DB_REFERENCE = "2025.2.1";
+    private static final String DEFAULT_DOCKER_DB_REFERENCE = "2026.1.0";
     /**
      * Do not use MavenProjectVersionGetter here to enable reference checker to check if reference points to the latest
      * version.
