@@ -4,7 +4,6 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -205,7 +204,7 @@ class ExasolColumnMetadataReaderTest {
                 remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH));
         assertAll(
                 () -> assertThat(result.getPrecisionOrSize(), equalTo(7)),
-                () -> verify(connectionMock).prepareStatement(eq(TYPE_DESCRIPTION_QUERY)),
+                () -> verify(connectionMock).prepareStatement(TYPE_DESCRIPTION_QUERY),
                 () -> verify(statementMock).setString(1, "SOURCE_SCHEMA"),
                 () -> verify(statementMock).setString(2, "SOURCE_TABLE"),
                 () -> verify(statementMock).setString(3, "SOURCE_COLUMN"));
@@ -225,9 +224,9 @@ class ExasolColumnMetadataReaderTest {
     @Test
     void readJdbcTypeDescriptionThrowsCompleteErrorMessageForInvalidIntervalYearToMonth() throws SQLException {
         final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement("INTERVAL YEAR")));
+        final ResultSet remoteColumn = remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH);
         final IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> reader.readJdbcTypeDescription(
-                        remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH)));
+                () -> reader.readJdbcTypeDescription(remoteColumn));
         assertThat(exception.getMessage(),
                 equalTo("E-VSEXA-3: Failed to extract INTERVAL YEAR TO MONTH precision"));
     }
@@ -236,9 +235,9 @@ class ExasolColumnMetadataReaderTest {
     void readJdbcTypeDescriptionThrowsCompleteErrorMessageForInvalidIntervalDayToSecond() throws SQLException {
         final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement(
                 "INTERVAL DAY TO SECOND")));
+        final ResultSet remoteColumn = remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECOND);
         final IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> reader.readJdbcTypeDescription(
-                        remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECOND)));
+                () -> reader.readJdbcTypeDescription(remoteColumn));
         assertThat(exception.getMessage(),
                 equalTo("E-VSEXA-2: Failed to extract INTERVAL DAY TO SECOND precision"));
     }
