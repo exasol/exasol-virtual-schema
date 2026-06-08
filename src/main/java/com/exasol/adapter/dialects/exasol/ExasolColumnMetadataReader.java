@@ -24,11 +24,13 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     static final int EXASOL_GEOMETRY = 123;
     static final int EXASOL_TIMESTAMP = 124;
     static final int EXASOL_HASHTYPE = 126;
-    private static final int DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER = 0;
+    private static final int DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER = 0;
 
     private static final String DIGITS_IN_PARENTHESES = "\\((\\d+)\\)";
     private static final Pattern INTERVAL_DAY_TO_SECOND_PATTERN = Pattern.compile( //
             "INTERVAL DAY" + DIGITS_IN_PARENTHESES + " TO SECOND" + DIGITS_IN_PARENTHESES);
+    private static final Pattern INTERVAL_YEAR_TO_MONTH_PATTERN = Pattern.compile( //
+            "INTERVAL YEAR" + DIGITS_IN_PARENTHESES + " TO MONTH");
     private static final Pattern SRID_PATTERN = Pattern.compile(DIGITS_IN_PARENTHESES);
 
     /**
@@ -128,11 +130,11 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     }
 
     /**
-     * Extract the spacial reference system identifier (SRID) from a type description.
+     * Extract the spatial reference system identifier (SRID) from a type description.
      *
      * @param typeDescriptionString a type description like {@code GEOMETRY(1234)} or {@code GEOMETRY}.
      * @return the SRID from the type description or the default value
-     *         {@link #DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER}
+     *         {@link #DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER}
      */
     protected int extractSrid(final String typeDescriptionString) {
         final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
@@ -140,13 +142,13 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             final String srid = matcher.group(1);
             return Integer.parseInt(srid);
         } else {
-            return DEFAULT_SPACIAL_REFERENCE_SYSTEM_IDENTIFIER;
+            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
         }
     }
 
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
         try (final PreparedStatement preparedStatement = this.connection.prepareStatement(
-                "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?;")) {
+                "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?")) {
             final String schema = remoteColumn.getString("TABLE_SCHEM");
             final String table = remoteColumn.getString("TABLE_NAME");
             final String column = remoteColumn.getString("COLUMN_NAME");
@@ -176,8 +178,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     private JDBCTypeDescription extractIntervalYearToMonthPrecision(final ResultSet remoteColumn,
             final JDBCTypeDescription typeDescription) throws SQLException {
         final String typeDescriptionString = getTypeDescriptionStringForColumn(remoteColumn);
-        final Pattern pattern = Pattern.compile("INTERVAL YEAR\\((\\d+)\\) TO MONTH");
-        final Matcher matcher = pattern.matcher(typeDescriptionString);
+        final Matcher matcher = INTERVAL_YEAR_TO_MONTH_PATTERN.matcher(typeDescriptionString);
         if (matcher.matches()) {
             return new JDBCTypeDescription(typeDescription.getJdbcType(), typeDescription.getDecimalScale(),
                     Integer.parseInt(matcher.group(1)), typeDescription.getByteSize(), typeDescription.getTypeName());
