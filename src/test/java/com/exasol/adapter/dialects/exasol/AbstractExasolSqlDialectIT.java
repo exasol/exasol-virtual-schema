@@ -266,6 +266,18 @@ abstract class AbstractExasolSqlDialectIT {
         return virtualSchema.getFullyQualifiedName() + ".\"" + table.getName() + "\"";
     }
 
+    protected static int execute(final String sqlFormatString, final Object... args) throws SQLException {
+        return execute(MessageFormat.format(sqlFormatString, args));
+    }
+
+    protected static int execute(final String statement) throws SQLException {
+        try (Statement stmt = connection.createStatement()) {
+            return stmt.executeUpdate(statement);
+        } catch (final SQLException exception) {
+            throw new SQLException("Error executing statement '" + statement + "': " + exception.getMessage(), exception);
+        }
+    }
+
     protected static ResultSet query(final String sqlFormatString, final Object... args) throws SQLException {
         return query(MessageFormat.format(sqlFormatString, args));
     }
@@ -274,7 +286,7 @@ abstract class AbstractExasolSqlDialectIT {
         try (Statement stmt = connection.createStatement()) {
             return stmt.executeQuery(sql);
         } catch (final SQLException exception) {
-            throw new SQLException("Error executing '" + sql + "': " + exception.getMessage(), exception);
+            throw new SQLException("Error executing query '" + sql + "': " + exception.getMessage(), exception);
         }
     }
 
