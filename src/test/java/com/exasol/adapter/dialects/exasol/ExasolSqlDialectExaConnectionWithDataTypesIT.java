@@ -88,7 +88,8 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
         final String name = this.testVirtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
                 () -> execute("alter virtual schema {0} set EXA_CONNECTION = Null", name));
-        final String expected = PropertyValidationException.class.getName() + ": E-VSCJDBC-17";
+        final String expected = PropertyValidationException.class.getName()
+                + ": E-VSCJDBC-17: You defined the property 'IMPORT_FROM_EXA'. Please also define 'EXA_CONNECTION'.";
         assertThat(exception.getMessage(), containsString(expected));
     }
 
