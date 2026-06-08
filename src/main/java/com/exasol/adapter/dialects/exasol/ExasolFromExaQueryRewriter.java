@@ -22,6 +22,7 @@ public class ExasolFromExaQueryRewriter extends AbstractQueryRewriter {
 
     @Override
     protected String generateImportStatement(final String connectionDefinition, final String pushdownQuery) {
-        return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '" + pushdownQuery.replace("'", "''") + "'";
+        return "IMPORT FROM EXA " + connectionDefinition + " STATEMENT '"
+                + ExasolSqlEscaper.escapeStringLiteralContent(pushdownQuery) + "'";
     }
 }

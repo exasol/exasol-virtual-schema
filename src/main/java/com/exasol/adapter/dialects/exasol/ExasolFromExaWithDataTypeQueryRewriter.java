@@ -45,7 +45,7 @@ class ExasolFromExaWithDataTypeQueryRewriter extends AbstractQueryRewriter {
             final String pushdownQuery) {
         return "IMPORT INTO (" + columnsDescription + ") FROM EXA " //
                 + connectionDefinition + " STATEMENT '" //
-                + pushdownQuery.replace("'", "''") + "'";
+                + ExasolSqlEscaper.escapeStringLiteralContent(pushdownQuery) + "'";
     }
 
     private String createColumnsDescriptionFromQuery(final String query) throws SQLException {

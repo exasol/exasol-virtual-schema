@@ -3,8 +3,14 @@ package com.exasol.adapter.dialects.exasol;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +27,9 @@ import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.metadata.DataType.ExaCharset;
 
 class ExasolColumnMetadataReaderTest {
+    private static final String TYPE_DESCRIPTION_QUERY = "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS"
+            + " WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?";
+
     private ExasolColumnMetadataReader exasolColumnMetadataReader;
 
     private ExaMetadata exaMetadataMock;
@@ -186,8 +195,88 @@ class ExasolColumnMetadataReaderTest {
         assertThat(result.getPrecision(), equalTo(expectedPrecision));
     }
 
+    @Test
+    void readJdbcTypeDescriptionExtractsIntervalYearToMonthPrecision() throws SQLException {
+        final PreparedStatement statementMock = mockTypeDescriptionStatement("INTERVAL YEAR(7) TO MONTH");
+        final Connection connectionMock = mockConnection(statementMock);
+        final ExasolColumnMetadataReader reader = reader(connectionMock);
+        final JDBCTypeDescription result = reader.readJdbcTypeDescription(
+                remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH));
+        assertAll(
+                () -> assertThat(result.getPrecisionOrSize(), equalTo(7)),
+                () -> verify(connectionMock).prepareStatement(TYPE_DESCRIPTION_QUERY),
+                () -> verify(statementMock).setString(1, "SOURCE_SCHEMA"),
+                () -> verify(statementMock).setString(2, "SOURCE_TABLE"),
+                () -> verify(statementMock).setString(3, "SOURCE_COLUMN"));
+    }
+
+    @Test
+    void readJdbcTypeDescriptionExtractsIntervalDayToSecondPrecision() throws SQLException {
+        final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement(
+                "INTERVAL DAY(4) TO SECOND(6)")));
+        final JDBCTypeDescription result = reader.readJdbcTypeDescription(
+                remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECOND));
+        assertAll(
+                () -> assertThat(result.getPrecisionOrSize(), equalTo(4)),
+                () -> assertThat(result.getDecimalScale(), equalTo(6)));
+    }
+
+    @Test
+    void readJdbcTypeDescriptionThrowsCompleteErrorMessageForInvalidIntervalYearToMonth() throws SQLException {
+        final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement("INTERVAL YEAR")));
+        final ResultSet remoteColumn = remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_YEAR_TO_MONTH);
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> reader.readJdbcTypeDescription(remoteColumn));
+        assertThat(exception.getMessage(),
+                equalTo("E-VSEXA-3: Failed to extract INTERVAL YEAR TO MONTH precision"));
+    }
+
+    @Test
+    void readJdbcTypeDescriptionThrowsCompleteErrorMessageForInvalidIntervalDayToSecond() throws SQLException {
+        final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement(
+                "INTERVAL DAY TO SECOND")));
+        final ResultSet remoteColumn = remoteColumn(ExasolColumnMetadataReader.EXASOL_INTERVAL_DAY_TO_SECOND);
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> reader.readJdbcTypeDescription(remoteColumn));
+        assertThat(exception.getMessage(),
+                equalTo("E-VSEXA-2: Failed to extract INTERVAL DAY TO SECOND precision"));
+    }
+
     private int getJdbcType(String typeDescription) {
         return typeDescription.contains("WITH LOCAL TIME ZONE") ? ExasolColumnMetadataReader.EXASOL_TIMESTAMP : Types.TIMESTAMP;
+    }
+
+    private ExasolColumnMetadataReader reader(final Connection connection) {
+        return new ExasolColumnMetadataReader(connection, AdapterProperties.emptyProperties(), this.exaMetadataMock,
+                BaseIdentifierConverter.createDefault());
+    }
+
+    private Connection mockConnection(final PreparedStatement statementMock) throws SQLException {
+        final Connection connectionMock = Mockito.mock(Connection.class);
+        when(connectionMock.prepareStatement(TYPE_DESCRIPTION_QUERY)).thenReturn(statementMock);
+        return connectionMock;
+    }
+
+    private PreparedStatement mockTypeDescriptionStatement(final String columnType) throws SQLException {
+        final ResultSet resultSetMock = Mockito.mock(ResultSet.class);
+        when(resultSetMock.next()).thenReturn(true);
+        when(resultSetMock.getString("COLUMN_TYPE")).thenReturn(columnType);
+        final PreparedStatement statementMock = Mockito.mock(PreparedStatement.class);
+        when(statementMock.executeQuery()).thenReturn(resultSetMock);
+        return statementMock;
+    }
+
+    private ResultSet remoteColumn(final int jdbcType) throws SQLException {
+        final ResultSet remoteColumnMock = Mockito.mock(ResultSet.class);
+        when(remoteColumnMock.getInt("DATA_TYPE")).thenReturn(jdbcType);
+        when(remoteColumnMock.getInt("DECIMAL_DIGITS")).thenReturn(0);
+        when(remoteColumnMock.getInt("COLUMN_SIZE")).thenReturn(0);
+        when(remoteColumnMock.getInt("CHAR_OCTET_LENGTH")).thenReturn(0);
+        when(remoteColumnMock.getString("TYPE_NAME")).thenReturn("INTERVAL");
+        when(remoteColumnMock.getString("TABLE_SCHEM")).thenReturn("SOURCE_SCHEMA");
+        when(remoteColumnMock.getString("TABLE_NAME")).thenReturn("SOURCE_TABLE");
+        when(remoteColumnMock.getString("COLUMN_NAME")).thenReturn("SOURCE_COLUMN");
+        return remoteColumnMock;
     }
 
     private void assertTypeMapped(final JdbcTypeBuilder typeBuilder, final DataType expectedDataType) {
