@@ -16,8 +16,8 @@ This release addresses several issues found within Exasol-virtual-schema.
 
 ### Compile Dependency Updates
 
-* Updated `com.exasol:virtual-schema-common-jdbc:14.0.2` to `14.0.3`
+* Updated `com.exasol:virtual-schema-common-jdbc:14.0.2` to `14.0.4`
 
 ### Test Dependency Updates
 
-* Updated `com.exasol:virtual-schema-common-jdbc:14.0.2` to `14.0.3`
+* Updated `com.exasol:virtual-schema-common-jdbc:14.0.2` to `14.0.4`
