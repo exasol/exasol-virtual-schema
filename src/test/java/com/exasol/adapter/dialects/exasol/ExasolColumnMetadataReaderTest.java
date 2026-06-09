@@ -58,8 +58,8 @@ class ExasolColumnMetadataReaderTest {
 
     @ParameterizedTest
     @CsvSource({
-            "8.34.0, -1, 3",
-            "8.34.0, 0, 3",
+            "8.34.0, -1, 0",
+            "8.34.0, 0, 0",
             "8.34.0, 1, 1",
             "8.34.0, 5, 5",
             "8.34.0, 9, 9",

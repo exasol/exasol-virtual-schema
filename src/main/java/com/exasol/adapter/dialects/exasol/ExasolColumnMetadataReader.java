@@ -81,8 +81,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * <p>
      * If the system supports timestamps with nanosecond precision, the fractional precision
      * of the timestamp will be set to the provided decimal scale as long as it is in the range
-     * 1..9. Decimal scales {@code <= 0} fall back to the legacy precision of 3 and values above
-     * 9 are capped at 9.
+     * 0..9. Decimal scales {@code < 0} fall back to precision 0 and values above 9 are capped at 9.
      * Otherwise, a default fractional precision of 3 (milliseconds) is used.
      *
      * @param decimalScale the number of fractional digits to use for the TIMESTAMP precision
@@ -97,7 +96,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     }
 
     private static int getTimestampFractionalPrecision(final int decimalScale) {
-        return decimalScale <= 0 ? 3 : Math.min(decimalScale, 9);
+        return decimalScale < 0 ? 0 : Math.min(decimalScale, 9);
     }
 
     private Optional<DataType> getDataTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
