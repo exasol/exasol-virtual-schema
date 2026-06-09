@@ -9,8 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
-import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.when;
 
@@ -287,6 +286,42 @@ class ExasolSqlDialectTest {
         assertThat(exception.getMessage(),
                 equalTo("E-VSEXA-6: EXASOL virtual schema dialect requires to specify a schema name."
                         + " Please specify a schema name using property 'SCHEMA_NAME'."));
+    }
+
+    @Test
+    void testValidateImportPropertyMissingConnection() {
+        final AdapterProperties adapterProperties = mandatory()
+                .with("IMPORT_FROM_EXA", "true")
+                .with("EXA_CONNECTION", null)
+                .build();
+        final ExasolSqlDialect sqlDialect = testee(adapterProperties);
+        final Exception exception = assertThrows(PropertyValidationException.class,
+                sqlDialect::validateProperties);
+        assertThat(exception.getMessage(),
+                equalTo("E-VSCJDBC-17: You defined the property 'IMPORT_FROM_EXA'. Please also define 'EXA_CONNECTION'."));
+    }
+
+    @Test
+    void testValidateImportPropertyImportFromExaFalse() {
+        final AdapterProperties adapterProperties = mandatory()
+                .with("IMPORT_FROM_EXA", "false")
+                .with("EXA_CONNECTION", "MY_CONN")
+                .build();
+        final ExasolSqlDialect sqlDialect = testee(adapterProperties);
+        final Exception exception = assertThrows(PropertyValidationException.class,
+                sqlDialect::validateProperties);
+        assertThat(exception.getMessage(),
+                equalTo("E-VSCJDBC-18: You defined the property 'EXA_CONNECTION' without setting 'IMPORT_FROM_EXA' to 'TRUE'. This is not allowed."));
+    }
+
+    @Test
+    void testValidateImportPropertyConnectionPresent() {
+        final AdapterProperties adapterProperties = mandatory()
+                .with("IMPORT_FROM_EXA", "true")
+                .with("EXA_CONNECTION", "MY_CONN")
+                .build();
+        final ExasolSqlDialect sqlDialect = testee(adapterProperties);
+        assertDoesNotThrow(sqlDialect::validateProperties);
     }
 
     AdapterProperties mandatoryWith(final String key, final String value) {

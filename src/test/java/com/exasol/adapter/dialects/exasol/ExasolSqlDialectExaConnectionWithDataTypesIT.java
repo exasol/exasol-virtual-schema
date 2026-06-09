@@ -10,9 +10,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.testcontainers.containers.JdbcDatabaseContainer.NoDriverFoundException;
 
 import com.exasol.adapter.properties.PropertyValidationException;
@@ -89,8 +87,9 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
         this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
         final String name = this.testVirtualSchema.getFullyQualifiedName();
         final SQLException exception = assertThrows(SQLException.class,
-                () -> query("alter virtual schema {0} set EXA_CONNECTION = Null", name));
-        final String expected = PropertyValidationException.class.getName() + ": E-VSCJDBC-17";
+                () -> execute("alter virtual schema {0} set EXA_CONNECTION = Null", name));
+        final String expected = PropertyValidationException.class.getName()
+                + ": E-VSCJDBC-17: You defined the property 'IMPORT_FROM_EXA'. Please also define 'EXA_CONNECTION'.";
         assertThat(exception.getMessage(), containsString(expected));
     }
 
