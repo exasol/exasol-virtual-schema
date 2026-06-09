@@ -1050,6 +1050,32 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
+    @DisplayName("Verify CAST(COUNT(*)) on an empty virtual table returns 0")
+    void testCountOnEmptyVirtualTableReturnsZero() throws SQLException {
+        final Table table = this.sourceSchema.createTable("T1", "A", "INT");
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(query("SELECT CAST(COUNT(*) AS INT) AS CNT FROM " + getVirtualTableName(virtualSchema, table)),
+                    table().row(0).matches(TypeMatchMode.NO_JAVA_TYPE_CHECK));
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
+    @DisplayName("Verify 'HAVING MAX(a) IS NULL' on an empty virtual table returns 1")
+    void testHavingMaxIsNullOnEmptyVirtualTableReturnsOne() throws SQLException {
+        final Table table = this.sourceSchema.createTable("T1", "A", "INT");
+        final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
+        try {
+            assertThat(query("SELECT 1 FROM " + getVirtualTableName(virtualSchema, table) + " HAVING MAX(a) IS NULL"),
+                    table().row(1).matches(TypeMatchMode.NO_JAVA_TYPE_CHECK));
+        } finally {
+            virtualSchema.drop();
+        }
+    }
+
+    @Test
     @DisplayName("Verify that a virtual and a normal table can be joined using a HASHTYPE column")
     void joinHashtypeTables() throws java.sql.SQLException {
         final Table virtualTable = sourceSchema.createTableBuilder("VIRTUAL").column("VHASH", "HASHTYPE(16 BYTE)")
