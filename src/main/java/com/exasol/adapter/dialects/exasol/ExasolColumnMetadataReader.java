@@ -80,8 +80,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * Converts a given decimal scale into an Exasol {@link DataType} representing a TIMESTAMP.
      * <p>
      * If the system supports timestamps with nanosecond precision, the fractional precision
-     * of the timestamp will be set to the minimum of the provided decimal scale and 9
-     * (since nanosecond precision supports up to 9 fractional digits).
+     * of the timestamp will be set to the provided decimal scale as long as it is in the range
+     * 0..9. Decimal scales {@code < 0} fall back to precision 0 and values above 9 are capped at 9.
      * Otherwise, a default fractional precision of 3 (milliseconds) is used.
      *
      * @param decimalScale the number of fractional digits to use for the TIMESTAMP precision
@@ -89,10 +89,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      */
     private DataType convertExasolTimestamp(final int decimalScale) {
         if (supportsTimestampsWithNanoPrecision()) {
-            final int fractionalPrecision = Math.min(decimalScale, 9);
+            final int fractionalPrecision = getTimestampFractionalPrecision(decimalScale);
             return DataType.createTimestamp(true, fractionalPrecision);
         }
         return DataType.createTimestamp(true, 3);
+    }
+
+    private static int getTimestampFractionalPrecision(final int decimalScale) {
+        return decimalScale < 0 ? 0 : Math.min(decimalScale, 9);
     }
 
     private Optional<DataType> getDataTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
@@ -137,13 +141,24 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      *         {@link #DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER}
      */
     protected int extractSrid(final String typeDescriptionString) {
-        final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
-        if (matcher.find()) {
-            final String srid = matcher.group(1);
-            return Integer.parseInt(srid);
-        } else {
-            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
+        if (typeDescriptionString == null) {
+            return fallbackSrid("null");
         }
+        final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
+        if (!matcher.find()) {
+            return fallbackSrid(typeDescriptionString);
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (final NumberFormatException ignored) {
+            return fallbackSrid(typeDescriptionString);
+        }
+    }
+
+    private int fallbackSrid(final String typeDescription) {
+        LOGGER.warning(() -> String.format("Could not extract SRID from type description \"%s\". Falling back to SRID %d.",
+                typeDescription, DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER));
+        return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
     }
 
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
@@ -156,7 +171,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             preparedStatement.setString(2, table);
             preparedStatement.setString(3, column);
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSet.next();
+                if (!resultSet.next()) {
+                    throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-7")
+                            .message(
+                                    "Could not find a matching row in SYS.EXA_ALL_COLUMNS for column {{columnName|uq}} in schema {{schemaName|uq}} and table {{tableName|uq}}.",
+                                    column, schema, table)
+                            .mitigation("Ensure that the user has the necessary privileges.")
+                            .toString());
+                }
                 return resultSet.getString("COLUMN_TYPE");
             }
         }
