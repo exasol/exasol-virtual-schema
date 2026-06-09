@@ -1063,12 +1063,12 @@ abstract class AbstractExasolSqlDialectIT {
     }
 
     @Test
-    @DisplayName("Verify HAVING max(a) is null on an empty virtual table returns 1")
+    @DisplayName("Verify 'HAVING MAX(a) IS NULL' on an empty virtual table returns 1")
     void testHavingMaxIsNullOnEmptyVirtualTableReturnsOne() throws SQLException {
         final Table table = this.sourceSchema.createTable("T1", "A", "INT");
         final VirtualSchema virtualSchema = createVirtualSchema(this.sourceSchema);
         try {
-            assertThat(query("SELECT 1 FROM " + getVirtualTableName(virtualSchema, table) + " HAVING max(a) is null"),
+            assertThat(query("SELECT 1 FROM " + getVirtualTableName(virtualSchema, table) + " HAVING MAX(a) IS NULL"),
                     table().row(1).matches(TypeMatchMode.NO_JAVA_TYPE_CHECK));
         } finally {
             virtualSchema.drop();
