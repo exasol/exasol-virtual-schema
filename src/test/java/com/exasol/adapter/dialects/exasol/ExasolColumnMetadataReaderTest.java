@@ -7,17 +7,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.*;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterProperties;
@@ -26,6 +25,7 @@ import com.exasol.adapter.jdbc.JDBCTypeDescription;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.metadata.DataType.ExaCharset;
 
+@ExtendWith(MockitoExtension.class)
 class ExasolColumnMetadataReaderTest {
     private static final String TYPE_DESCRIPTION_QUERY = "SELECT COLUMN_TYPE FROM SYS.EXA_ALL_COLUMNS"
             + " WHERE COLUMN_SCHEMA = ? AND COLUMN_TABLE = ? AND COLUMN_NAME = ?";
@@ -39,7 +39,7 @@ class ExasolColumnMetadataReaderTest {
         prepareMocks("8.34.0");
     }
 
-    private void prepareMocks(String exaDbVersion) {
+    private void prepareMocks(final String exaDbVersion) {
         this.exaMetadataMock = Mockito.mock(ExaMetadata.class);
         when(exaMetadataMock.getDatabaseVersion()).thenReturn(exaDbVersion);
         this.exasolColumnMetadataReader = new ExasolColumnMetadataReader(null, AdapterProperties.emptyProperties(),
@@ -58,20 +58,23 @@ class ExasolColumnMetadataReaderTest {
 
     @ParameterizedTest
     @CsvSource({
-            "8.34.0, true",
-            "2025.1.0, true",
-            "8.29.9, false",
-            "7.1.30, false"
+            "8.34.0, -1, 0",
+            "8.34.0, 0, 0",
+            "8.34.0, 1, 1",
+            "8.34.0, 5, 5",
+            "8.34.0, 9, 9",
+            "8.34.0, 23, 9",
+            "8.29.9, -1, 3",
+            "8.29.9, 0, 3",
+            "8.29.9, 9, 3"
     })
-    void testMapJdbcTypeTimestamp(String exaDbVersion, boolean supportsTimestampPrecision) {
+    void testMapJdbcTypeTimestamp(final String exaDbVersion, final int decimalScale, final int expectedPrecision) {
         prepareMocks(exaDbVersion);
-        int precision = supportsTimestampPrecision ? 9 : 3;
         assertAll(
-            () -> assertTypeMapped(timestamp(precision), DataType.createTimestamp(true, precision)),
-            () -> assertTypeMapped(timestamp(precision).typeName("unknown"), DataType.createTimestamp(true, precision)),
-            () -> assertTypeMapped(timestampWithTimeZone(precision), DataType.createTimestamp(true, precision)),
-            () -> assertTypeMapped(timestampWithTimeZone(precision).typeName("unknown"), DataType.createTimestamp(true, precision))
-        );
+                () -> assertTypeMapped(timestamp(decimalScale), DataType.createTimestamp(true, expectedPrecision)),
+                () -> assertTypeMapped(timestamp(decimalScale).typeName("unknown"), DataType.createTimestamp(true, expectedPrecision)),
+                () -> assertTypeMapped(timestampWithTimeZone(decimalScale), DataType.createTimestamp(true, expectedPrecision)),
+                () -> assertTypeMapped(timestampWithTimeZone(decimalScale).typeName("unknown"), DataType.createTimestamp(true, expectedPrecision)));
     }
 
     @Test
@@ -176,6 +179,26 @@ class ExasolColumnMetadataReaderTest {
     }
 
     @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = { "GEOMETRY", "GEOMETRY()", "GEOMETRY(abc)", "GEOMETRY(999999999999999999999999)", "GEOMETRY(-1)", "GEOMETRY(1.2)",
+            "GEOMETRY(1,2)" })
+    void testExtractSridFallsBackToDefaultForInvalidInput(final String input) {
+        assertThat(this.exasolColumnMetadataReader.extractSrid(input), equalTo(0));
+    }
+
+    @Test
+    void readJdbcTypeDescriptionFallsBackToDefaultSridForNullColumnType() throws SQLException {
+        final ExasolColumnMetadataReader reader = reader(mockConnection(mockTypeDescriptionStatement(null)));
+
+        final JDBCTypeDescription result = reader.readJdbcTypeDescription(
+                remoteColumn(ExasolColumnMetadataReader.EXASOL_GEOMETRY));
+
+        assertAll(
+                () -> assertThat(result.getPrecisionOrSize(), equalTo(0)),
+                () -> assertThat(result.getJdbcType(), equalTo(ExasolColumnMetadataReader.EXASOL_GEOMETRY)));
+    }
+
+    @ParameterizedTest
     @CsvSource({
             "'TIMESTAMP', 3",
             "'TIMESTAMP(3)', 3",
@@ -242,7 +265,23 @@ class ExasolColumnMetadataReaderTest {
                 equalTo("E-VSEXA-2: Failed to extract INTERVAL DAY TO SECOND precision"));
     }
 
-    private int getJdbcType(String typeDescription) {
+    @Test
+    void readJdbcTypeDescriptionThrowsCompleteErrorMessageWhenDictionaryRowIsMissing(@Mock final Connection connectionMock, @Mock final ResultSet resultSetMock,
+            @Mock final PreparedStatement statementMock) throws SQLException {
+        when(resultSetMock.next()).thenReturn(false);
+        when(statementMock.executeQuery()).thenReturn(resultSetMock);
+        when(connectionMock.prepareStatement(TYPE_DESCRIPTION_QUERY)).thenReturn(statementMock);
+        final ExasolColumnMetadataReader reader = reader(connectionMock);
+        final ResultSet remoteColumn = remoteColumn(ExasolColumnMetadataReader.EXASOL_GEOMETRY);
+
+        final IllegalStateException exception = assertThrows(IllegalStateException.class,
+                () -> reader.readJdbcTypeDescription(remoteColumn));
+
+        assertThat(exception.getMessage(),
+                equalTo("E-VSEXA-7: Could not find a matching row in SYS.EXA_ALL_COLUMNS for column SOURCE_COLUMN in schema SOURCE_SCHEMA and table SOURCE_TABLE. Ensure that the user has the necessary privileges."));
+    }
+
+    private int getJdbcType(final String typeDescription) {
         return typeDescription.contains("WITH LOCAL TIME ZONE") ? ExasolColumnMetadataReader.EXASOL_TIMESTAMP : Types.TIMESTAMP;
     }
 
@@ -305,11 +344,11 @@ class ExasolColumnMetadataReaderTest {
         return jdbcType("HASHTYPE").jdbcType(ExasolColumnMetadataReader.EXASOL_HASHTYPE).byteSize(byteSize);
     }
 
-    private static JdbcTypeBuilder timestampWithTimeZone(int precision) {
+    private static JdbcTypeBuilder timestampWithTimeZone(final int precision) {
         return jdbcType("TIMESTAMP WITH LOCAL TIME ZONE", precision).jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
-    private static JdbcTypeBuilder timestamp(int precision) {
+    private static JdbcTypeBuilder timestamp(final int precision) {
         return jdbcType("TIMESTAMP", precision).jdbcType(ExasolColumnMetadataReader.EXASOL_TIMESTAMP).precisionOrSize(precision);
     }
 
@@ -321,7 +360,7 @@ class ExasolColumnMetadataReaderTest {
         return jdbcType(typeName, 0);
     }
 
-    private static JdbcTypeBuilder jdbcType(final String typeName, int decimalScale) {
+    private static JdbcTypeBuilder jdbcType(final String typeName, final int decimalScale) {
         return new JdbcTypeBuilder().jdbcType(0).typeName(typeName).byteSize(0).decimalScale(decimalScale);
     }
 

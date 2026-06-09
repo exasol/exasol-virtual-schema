@@ -1,10 +1,8 @@
 package com.exasol.adapter.dialects.exasol;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Optional;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +18,7 @@ import com.exasol.errorreporting.ExaError;
  * This class implements Exasol-specific reading of column metadata.
  */
 public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
+    private static final Logger LOGGER = Logger.getLogger(ExasolColumnMetadataReader.class.getName());
     static final int EXASOL_INTERVAL_DAY_TO_SECOND = -104;
     static final int EXASOL_INTERVAL_YEAR_TO_MONTH = -103;
     static final int EXASOL_GEOMETRY = 123;
@@ -40,10 +39,10 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * @param connection          JDBC connection through which the column metadata is read from the remote database
      * @param properties          user-defined adapter properties
      * @param identifierConverter converter between source and Exasol identifiers
-     * @param exaMetadata Metadata of the Exasol database
+     * @param exaMetadata         Metadata of the Exasol database
      */
     public ExasolColumnMetadataReader(final Connection connection, final AdapterProperties properties,
-                                      final ExaMetadata exaMetadata, final IdentifierConverter identifierConverter) {
+            final ExaMetadata exaMetadata, final IdentifierConverter identifierConverter) {
         super(connection, properties, exaMetadata, identifierConverter);
     }
 
@@ -61,19 +60,19 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
 
     private Optional<DataType> getDataTypeBasedOnJdbcType(final JDBCTypeDescription jdbcTypeDescription) {
         switch (jdbcTypeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECOND:
-            return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
-                    jdbcTypeDescription.getDecimalScale()));
-        case EXASOL_INTERVAL_YEAR_TO_MONTH:
-            return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
-        case EXASOL_GEOMETRY:
-            return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
-        case EXASOL_TIMESTAMP:
-            return Optional.of(convertExasolTimestamp(jdbcTypeDescription.getDecimalScale()));
-        case EXASOL_HASHTYPE:
-            return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
-        default:
-            return Optional.empty();
+            case EXASOL_INTERVAL_DAY_TO_SECOND:
+                return Optional.of(DataType.createIntervalDaySecond(jdbcTypeDescription.getPrecisionOrSize(),
+                        jdbcTypeDescription.getDecimalScale()));
+            case EXASOL_INTERVAL_YEAR_TO_MONTH:
+                return Optional.of(DataType.createIntervalYearMonth(jdbcTypeDescription.getPrecisionOrSize()));
+            case EXASOL_GEOMETRY:
+                return Optional.of(DataType.createGeometry(jdbcTypeDescription.getPrecisionOrSize()));
+            case EXASOL_TIMESTAMP:
+                return Optional.of(convertExasolTimestamp(jdbcTypeDescription.getDecimalScale()));
+            case EXASOL_HASHTYPE:
+                return Optional.of(DataType.createHashtype(jdbcTypeDescription.getByteSize()));
+            default:
+                return Optional.empty();
         }
     }
 
@@ -81,8 +80,8 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      * Converts a given decimal scale into an Exasol {@link DataType} representing a TIMESTAMP.
      * <p>
      * If the system supports timestamps with nanosecond precision, the fractional precision
-     * of the timestamp will be set to the minimum of the provided decimal scale and 9
-     * (since nanosecond precision supports up to 9 fractional digits).
+     * of the timestamp will be set to the provided decimal scale as long as it is in the range
+     * 0..9. Decimal scales {@code < 0} fall back to precision 0 and values above 9 are capped at 9.
      * Otherwise, a default fractional precision of 3 (milliseconds) is used.
      *
      * @param decimalScale the number of fractional digits to use for the TIMESTAMP precision
@@ -90,10 +89,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      */
     private DataType convertExasolTimestamp(final int decimalScale) {
         if (supportsTimestampsWithNanoPrecision()) {
-            final int fractionalPrecision = Math.min(decimalScale, 9);
+            final int fractionalPrecision = getTimestampFractionalPrecision(decimalScale);
             return DataType.createTimestamp(true, fractionalPrecision);
         }
         return DataType.createTimestamp(true, 3);
+    }
+
+    private static int getTimestampFractionalPrecision(final int decimalScale) {
+        return decimalScale < 0 ? 0 : Math.min(decimalScale, 9);
     }
 
     private Optional<DataType> getDataTypeBasedOnTypeName(final JDBCTypeDescription jdbcTypeDescription) {
@@ -111,14 +114,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
     public JDBCTypeDescription readJdbcTypeDescription(final ResultSet remoteColumn) throws SQLException {
         final JDBCTypeDescription typeDescription = super.readJdbcTypeDescription(remoteColumn);
         switch (typeDescription.getJdbcType()) {
-        case EXASOL_INTERVAL_DAY_TO_SECOND:
-            return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
-        case EXASOL_INTERVAL_YEAR_TO_MONTH:
-            return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
-        case EXASOL_GEOMETRY:
-            return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
-        default:
-            return typeDescription;
+            case EXASOL_INTERVAL_DAY_TO_SECOND:
+                return extractIntervalDayToSecondPrecision(remoteColumn, typeDescription);
+            case EXASOL_INTERVAL_YEAR_TO_MONTH:
+                return extractIntervalYearToMonthPrecision(remoteColumn, typeDescription);
+            case EXASOL_GEOMETRY:
+                return getGeometryWithExtractedSrid(remoteColumn, typeDescription);
+            default:
+                return typeDescription;
         }
     }
 
@@ -138,13 +141,24 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      *         {@link #DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER}
      */
     protected int extractSrid(final String typeDescriptionString) {
-        final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
-        if (matcher.find()) {
-            final String srid = matcher.group(1);
-            return Integer.parseInt(srid);
-        } else {
-            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
+        if (typeDescriptionString == null) {
+            return fallbackSrid("null");
         }
+        final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
+        if (!matcher.find()) {
+            return fallbackSrid(typeDescriptionString);
+        }
+        try {
+            return Integer.parseInt(matcher.group(1));
+        } catch (final NumberFormatException ignored) {
+            return fallbackSrid(typeDescriptionString);
+        }
+    }
+
+    private int fallbackSrid(final String typeDescription) {
+        LOGGER.warning(() -> String.format("Could not extract SRID from type description \"%s\". Falling back to SRID %d.",
+                typeDescription, DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER));
+        return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
     }
 
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
@@ -157,7 +171,14 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
             preparedStatement.setString(2, table);
             preparedStatement.setString(3, column);
             try (final ResultSet resultSet = preparedStatement.executeQuery()) {
-                resultSet.next();
+                if (!resultSet.next()) {
+                    throw new IllegalStateException(ExaError.messageBuilder("E-VSEXA-7")
+                            .message(
+                                    "Could not find a matching row in SYS.EXA_ALL_COLUMNS for column {{columnName|uq}} in schema {{schemaName|uq}} and table {{tableName|uq}}.",
+                                    column, schema, table)
+                            .mitigation("Ensure that the user has the necessary privileges.")
+                            .toString());
+                }
                 return resultSet.getString("COLUMN_TYPE");
             }
         }
