@@ -176,7 +176,7 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
                             .message(
                                     "Could not find a matching row in SYS.EXA_ALL_COLUMNS for column {{columnName|uq}} in schema {{schemaName|uq}} and table {{tableName|uq}}.",
                                     column, schema, table)
-                            .mitigation("This may be caused by missing privileges or concurrent schema changes.")
+                            .mitigation("Ensure that the user has the necessary privileges.")
                             .toString());
                 }
                 return resultSet.getString("COLUMN_TYPE");

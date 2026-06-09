@@ -278,7 +278,7 @@ class ExasolColumnMetadataReaderTest {
                 () -> reader.readJdbcTypeDescription(remoteColumn));
 
         assertThat(exception.getMessage(),
-                equalTo("E-VSEXA-7: Could not find a matching row in SYS.EXA_ALL_COLUMNS for column SOURCE_COLUMN in schema SOURCE_SCHEMA and table SOURCE_TABLE. This may be caused by missing privileges or concurrent schema changes."));
+                equalTo("E-VSEXA-7: Could not find a matching row in SYS.EXA_ALL_COLUMNS for column SOURCE_COLUMN in schema SOURCE_SCHEMA and table SOURCE_TABLE. Ensure that the user has the necessary privileges."));
     }
 
     private int getJdbcType(final String typeDescription) {
