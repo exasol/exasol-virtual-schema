@@ -143,23 +143,23 @@ public class ExasolColumnMetadataReader extends BaseColumnMetadataReader {
      */
     protected int extractSrid(final String typeDescriptionString) {
         if (typeDescriptionString == null) {
-            LOGGER.warning(() -> "Could not extract SRID from type description \"null\". Falling back to SRID "
-                    + DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER + ".");
-            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
+            return fallbackSrid("null");
         }
         final Matcher matcher = SRID_PATTERN.matcher(typeDescriptionString);
         if (!matcher.find()) {
-            LOGGER.warning(() -> "Could not extract SRID from type description \"" + typeDescriptionString
-                    + "\". Falling back to SRID " + DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER + ".");
-            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
+            return fallbackSrid(typeDescriptionString);
         }
         try {
             return Integer.parseInt(matcher.group(1));
         } catch (final NumberFormatException ignored) {
-            LOGGER.warning(() -> "Could not extract SRID from type description \"" + typeDescriptionString
-                    + "\". Falling back to SRID " + DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER + ".");
-            return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
+            return fallbackSrid(typeDescriptionString);
         }
+    }
+
+    private int fallbackSrid(final String typeDescription) {
+        LOGGER.warning(() -> String.format("Could not extract SRID from type description \"%s\". Falling back to SRID %d.",
+                typeDescription, DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER));
+        return DEFAULT_SPATIAL_REFERENCE_SYSTEM_IDENTIFIER;
     }
 
     private String getTypeDescriptionStringForColumn(final ResultSet remoteColumn) throws SQLException {
