@@ -64,7 +64,7 @@
 [0]: https://github.com/exasol/virtual-schema-common-jdbc/
 [1]: https://github.com/exasol/virtual-schema-common-jdbc/blob/main/LICENSE
 [2]: https://www.exasol.com/
-[3]: https://repo1.maven.org/maven2/com/exasol/exasol-jdbc/26.2.7/exasol-jdbc-26.2.7-license.txt
+[3]: https://repo1.maven.org/maven2/com/exasol/exasol-jdbc/26.2.8/exasol-jdbc-26.2.8-license.txt
 [4]: https://github.com/exasol/error-reporting-java/
 [5]: https://github.com/exasol/error-reporting-java/blob/main/LICENSE
 [6]: http://hamcrest.org/JavaHamcrest/
