@@ -11,7 +11,7 @@
         <exasol-jdbc.version>26.2.8</exasol-jdbc.version>
         <exasol-testcontainers.version>7.1.6</exasol-testcontainers.version>
         <!-- Version 6 requires Java 17 -->
-        <junit-jupiter.version>6.1.2</junit-jupiter.version>
+        <junit-jupiter.version>5.14.4</junit-jupiter.version>
     </properties>
     <dependencies>
         <dependency>
