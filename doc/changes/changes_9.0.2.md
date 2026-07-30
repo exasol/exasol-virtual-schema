@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 9.0.2, released 2026-??-??
+# Exasol Virtual Schema 9.0.2, released 2026-07-30
 
 Code name: Fixed vulnerability CVE-2026-9563 in org.eclipse.parsson:parsson:jar:1.1.7:test
 
@@ -26,14 +26,17 @@ In Eclipse Parsson published Maven Central artifacts before version 1.1.8, the J
 
 ### Test Dependency Updates
 
-* Updated `com.exasol:test-db-builder-java:4.0.0` to `4.0.1`
+* Updated `com.exasol:exasol-testcontainers:7.3.0` to `8.0.1`
+* Updated `com.exasol:hamcrest-resultset-matcher:1.7.2` to `1.7.3`
+* Updated `com.exasol:test-db-builder-java:4.0.0` to `4.0.2`
+* Updated `com.exasol:udf-debugging-java:0.6.18` to `0.6.20`
 * Updated `org.jacoco:org.jacoco.agent:0.8.14` to `0.8.15`
 
 ### Plugin Dependency Updates
 
 * Updated `com.exasol:artifact-reference-checker-maven-plugin:0.4.4` to `1.0.1`
 * Updated `com.exasol:error-code-crawler-maven-plugin:2.0.7` to `2.1.0`
-* Updated `com.exasol:project-keeper-maven-plugin:5.6.2` to `5.7.3`
+* Updated `com.exasol:project-keeper-maven-plugin:5.6.2` to `5.7.4`
 * Removed `com.exasol:quality-summarizer-maven-plugin:0.2.1`
 * Updated `org.apache.maven.plugins:maven-dependency-plugin:3.10.0` to `3.11.0`
 * Updated `org.apache.maven.plugins:maven-enforcer-plugin:3.6.2` to `3.6.3`

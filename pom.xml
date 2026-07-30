@@ -66,7 +66,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>exasol-testcontainers</artifactId>
-            <version>7.3.0</version>
+            <version>8.0.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -78,7 +78,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.7.2</version>
+            <version>1.7.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>4.0.1</version>
+            <version>4.0.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -102,7 +102,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
-            <version>0.6.18</version>
+            <version>0.6.20</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -111,7 +111,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>5.7.3</version>
+                <version>5.7.4</version>
                 <executions>
                     <execution>
                         <goals>
@@ -135,19 +135,10 @@
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+                <groupId>org.apache.maven.plugins</groupId>
                 <configuration>
                     <finalName>virtual-schema-dist-${virtual-schema-common-jdbc.version}-exasol-${project.version}</finalName>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>make-assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <groupId>org.apache.maven.plugins</groupId>
             </plugin>
             <plugin>
                 <groupId>com.exasol</groupId>
