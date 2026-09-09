@@ -31,7 +31,7 @@ class ExasolTypedNullSqlGenerationVisitorTest {
     }
 
     @Test
-    void emptySelectList() throws AdapterException {
+    void anyValueSelectList() throws AdapterException {
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of(DataType.createDecimal(18, 0), DataType.createDecimal(1, 0)));
         final SqlSelectList selectList = SqlSelectList.createAnyValueSelectList();
