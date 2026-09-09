@@ -3,6 +3,7 @@ package com.exasol.adapter.dialects.exasol;
 import static com.exasol.matcher.ResultSetStructureMatcher.table;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.sql.ResultSet;
@@ -70,6 +71,19 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
         final String virtualTable = getVirtualTableName(this.testVirtualSchema, table);
         assertVsQuery("SELECT NULL AS X FROM " + virtualTable + " UNION ALL SELECT 1 FROM DUAL",
                 table("SMALLINT").row((Short) null).row((short) 1).matches());
+    }
+
+    @Test
+    void testTypedNullLiteral() {
+        final Table table = createSingleColumnTable("BOOLEAN").insert(true);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String virtualTableName = getVirtualTableName(this.testVirtualSchema, table);
+
+        assertAll(
+                () -> assertVsQuery("SELECT CAST(NULL AS DECIMAL(18,0)) FROM " + virtualTableName,
+                        table("BIGINT").row((Object) null).matches()),
+                () -> assertVsQuery("SELECT CAST(NULL AS DOUBLE) FROM " + virtualTableName,
+                        table("DOUBLE PRECISION").row((Object) null).matches()));
     }
 
     @Test
