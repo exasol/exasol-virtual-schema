@@ -18,8 +18,6 @@ This release fixes remote Exasol queries with top-level `NULL` literals.
 
 ### Test Dependency Updates
 
-* Updated `org.junit.jupiter:junit-jupiter-api:5.14.4` to `6.1.3`
-* Updated `org.junit.jupiter:junit-jupiter-params:5.14.4` to `6.1.3`
 * Updated `org.slf4j:slf4j-jdk14:2.0.18` to `2.0.19`
 
 ### Plugin Dependency Updates
