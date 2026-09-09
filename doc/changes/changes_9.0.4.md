@@ -18,6 +18,7 @@ This release fixes remote Exasol queries with top-level `NULL` literals.
 
 ### Test Dependency Updates
 
+* Updated `com.exasol:exasol-testcontainers:8.0.1` to `8.0.2`
 * Updated `org.slf4j:slf4j-jdk14:2.0.18` to `2.0.19`
 
 ### Plugin Dependency Updates
