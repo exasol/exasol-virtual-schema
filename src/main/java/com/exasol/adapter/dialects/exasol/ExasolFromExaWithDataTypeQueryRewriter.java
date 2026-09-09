@@ -8,9 +8,7 @@ import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
 import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.SqlDialect;
-import com.exasol.adapter.dialects.rewriting.AbstractQueryRewriter;
-import com.exasol.adapter.dialects.rewriting.SqlGenerationContext;
-import com.exasol.adapter.dialects.rewriting.SqlGenerationHelper;
+import com.exasol.adapter.dialects.rewriting.*;
 import com.exasol.adapter.jdbc.*;
 import com.exasol.adapter.metadata.DataType;
 import com.exasol.adapter.sql.SqlStatement;
@@ -32,6 +30,8 @@ class ExasolFromExaWithDataTypeQueryRewriter extends AbstractQueryRewriter {
         this.connectionFactory = connectionFactory;
     }
 
+    // Replace this workaround with the VSCJDBC query-generation hook once available.
+    // See https://github.com/exasol/exasol-virtual-schema/issues/156
     @Override
     public String rewrite(final SqlStatement statement, final List<DataType> selectListDataTypes,
             final ExaMetadata exaMetadata, final AdapterProperties properties) throws AdapterException, SQLException {
