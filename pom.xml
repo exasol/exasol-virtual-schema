@@ -2,13 +2,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>9.0.3</version>
+    <version>9.0.4</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
         <virtual-schema-common-jdbc.version>14.0.5</virtual-schema-common-jdbc.version>
-        <exasol-jdbc.version>26.2.8</exasol-jdbc.version>
+        <exasol-jdbc.version>26.2.9</exasol-jdbc.version>
         <exasol-testcontainers.version>7.2.3</exasol-testcontainers.version>
         <!-- Version 6 requires Java 17 -->
         <junit-jupiter.version>5.14.4</junit-jupiter.version>
@@ -84,7 +84,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.18</version>
+            <version>2.0.19</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -111,7 +111,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>5.7.4</version>
+                <version>5.7.5</version>
                 <executions>
                     <execution>
                         <goals>
@@ -181,7 +181,7 @@
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>9.0.3</version>
+        <version>9.0.4</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
