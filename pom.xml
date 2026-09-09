@@ -9,7 +9,6 @@
     <properties>
         <virtual-schema-common-jdbc.version>14.0.5</virtual-schema-common-jdbc.version>
         <exasol-jdbc.version>26.2.9</exasol-jdbc.version>
-        <exasol-testcontainers.version>7.2.3</exasol-testcontainers.version>
         <!-- Version 6 requires Java 17 -->
         <junit-jupiter.version>5.14.4</junit-jupiter.version>
     </properties>
