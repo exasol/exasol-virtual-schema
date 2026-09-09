@@ -15,8 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 import com.exasol.ExaMetadata;
@@ -65,9 +65,9 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     @MockitoSettings(strictness = Strictness.LENIENT)
     void rewritePushdownQueryCastsTopLevelNullLiteral() throws AdapterException, SQLException {
         final AdapterProperties properties = createAdapterProperties();
-        final SqlStatement statement = SqlStatementSelect.builder() //
-                .selectList(SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull()))) //
-                .fromClause(new SqlTable("DUAL", null)) //
+        final SqlStatement statement = SqlStatementSelect.builder()
+                .selectList(SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull())))
+                .fromClause(new SqlTable("DUAL", null))
                 .build();
         final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(testee(properties),
                 new ExasolMetadataReader(connectionMock, properties, exaMetadataMock), connectionFactoryMock);
