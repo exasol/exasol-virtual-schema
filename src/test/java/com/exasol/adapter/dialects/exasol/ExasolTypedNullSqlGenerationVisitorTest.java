@@ -21,7 +21,7 @@ class ExasolTypedNullSqlGenerationVisitorTest {
     private ExasolSqlDialect dialect;
 
     @Test
-    void castsOnlyTopLevelNullLiteralToCorrespondingSelectListType() throws AdapterException {
+    void testCastsTopLevelNullLiteralToCorrespondingSelectListType() throws AdapterException {
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of(DataType.createDecimal(18, 0), DataType.createDecimal(1, 0)));
         final SqlSelectList selectList = SqlSelectList.createRegularSelectList(
@@ -31,7 +31,7 @@ class ExasolTypedNullSqlGenerationVisitorTest {
     }
 
     @Test
-    void anyValueSelectList() throws AdapterException {
+    void testAnyValueSelectList() throws AdapterException {
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of(DataType.createDecimal(18, 0), DataType.createDecimal(1, 0)));
         final SqlSelectList selectList = SqlSelectList.createAnyValueSelectList();
@@ -40,7 +40,7 @@ class ExasolTypedNullSqlGenerationVisitorTest {
     }
 
     @Test
-    void leavesTopLevelNullLiteralUncastWhenNoCorrespondingSelectListTypeExists() throws AdapterException {
+    void testLeavesTopLevelNullLiteralUncastWhenNoCorrespondingSelectListTypeExists() throws AdapterException {
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of());
         final SqlSelectList selectList = SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull()));

@@ -49,7 +49,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     }
 
     @Test
-    void rewritePushdownQuery() throws AdapterException, SQLException {
+    void testRewritePushdownQuery() throws AdapterException, SQLException {
         final AdapterProperties properties = createAdapterProperties();
         final SqlDialect dialect = testee(properties);
         final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
@@ -63,7 +63,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
 
     @Test
     @MockitoSettings(strictness = Strictness.LENIENT)
-    void rewritePushdownQueryCastsTopLevelNullLiteral() throws AdapterException, SQLException {
+    void testRewritePushdownQueryCastsTopLevelNullLiteral() throws AdapterException, SQLException {
         final AdapterProperties properties = createAdapterProperties();
         final SqlStatement statement = SqlStatementSelect.builder()
                 .selectList(SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull())))
@@ -89,7 +89,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     }
 
     @Test
-    void rewritePushdownQueryEscapesSingleQuotes() throws AdapterException, SQLException {
+    void testRewritePushdownQueryEscapesSingleQuotes() throws AdapterException, SQLException {
         final AdapterProperties properties = createAdapterProperties();
         when(dialectMock.getSqlGenerator(any())).thenReturn(sqlGeneratorMock);
         when(sqlGeneratorMock.generateSqlFor(any())).thenReturn("string ' with '' quotes \"...");
@@ -103,7 +103,7 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
     }
 
     @Test
-    void generateImportStatement() throws SQLException {
+    void testGenerateImportStatement() throws SQLException {
         final AdapterProperties properties = createAdapterProperties();
         final SqlDialect dialect = testee(properties);
         final ExasolFromExaWithDataTypeQueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(dialect,
