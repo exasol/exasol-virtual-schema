@@ -26,16 +26,15 @@ class ExasolTypedNullSqlGenerationVisitorTest {
                 List.of(DataType.createDecimal(18, 0), DataType.createDecimal(1, 0)));
         final SqlSelectList selectList = SqlSelectList.createRegularSelectList(
                 List.of(new SqlLiteralNull(), new SqlLiteralExactnumeric(BigDecimal.ONE)));
-
         assertThat(visitor.visit(selectList), equalTo("CAST(NULL AS DECIMAL(18, 0)), 1"));
     }
 
     @Test
     void testAnyValueSelectList() throws AdapterException {
+        // "any value" in this case means just checking whether there is a result row at all
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of(DataType.createDecimal(18, 0), DataType.createDecimal(1, 0)));
         final SqlSelectList selectList = SqlSelectList.createAnyValueSelectList();
-
         assertThat(visitor.visit(selectList), equalTo("true"));
     }
 
@@ -44,7 +43,6 @@ class ExasolTypedNullSqlGenerationVisitorTest {
         final ExasolTypedNullSqlGenerationVisitor visitor = new ExasolTypedNullSqlGenerationVisitor(this.dialect, null,
                 List.of());
         final SqlSelectList selectList = SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull()));
-
         assertThat(visitor.visit(selectList), equalTo("NULL"));
     }
 }
