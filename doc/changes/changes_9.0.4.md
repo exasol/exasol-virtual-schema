@@ -6,7 +6,7 @@ Code name:
 
 ## Bugfixes
 
-* ISSUE_NUMBER: description
+* #125: Added test to verify that remote Exasol queries with string literals in the select list work
 
 ## Dependency Updates
 

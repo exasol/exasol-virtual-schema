@@ -63,6 +63,16 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
     }
 
     @Test
+    // https://github.com/exasol/exasol-virtual-schema/issues/125
+    void testStringLiteralInSelectList() {
+        final Table table = createSingleColumnTable("VARCHAR(20)").insert("value");
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String virtualTable = getVirtualTableName(this.testVirtualSchema, table);
+        assertVsQuery("SELECT 'VS_EXA_META' AS VS_NAME, C1 FROM " + virtualTable,
+                table("CHAR", "VARCHAR").row("VS_EXA_META", "value").matches());
+    }
+
+    @Test
     void testPasswordNotVisibleInImportFromExa() throws NoDriverFoundException, SQLException {
         final Table table = this.sourceSchema.createTable("T1", "C1", "VARCHAR(20)").insert("Hello.");
         this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
