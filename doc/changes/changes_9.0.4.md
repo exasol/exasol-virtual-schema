@@ -4,9 +4,11 @@ Code name:
 
 ## Summary
 
+This release fixes remote Exasol queries with top-level `NULL` literals.
+
 ## Bugfixes
 
-* ISSUE_NUMBER: description
+* #124: Fixed remote Exasol queries with top-level `NULL` literals
 
 ## Dependency Updates
 

@@ -63,6 +63,16 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
     }
 
     @Test
+    // https://github.com/exasol/exasol-virtual-schema/issues/124
+    void testNullLiteralInUnionAll() {
+        final Table table = createSingleColumnTable("BOOLEAN").insert(true);
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String virtualTable = getVirtualTableName(this.testVirtualSchema, table);
+        assertVsQuery("SELECT NULL AS X FROM " + virtualTable + " UNION ALL SELECT 1 FROM DUAL",
+                table("SMALLINT").row((Short) null).row((short) 1).matches());
+    }
+
+    @Test
     void testPasswordNotVisibleInImportFromExa() throws NoDriverFoundException, SQLException {
         final Table table = this.sourceSchema.createTable("T1", "C1", "VARCHAR(20)").insert("Hello.");
         this.testVirtualSchema = createVirtualSchema(this.sourceSchema);

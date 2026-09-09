@@ -15,7 +15,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.quality.Strictness;
 
 import com.exasol.ExaMetadata;
 import com.exasol.adapter.AdapterException;
@@ -23,7 +25,7 @@ import com.exasol.adapter.AdapterProperties;
 import com.exasol.adapter.dialects.*;
 import com.exasol.adapter.jdbc.ConnectionFactory;
 import com.exasol.adapter.metadata.DataType;
-import com.exasol.adapter.sql.TestSqlStatementFactory;
+import com.exasol.adapter.sql.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExasolFromExaWithDataTypeQueryRewriterTest {
@@ -57,6 +59,21 @@ class ExasolFromExaWithDataTypeQueryRewriterTest {
                         exaMetadataMock, properties),
                 equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA AT \"THE_EXA_CONNECTION\""
                         + " STATEMENT 'SELECT 1 FROM \"DUAL\"'"));
+    }
+
+    @Test
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    void rewritePushdownQueryCastsTopLevelNullLiteral() throws AdapterException, SQLException {
+        final AdapterProperties properties = createAdapterProperties();
+        final SqlStatement statement = SqlStatementSelect.builder() //
+                .selectList(SqlSelectList.createRegularSelectList(List.of(new SqlLiteralNull()))) //
+                .fromClause(new SqlTable("DUAL", null)) //
+                .build();
+        final QueryRewriter queryRewriter = new ExasolFromExaWithDataTypeQueryRewriter(testee(properties),
+                new ExasolMetadataReader(connectionMock, properties, exaMetadataMock), connectionFactoryMock);
+        assertThat(queryRewriter.rewrite(statement, List.of(DataType.createDecimal(18, 0)), exaMetadataMock, properties),
+                equalTo("IMPORT INTO (c1 DECIMAL(18, 0)) FROM EXA AT \"THE_EXA_CONNECTION\""
+                        + " STATEMENT 'SELECT CAST(NULL AS DECIMAL(18, 0)) FROM \"DUAL\"'"));
     }
 
     private SqlDialect testee(final AdapterProperties properties) {
