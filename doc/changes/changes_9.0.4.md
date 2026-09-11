@@ -1,4 +1,4 @@
-# Exasol Virtual Schema 9.0.4, released 2026-09-09
+# Exasol Virtual Schema 9.0.4, released 2026-09-11
 
 Code name: Fix queries with `NULL` literals
 
