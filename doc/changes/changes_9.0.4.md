@@ -1,6 +1,6 @@
-# Exasol Virtual Schema 9.0.4, released 2026-??-??
+# Exasol Virtual Schema 9.0.4, released 2026-09-11
 
-Code name:
+Code name: Fix queries with `NULL` literals
 
 ## Summary
 
@@ -9,6 +9,7 @@ This release fixes remote Exasol queries with top-level `NULL` literals.
 ## Bugfixes
 
 * #124: Fixed remote Exasol queries with top-level `NULL` literals
+* #125: Added test to verify that remote Exasol queries with string literals in the select list work
 
 ## Dependency Updates
 

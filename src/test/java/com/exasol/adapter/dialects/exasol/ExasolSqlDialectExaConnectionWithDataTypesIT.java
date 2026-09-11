@@ -63,8 +63,18 @@ class ExasolSqlDialectExaConnectionWithDataTypesIT extends AbstractRemoteExasolV
                 "GENERATE_JDBC_DATATYPE_MAPPING_FOR_EXA", "true");
     }
 
+    // https://github.com/exasol/exasol-virtual-schema/issues/125
     @Test
+    void testStringLiteralInSelectList() {
+        final Table table = createSingleColumnTable("VARCHAR(20)").insert("value");
+        this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
+        final String virtualTable = getVirtualTableName(this.testVirtualSchema, table);
+        assertVsQuery("SELECT 'VS_EXA_META' AS VS_NAME, C1 FROM " + virtualTable,
+                table("CHAR", "VARCHAR").row("VS_EXA_META", "value").matches());
+    }
+
     // https://github.com/exasol/exasol-virtual-schema/issues/124
+    @Test
     void testNullLiteralInUnionAll() {
         final Table table = createSingleColumnTable("BOOLEAN").insert(true);
         this.testVirtualSchema = createVirtualSchema(this.sourceSchema);
