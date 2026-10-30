@@ -12,6 +12,17 @@
         <exasol-jdbc.version>26.2.10</exasol-jdbc.version>
         <junit-jupiter.version>6.1.3</junit-jupiter.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Upgrade transitive dependency of Mockito to fix CVE-2026-116486 -->
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>3.6</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.exasol</groupId>
