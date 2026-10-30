@@ -11,6 +11,8 @@ This release fixes the following 8 vulnerabilities.
 * This project now requires Java 17 for building and running. Exasol v8 is no longer supported.
 * This project is no longer published to Maven Central as the only user of that artifact was [row-level-security](https://github.com/exasol/row-level-security) which is now archived.
 
+## Details About Fixed Vulnerabilities
+
 ### CVE-2026-110262 (CWE-770) in dependency `org.ow2.asm:asm-commons:jar:9.10.1:test`
 OW2 ASM 3.1 before 9.11 contains an excessive memory allocation vulnerability in the asm-commons AdviceAdapter that allows attackers to exhaust memory by supplying crafted class files. Attackers can craft bytecode with many forward jump targets in constructors, causing unbounded stack copies in forwardJumpStackFrames and allocation of hundreds of megabytes, leading to denial of service.
 #### References
