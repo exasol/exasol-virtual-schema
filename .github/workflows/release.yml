@@ -70,7 +70,7 @@ jobs:
           persist-credentials: true # Required for pushing tag for the release
       - name: Set up Maven Central Repository
         id: configure-maven-central-credentials
-        if: ${{ true }}
+        if: ${{ false }}
         uses: actions/setup-java@v6
         with:
           distribution: "temurin"
@@ -87,7 +87,7 @@ jobs:
       - # [impl->dsn~release-workflow.validate-maven-central-signing-key~0]
         name: Validate Maven Central GPG signing key
         id: validate-gpg-signing-key
-        if: ${{ true }}
+        if: ${{ false }}
         run: |
           gpg_keys="$(gpg --list-secret-keys)"
           echo "$gpg_keys"
@@ -114,7 +114,7 @@ jobs:
           MAVEN_GPG_PASSPHRASE: ${{ secrets.OSSRH_GPG_SECRET_KEY_PASSWORD }}
       - name: Set up JDKs
         id: setup-jdks
-        if: ${{ ! true }}
+        if: ${{ ! false }}
         uses: actions/setup-java@v6
         with:
           distribution: "temurin"
@@ -178,7 +178,7 @@ jobs:
         # [impl->dsn~release-workflow.deploy-maven-central~1]
         name: Publish to Central Repository
         id: deploy-maven-central
-        if: ${{ true && (! inputs.skip-maven-central) }}
+        if: ${{ false && (! inputs.skip-maven-central) }}
         run: |
           echo "#### Maven Central Release" >> "$GITHUB_STEP_SUMMARY"
           ./mvnw --batch-mode -Dgpg.skip=false -DskipTests -DskipITs -Dossindex.skip=true deploy \

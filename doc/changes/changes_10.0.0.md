@@ -8,7 +8,8 @@ This release fixes the following 8 vulnerabilities.
 
 ## Breaking Changes
 
-This project now requires Java 17 for building and running. Exasol v8 is no longer supported.
+* This project now requires Java 17 for building and running. Exasol v8 is no longer supported.
+* This project is no longer published to Maven Central as the only user of that artifact was [row-level-security](https://github.com/exasol/row-level-security) which is now archived.
 
 ### CVE-2026-110262 (CWE-770) in dependency `org.ow2.asm:asm-commons:jar:9.10.1:test`
 OW2 ASM 3.1 before 9.11 contains an excessive memory allocation vulnerability in the asm-commons AdviceAdapter that allows attackers to exhaust memory by supplying crafted class files. Attackers can craft bytecode with many forward jump targets in constructors, causing unbounded stack copies in forwardJumpStackFrames and allocation of hundreds of megabytes, leading to denial of service.
@@ -104,10 +105,13 @@ OW2 ASM 3.0 before 9.11 contains an uncontrolled recursion vulnerability in Sign
 * Updated `org.apache.maven.plugins:maven-compiler-plugin:3.15.0` to `3.16.0`
 * Updated `org.apache.maven.plugins:maven-deploy-plugin:3.1.4` to `3.2.0`
 * Updated `org.apache.maven.plugins:maven-failsafe-plugin:3.5.6` to `3.6.1`
+* Removed `org.apache.maven.plugins:maven-gpg-plugin:3.2.8`
 * Updated `org.apache.maven.plugins:maven-install-plugin:3.1.4` to `3.2.0`
+* Removed `org.apache.maven.plugins:maven-javadoc-plugin:3.12.0`
+* Removed `org.apache.maven.plugins:maven-source-plugin:3.4.0`
 * Updated `org.apache.maven.plugins:maven-surefire-plugin:3.5.6` to `3.6.1`
-* Updated `org.codehaus.mojo:build-helper-maven-plugin:3.6.1` to `3.6.2`
+* Removed `org.codehaus.mojo:build-helper-maven-plugin:3.6.1`
 * Updated `org.codehaus.mojo:versions-maven-plugin:2.21.0` to `2.23.0`
 * Updated `org.jacoco:jacoco-maven-plugin:0.8.15` to `0.8.16`
 * Updated `org.sonarsource.scanner.maven:sonar-maven-plugin:5.7.0.6970` to `5.8.0.7211`
-* Updated `org.sonatype.central:central-publishing-maven-plugin:0.11.0` to `0.12.0`
+* Removed `org.sonatype.central:central-publishing-maven-plugin:0.11.0`

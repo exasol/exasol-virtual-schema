@@ -5,7 +5,6 @@ sources:
       - jar_artifact
       - integration_tests
       - udf_coverage
-      - maven_central
       - mockito_agent
 build:
   runnerOs: ubuntu-24.04
