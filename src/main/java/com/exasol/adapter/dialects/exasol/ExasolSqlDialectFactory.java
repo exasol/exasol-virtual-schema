@@ -7,6 +7,14 @@ import com.exasol.logging.VersionCollector;
  * Factory for the Exasol SQL dialect.
  */
 public class ExasolSqlDialectFactory implements SqlDialectFactory {
+
+    /**
+     * Create a new instance.
+     */
+    public ExasolSqlDialectFactory() {
+        // Required to add JavaDoc comment.
+    }
+
     @Override
     public String getSqlDialectName() {
         return ExasolSqlDialect.NAME;

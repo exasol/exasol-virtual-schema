@@ -16,6 +16,14 @@ import com.exasol.errorreporting.ExaError;
  * a separate property.
  */
 public class ExasolConnectionDefinitionBuilder extends BaseConnectionDefinitionBuilder {
+
+    /**
+     * Create a new instance.
+     */
+    public ExasolConnectionDefinitionBuilder() {
+        // Required to add JavaDoc comment.
+    }
+
     @Override
     public String buildConnectionDefinition(final AdapterProperties properties,
             final ExaConnectionInformation exaConnectionInformation) {

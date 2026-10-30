@@ -10,6 +10,8 @@ import com.exasol.errorreporting.ExaError;
  */
 public class SchemaNameProperty {
     /**
+     * Create a new validator for the given dialect name.
+     *
      * @param dialect name of the current dialect
      * @return {@link PropertyValidator} for mandatory property {@link AdapterProperties#SCHEMA_NAME_PROPERTY}.
      */
