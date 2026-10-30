@@ -2,16 +2,27 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>exasol-virtual-schema</artifactId>
-    <version>9.0.4</version>
+    <version>10.0.0</version>
     <name>Exasol Virtual Schema</name>
     <description>This projects contains the Exasol dialect for Exasol's Virtual Schema</description>
     <url>https://github.com/exasol/exasol-virtual-schema/</url>
     <properties>
-        <virtual-schema-common-jdbc.version>14.0.5</virtual-schema-common-jdbc.version>
-        <exasol-jdbc.version>26.2.9</exasol-jdbc.version>
-        <!-- Version 6 requires Java 17 -->
-        <junit-jupiter.version>5.14.4</junit-jupiter.version>
+        <java.version>17</java.version>
+        <virtual-schema-common-jdbc.version>14.1.1</virtual-schema-common-jdbc.version>
+        <exasol-jdbc.version>26.2.10</exasol-jdbc.version>
+        <junit-jupiter.version>6.1.3</junit-jupiter.version>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <!-- Upgrade transitive dependency of Mockito to fix CVE-2026-116486 -->
+                <groupId>org.objenesis</groupId>
+                <artifactId>objenesis</artifactId>
+                <version>3.6</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
             <groupId>com.exasol</groupId>
@@ -58,7 +69,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>5.23.0</version>
+            <version>5.24.0</version>
             <scope>test</scope>
         </dependency>
         <!--Integration test dependencies -->
@@ -77,19 +88,19 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>hamcrest-resultset-matcher</artifactId>
-            <version>1.7.3</version>
+            <version>1.7.4</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-jdk14</artifactId>
-            <version>2.0.19</version>
+            <version>2.0.20</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>test-db-builder-java</artifactId>
-            <version>4.0.2</version>
+            <version>4.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -101,7 +112,7 @@
         <dependency>
             <groupId>com.exasol</groupId>
             <artifactId>udf-debugging-java</artifactId>
-            <version>0.6.20</version>
+            <version>0.6.22</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -110,7 +121,7 @@
             <plugin>
                 <groupId>com.exasol</groupId>
                 <artifactId>project-keeper-maven-plugin</artifactId>
-                <version>5.7.5</version>
+                <version>5.8.2</version>
                 <executions>
                     <execution>
                         <goals>
@@ -118,19 +129,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <compilerArgs>
-                        <!-- We turn off `processing` because it complains about every annotation -->
-                        <!-- Disable 'path' warning because compiler fails with error
-                            "[path] bad path element "~/.m2/repository/org/apache/derby/derbyclient/10.14.2.0/derbyLocale_cs.jar": no such file or directory" -->
-                        <arg>-Xlint:all,-processing,-path</arg>
-                        <arg>-Werror</arg>
-                    </compilerArgs>
-                </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -155,32 +153,12 @@
                     </excludes>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <useModulePath>false</useModulePath>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <failOnError>true</failOnError>
-                    <additionalOptions>
-                        <option>--add-modules</option>
-                        <option>java.sql</option>
-                        <option>--add-reads</option>
-                        <option>org.glassfish.jakarta.json=java.sql</option>
-                    </additionalOptions>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
     <parent>
         <artifactId>exasol-virtual-schema-generated-parent</artifactId>
         <groupId>com.exasol</groupId>
-        <version>9.0.4</version>
+        <version>10.0.0</version>
         <relativePath>pk_generated_parent.pom</relativePath>
     </parent>
 </project>
